@@ -1,0 +1,84 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: schoolcrm-mysql
+    environment:
+      MYSQL_DATABASE: schoolcrm
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - schoolcrm-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: schoolcrm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - schoolcrm-network
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: schoolcrm-api
+    ports:
+      - "5000:80"
+      - "5001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=server=mysql;port=3306;database=schoolcrm;user=appuser;password=apppassword
+      - Redis__ConnectionString=redis:6379
+      - Jwt__Secret=YourSuperSecretKeyThatIsAtLeast32CharactersLongForProduction!
+      - Jwt__Issuer=SchoolCRM
+      - Jwt__Audience=SchoolCRM
+      - Jwt__AccessTokenExpirationMinutes=60
+      - Jwt__RefreshTokenExpirationDays=7
+      - Cors__AllowedOrigins__0=http://localhost:3000
+      - Cors__AllowedOrigins__1=http://localhost:5173
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - schoolcrm-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: schoolcrm-client
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - api
+    networks:
+      - schoolcrm-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  schoolcrm-network:
+    driver: bridge

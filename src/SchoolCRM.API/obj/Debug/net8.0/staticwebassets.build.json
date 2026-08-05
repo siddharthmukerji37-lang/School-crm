@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "e9wmZvPOu1AwrMsjJv+AlZzBZ33XW4jR0xKBjHCTn4w=",
+  "Source": "SchoolCRM.API",
+  "BasePath": "_content/SchoolCRM.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

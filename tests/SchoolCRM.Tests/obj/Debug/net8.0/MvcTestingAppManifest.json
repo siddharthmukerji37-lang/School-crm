@@ -1,0 +1,7 @@
+{
+  "SchoolCRM.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/var\/www\/html\/school-crm\/src\/SchoolCRM.API",
+  "SchoolCRM.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/var\/www\/html\/school-crm\/src\/SchoolCRM.Application",
+  "SchoolCRM.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/var\/www\/html\/school-crm\/src\/SchoolCRM.Domain",
+  "SchoolCRM.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/var\/www\/html\/school-crm\/src\/SchoolCRM.Infrastructure",
+  "SchoolCRM.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/var\/www\/html\/school-crm\/src\/SchoolCRM.Shared"
+}

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "r1c1WcDwgu4=",
+  "success": true,
+  "projectFilePath": "/var/www/html/school-crm/src/SchoolCRM.Shared/SchoolCRM.Shared.csproj",
+  "expectedPackageFiles": [
+    "/home/siddhartha/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.2/microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}

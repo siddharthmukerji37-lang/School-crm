@@ -1,0 +1,88 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace SchoolCRM.Application.DTOs.Attendance;
+
+public sealed class AttendanceDto
+{
+    public Guid Id { get; set; }
+    public Guid StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public string AdmissionNumber { get; set; } = string.Empty;
+    public Guid ClassRoomId { get; set; }
+    public string ClassName { get; set; } = string.Empty;
+    public Guid SectionId { get; set; }
+    public string SectionName { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? Remarks { get; set; }
+    public string? MarkedBy { get; set; }
+    public DateTime? CreatedAt { get; set; }
+}
+
+public sealed class MarkAttendanceDto
+{
+    [Required(ErrorMessage = "Date is required")]
+    public DateTime Date { get; set; }
+
+    [Required(ErrorMessage = "Section is required")]
+    public Guid SectionId { get; set; }
+
+    [Required(ErrorMessage = "Class is required")]
+    public Guid ClassRoomId { get; set; }
+
+    [Required(ErrorMessage = "Attendance records are required")]
+    [MinLength(1, ErrorMessage = "At least one attendance record is required")]
+    public List<AttendanceRecordDto> Records { get; set; } = new();
+}
+
+public sealed class AttendanceRecordDto
+{
+    [Required(ErrorMessage = "Student ID is required")]
+    public Guid StudentId { get; set; }
+
+    [Required(ErrorMessage = "Status is required")]
+    [RegularExpression("^(Present|Absent|Late|Excused)$",
+        ErrorMessage = "Status must be Present, Absent, Late, or Excused")]
+    public string Status { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+}
+
+public sealed class AttendanceStatsDto
+{
+    public DateTime Date { get; set; }
+    public Guid? ClassRoomId { get; set; }
+    public string? ClassName { get; set; }
+    public Guid? SectionId { get; set; }
+    public string? SectionName { get; set; }
+    public int TotalStudents { get; set; }
+    public int Present { get; set; }
+    public int Absent { get; set; }
+    public int Late { get; set; }
+    public int Excused { get; set; }
+    public decimal AttendancePercentage { get; set; }
+}
+
+public sealed class BulkMarkAttendanceDto
+{
+    [Required(ErrorMessage = "Start date is required")]
+    public DateTime StartDate { get; set; }
+
+    [Required(ErrorMessage = "End date is required")]
+    public DateTime EndDate { get; set; }
+
+    [Required(ErrorMessage = "Student IDs are required")]
+    [MinLength(1, ErrorMessage = "At least one student is required")]
+    public List<Guid> StudentIds { get; set; } = new();
+
+    [Required(ErrorMessage = "Status is required")]
+    [RegularExpression("^(Present|Absent|Late|Excused)$",
+        ErrorMessage = "Status must be Present, Absent, Late, or Excused")]
+    public string Status { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+
+    public bool SkipWeekends { get; set; } = true;
+}

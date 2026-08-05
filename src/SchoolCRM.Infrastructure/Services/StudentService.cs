@@ -1,0 +1,302 @@
+using Microsoft.AspNetCore.Identity;
+using SchoolCRM.Application.DTOs.Student;
+using SchoolCRM.Application.Interfaces.Repositories;
+using SchoolCRM.Application.Interfaces.Services;
+using SchoolCRM.Domain.Entities.Identity;
+using SchoolCRM.Domain.Entities.Student;
+using SchoolCRM.Domain.Enums;
+using SchoolCRM.Shared.Constants;
+using SchoolCRM.Shared.Models;
+
+namespace SchoolCRM.Infrastructure.Services;
+
+public class StudentService : IStudentService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public StudentService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    {
+        _unitOfWork = unitOfWork;
+        _userManager = userManager;
+    }
+
+    public async Task<ApiResponse<PagedResult<StudentDto>>> GetStudentsAsync(
+        PaginationQuery query, Guid? sectionId, Guid? classRoomId, Guid? schoolId, string? status)
+    {
+        try
+        {
+            var (items, totalCount) = await _unitOfWork.Students.GetPagedStudentsAsync(
+                query.PageNumber, query.PageSize, query.SearchTerm, query.SortColumn, query.SortOrder,
+                sectionId, classRoomId, schoolId, status);
+
+            var dtos = items.Select(MapToDto).ToList();
+
+            var pagedResult = new PagedResult<StudentDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                SearchTerm = query.SearchTerm,
+                SortColumn = query.SortColumn,
+                SortOrder = query.SortOrder
+            };
+
+            return ApiResponse<PagedResult<StudentDto>>.SuccessResponse(pagedResult);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<PagedResult<StudentDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<StudentDto>> GetStudentByIdAsync(Guid id)
+    {
+        try
+        {
+            var student = await _unitOfWork.Students.GetStudentWithDetailsAsync(id);
+            if (student is null)
+                return ApiResponse<StudentDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            return ApiResponse<StudentDto>.SuccessResponse(MapToDto(student));
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<StudentDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<StudentDto>> CreateStudentAsync(CreateStudentDto dto)
+    {
+        try
+        {
+            var existing = await _unitOfWork.Students.GetStudentByAdmissionNumberAsync(dto.Email);
+            if (existing is not null)
+                return ApiResponse<StudentDto>.FailResponse(ApplicationMessages.DuplicateRecord);
+
+            var classRoom = await _unitOfWork.ClassRooms.GetByIdAsync(dto.ClassRoomId);
+            if (classRoom is null)
+                return ApiResponse<StudentDto>.FailResponse("Selected class not found.");
+
+            var section = await _unitOfWork.Sections.GetByIdAsync(dto.SectionId);
+            if (section is null)
+                return ApiResponse<StudentDto>.FailResponse("Selected section not found.");
+
+            if (section.ClassRoomId != dto.ClassRoomId)
+                return ApiResponse<StudentDto>.FailResponse("Selected section does not belong to the chosen class.");
+
+            var user = new ApplicationUser
+            {
+                UserName = dto.Email,
+                Email = dto.Email,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                PhoneNumber = dto.Phone,
+                Gender = Enum.Parse<Gender>(dto.Gender),
+                DateOfBirth = dto.DateOfBirth,
+                Address = dto.Address,
+                BloodGroup = BloodGroupExtensions.ParseBloodGroup(dto.BloodGroup),
+                ProfilePictureUrl = dto.ProfilePictureUrl,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await _userManager.CreateAsync(user, "Student@123");
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return ApiResponse<StudentDto>.FailResponse(string.Join("; ", errors));
+            }
+
+            await _userManager.AddToRoleAsync(user, Roles.Student);
+
+            var admissionNumber = await _unitOfWork.Students.GenerateNextAdmissionNumberAsync(classRoom.SchoolId);
+
+            var student = new Domain.Entities.Student.Student
+            {
+                AdmissionNumber = admissionNumber,
+                RollNumber = admissionNumber,
+                UserId = user.Id,
+                SectionId = dto.SectionId,
+                SchoolId = classRoom.SchoolId,
+                AdmissionDate = dto.AdmissionDate,
+                Status = StudentStatus.Active,
+                ParentId = dto.ParentId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.Students.AddAsync(student);
+            await _unitOfWork.SaveChangesAsync();
+
+            var created = await _unitOfWork.Students.GetStudentWithDetailsAsync(student.Id);
+            return ApiResponse<StudentDto>.SuccessResponse(MapToDto(created!), ApplicationMessages.CreateSuccess);
+        }
+        catch (Exception ex)
+        {
+            var message = ex.InnerException?.Message ?? ex.Message;
+            return ApiResponse<StudentDto>.FailResponse(message);
+        }
+    }
+
+    public async Task<ApiResponse<StudentDto>> UpdateStudentAsync(Guid id, UpdateStudentDto dto)
+    {
+        try
+        {
+            var student = await _unitOfWork.Students.GetStudentWithDetailsAsync(id);
+            if (student is null)
+                return ApiResponse<StudentDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            student.SectionId = dto.SectionId;
+            student.Status = Enum.Parse<StudentStatus>(dto.Status);
+            student.UpdatedAt = DateTime.UtcNow;
+
+            var user = await _userManager.FindByIdAsync(student.UserId.ToString());
+            if (user is not null)
+            {
+                user.FirstName = dto.FirstName;
+                user.LastName = dto.LastName;
+                user.Email = dto.Email;
+                user.UserName = dto.Email;
+                user.PhoneNumber = dto.Phone;
+                user.DateOfBirth = dto.DateOfBirth;
+                user.Address = dto.Address;
+                user.ProfilePictureUrl = dto.ProfilePictureUrl;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                if (!string.IsNullOrEmpty(dto.BloodGroup))
+                    user.BloodGroup = BloodGroupExtensions.ParseBloodGroup(dto.BloodGroup);
+
+                if (!string.IsNullOrEmpty(dto.Gender))
+                    user.Gender = Enum.Parse<Gender>(dto.Gender);
+
+                await _userManager.UpdateAsync(user);
+            }
+
+            await _unitOfWork.Students.UpdateAsync(student);
+            await _unitOfWork.SaveChangesAsync();
+
+            var updated = await _unitOfWork.Students.GetStudentWithDetailsAsync(id);
+            return ApiResponse<StudentDto>.SuccessResponse(MapToDto(updated!), ApplicationMessages.UpdateSuccess);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<StudentDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse> DeleteStudentAsync(Guid id)
+    {
+        try
+        {
+            var student = await _unitOfWork.Students.GetByIdAsync(id);
+            if (student is null)
+                return ApiResponse.FailResponse(ApplicationMessages.NotFound);
+
+            student.IsDeleted = true;
+            student.DeletedAt = DateTime.UtcNow;
+            await _unitOfWork.Students.UpdateAsync(student);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ApiResponse.SuccessResponse(ApplicationMessages.DeleteSuccess);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<StudentDto>> PromoteStudentAsync(Guid id, PromoteStudentDto dto)
+    {
+        try
+        {
+            var student = await _unitOfWork.Students.GetStudentWithDetailsAsync(id);
+            if (student is null)
+                return ApiResponse<StudentDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            var promotion = new StudentPromotion
+            {
+                StudentId = id,
+                FromSectionId = student.SectionId,
+                ToSectionId = dto.ToSectionId,
+                FromAcademicYearId = student.Section.ClassRoom.AcademicYearId,
+                ToAcademicYearId = dto.ToAcademicYearId,
+                Remarks = dto.Remarks,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.Repository<StudentPromotion>().AddAsync(promotion);
+
+            student.SectionId = dto.ToSectionId;
+            if (dto.NewRollNumber.HasValue)
+                student.RollNumber = dto.NewRollNumber.Value.ToString();
+
+            student.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Students.UpdateAsync(student);
+            await _unitOfWork.SaveChangesAsync();
+
+            var updated = await _unitOfWork.Students.GetStudentWithDetailsAsync(id);
+            return ApiResponse<StudentDto>.SuccessResponse(MapToDto(updated!), ApplicationMessages.UpdateSuccess);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<StudentDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<PagedResult<StudentDto>>> SearchStudentsAsync(string searchTerm, PaginationQuery query)
+    {
+        try
+        {
+            var (items, totalCount) = await _unitOfWork.Students.GetPagedStudentsAsync(
+                query.PageNumber, query.PageSize, searchTerm, query.SortColumn, query.SortOrder,
+                null, null, null, null);
+
+            var dtos = items.Select(MapToDto).ToList();
+
+            var pagedResult = new PagedResult<StudentDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                SearchTerm = searchTerm
+            };
+
+            return ApiResponse<PagedResult<StudentDto>>.SuccessResponse(pagedResult);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<PagedResult<StudentDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    private static StudentDto MapToDto(Domain.Entities.Student.Student student)
+    {
+        return new StudentDto
+        {
+            Id = student.Id,
+            AdmissionNumber = student.AdmissionNumber,
+            RollNumber = int.TryParse(student.RollNumber, out var rn) ? rn : 0,
+            FirstName = student.User.FirstName,
+            LastName = student.User.LastName,
+            Email = student.User.Email ?? string.Empty,
+            Phone = student.User.PhoneNumber,
+            Gender = student.User.Gender.ToString(),
+            DateOfBirth = student.User.DateOfBirth ?? DateTime.MinValue,
+            SectionId = student.SectionId,
+            SectionName = student.Section?.Name ?? string.Empty,
+            ClassRoomId = student.Section?.ClassRoomId ?? Guid.Empty,
+            ClassName = student.Section?.ClassRoom?.Name ?? string.Empty,
+            ParentId = student.ParentId,
+            ParentName = student.Parent?.User is not null
+                ? $"{student.Parent.User.FirstName} {student.Parent.User.LastName}"
+                : null,
+            AdmissionDate = student.AdmissionDate,
+            Status = student.Status.ToString(),
+            ProfilePictureUrl = student.User.ProfilePictureUrl,
+            Address = student.User.Address,
+            BloodGroup = student.User.BloodGroup?.ToString()
+        };
+    }
+}

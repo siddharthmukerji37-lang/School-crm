@@ -1,0 +1,227 @@
+{
+  "format": 1,
+  "restore": {
+    "/var/www/html/school-crm/src/SchoolCRM.Application/SchoolCRM.Application.csproj": {}
+  },
+  "projects": {
+    "/var/www/html/school-crm/src/SchoolCRM.Application/SchoolCRM.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/var/www/html/school-crm/src/SchoolCRM.Application/SchoolCRM.Application.csproj",
+        "projectName": "SchoolCRM.Application",
+        "projectPath": "/var/www/html/school-crm/src/SchoolCRM.Application/SchoolCRM.Application.csproj",
+        "packagesPath": "/home/siddhartha/.nuget/packages/",
+        "outputPath": "/var/www/html/school-crm/src/SchoolCRM.Application/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/siddhartha/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/var/www/html/school-crm/src/SchoolCRM.Domain/SchoolCRM.Domain.csproj": {
+                "projectPath": "/var/www/html/school-crm/src/SchoolCRM.Domain/SchoolCRM.Domain.csproj"
+              },
+              "/var/www/html/school-crm/src/SchoolCRM.Shared/SchoolCRM.Shared.csproj": {
+                "projectPath": "/var/www/html/school-crm/src/SchoolCRM.Shared/SchoolCRM.Shared.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.10.0, )"
+            },
+            "FluentValidation.DependencyInjectionExtensions": {
+              "target": "Package",
+              "version": "[11.10.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.4.1, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.11, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/home/siddhartha/.dotnet/sdk/8.0.423/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/var/www/html/school-crm/src/SchoolCRM.Domain/SchoolCRM.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/var/www/html/school-crm/src/SchoolCRM.Domain/SchoolCRM.Domain.csproj",
+        "projectName": "SchoolCRM.Domain",
+        "projectPath": "/var/www/html/school-crm/src/SchoolCRM.Domain/SchoolCRM.Domain.csproj",
+        "packagesPath": "/home/siddhartha/.nuget/packages/",
+        "outputPath": "/var/www/html/school-crm/src/SchoolCRM.Domain/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/siddhartha/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.11, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/home/siddhartha/.dotnet/sdk/8.0.423/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/var/www/html/school-crm/src/SchoolCRM.Shared/SchoolCRM.Shared.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/var/www/html/school-crm/src/SchoolCRM.Shared/SchoolCRM.Shared.csproj",
+        "projectName": "SchoolCRM.Shared",
+        "projectPath": "/var/www/html/school-crm/src/SchoolCRM.Shared/SchoolCRM.Shared.csproj",
+        "packagesPath": "/home/siddhartha/.nuget/packages/",
+        "outputPath": "/var/www/html/school-crm/src/SchoolCRM.Shared/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/siddhartha/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/home/siddhartha/.dotnet/sdk/8.0.423/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
