@@ -69,6 +69,22 @@ public static class BloodGroupExtensions
 
         return null;
     }
+
+    public static string? ToDisplayString(this BloodGroup? value)
+    {
+        return value switch
+        {
+            BloodGroup.APositive => "A+",
+            BloodGroup.ANegative => "A-",
+            BloodGroup.BPositive => "B+",
+            BloodGroup.BNegative => "B-",
+            BloodGroup.OPositive => "O+",
+            BloodGroup.ONegative => "O-",
+            BloodGroup.ABPositive => "AB+",
+            BloodGroup.ABNegative => "AB-",
+            _ => null
+        };
+    }
 }
 
 public enum AttendanceStatus

@@ -7,6 +7,7 @@ import { fetchStudents, deleteStudent } from '../../store/slices/studentSlice';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import { hasAdminRole } from '../../utils/roles';
 import toast from 'react-hot-toast';
 
 const CLASS_OPTIONS = [
@@ -30,7 +31,7 @@ export default function StudentListPage() {
   const dispatch = useDispatch();
   const { students, loading } = useSelector((state) => state.students);
   const { user } = useSelector((state) => state.auth);
-  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const isAdmin = hasAdminRole(user?.roles);
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);

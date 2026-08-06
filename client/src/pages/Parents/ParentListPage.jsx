@@ -7,6 +7,7 @@ import { fetchParents, deleteParent } from '../../store/slices/parentSlice';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import { hasAdminRole } from '../../utils/roles';
 import toast from 'react-hot-toast';
 
 export default function ParentListPage() {
@@ -14,7 +15,7 @@ export default function ParentListPage() {
   const dispatch = useDispatch();
   const { parents, loading } = useSelector((state) => state.parents);
   const { user } = useSelector((state) => state.auth);
-  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const isAdmin = hasAdminRole(user?.roles);
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -53,6 +54,10 @@ export default function ParentListPage() {
 
   const handleEdit = (row) => {
     navigate(`/parents/${row.id}/edit`);
+  };
+
+  const handleView = (row) => {
+    navigate(`/parents/${row.id}`);
   };
 
   const handleDelete = (row) => {
@@ -101,6 +106,7 @@ export default function ParentListPage() {
         onRowsPerPageChange={handleRowsPerPageChange}
         onEdit={isAdmin ? handleEdit : undefined}
         onDelete={isAdmin ? handleDelete : undefined}
+        onView={handleView}
         emptyMessage="No parents found"
       />
 

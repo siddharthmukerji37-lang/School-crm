@@ -858,6 +858,9 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<Guid?>("AcademicYearId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("ClassRoomId")
+                        .HasColumnType("char(36)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -905,6 +908,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AcademicYearId");
+
+                    b.HasIndex("ClassRoomId");
 
                     b.HasIndex("ExamTypeId");
 
@@ -2944,6 +2949,9 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<bool>("IsPublished")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("Priority")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime?>("PublishDate")
                         .HasColumnType("datetime(6)");
 
@@ -4525,6 +4533,9 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<string>("EmergencyContactPhone")
                         .HasColumnType("longtext");
 
+                    b.Property<bool>("HostelRequired")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
@@ -4534,8 +4545,23 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<string>("MedicalCondition")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ParentEmail")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("ParentName")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("ParentPhone")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("PreviousSchool")
                         .HasColumnType("longtext");
@@ -4556,6 +4582,9 @@ namespace SchoolCRM.Infrastructure.Migrations
 
                     b.Property<string>("TransferCertificateNumber")
                         .HasColumnType("longtext");
+
+                    b.Property<bool>("TransportRequired")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("TransportRoute")
                         .HasColumnType("longtext");
@@ -5706,6 +5735,11 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .HasForeignKey("AcademicYearId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("SchoolCRM.Domain.Entities.School.ClassRoom", "ClassRoom")
+                        .WithMany()
+                        .HasForeignKey("ClassRoomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SchoolCRM.Domain.Entities.Exam.ExamType", "ExamType")
                         .WithMany("Exams")
                         .HasForeignKey("ExamTypeId")
@@ -5718,6 +5752,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("AcademicYear");
+
+                    b.Navigation("ClassRoom");
 
                     b.Navigation("ExamType");
 

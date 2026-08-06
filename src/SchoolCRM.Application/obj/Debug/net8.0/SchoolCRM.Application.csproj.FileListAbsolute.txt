@@ -15,3 +15,4 @@
 /var/www/html/school-crm/src/SchoolCRM.Application/obj/Debug/net8.0/refint/SchoolCRM.Application.dll
 /var/www/html/school-crm/src/SchoolCRM.Application/obj/Debug/net8.0/SchoolCRM.Application.pdb
 /var/www/html/school-crm/src/SchoolCRM.Application/obj/Debug/net8.0/ref/SchoolCRM.Application.dll
+/var/www/html/school-crm/src/SchoolCRM.Application/obj/Debug/net8.0/SchoolCRM.Application.sourcelink.json

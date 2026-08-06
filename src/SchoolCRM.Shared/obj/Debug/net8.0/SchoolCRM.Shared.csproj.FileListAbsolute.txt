@@ -10,3 +10,4 @@
 /var/www/html/school-crm/src/SchoolCRM.Shared/obj/Debug/net8.0/refint/SchoolCRM.Shared.dll
 /var/www/html/school-crm/src/SchoolCRM.Shared/obj/Debug/net8.0/SchoolCRM.Shared.pdb
 /var/www/html/school-crm/src/SchoolCRM.Shared/obj/Debug/net8.0/ref/SchoolCRM.Shared.dll
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Debug/net8.0/SchoolCRM.Shared.sourcelink.json

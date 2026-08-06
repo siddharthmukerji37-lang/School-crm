@@ -153,3 +153,4 @@
 /var/www/html/school-crm/src/SchoolCRM.API/obj/Debug/net8.0/SchoolCRM.API.pdb
 /var/www/html/school-crm/src/SchoolCRM.API/obj/Debug/net8.0/SchoolCRM.API.genruntimeconfig.cache
 /var/www/html/school-crm/src/SchoolCRM.API/obj/Debug/net8.0/ref/SchoolCRM.API.dll
+/var/www/html/school-crm/src/SchoolCRM.API/obj/Debug/net8.0/SchoolCRM.API.sourcelink.json

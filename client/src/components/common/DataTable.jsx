@@ -24,9 +24,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import InboxIcon from '@mui/icons-material/Inbox';
 
+function resolveAccessor(row, accessor) {
+  if (typeof accessor === 'function') return accessor(row);
+  return row[accessor];
+}
+
 function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) return -1;
-  if (b[orderBy] > a[orderBy]) return 1;
+  if (resolveAccessor(b, orderBy) < resolveAccessor(a, orderBy)) return -1;
+  if (resolveAccessor(b, orderBy) > resolveAccessor(a, orderBy)) return 1;
   return 0;
 }
 
@@ -85,8 +90,8 @@ export default function DataTable({
     const lower = searchTerm.toLowerCase();
     return rows.filter((row) =>
       columns.some((col) => {
-        const value = col.accessor ? row[col.accessor] : '';
-        return String(value).toLowerCase().includes(lower);
+        const value = resolveAccessor(row, col.accessor);
+        return String(value ?? '').toLowerCase().includes(lower);
       })
     );
   }, [rows, searchTerm, columns, enableSearch]);
@@ -186,7 +191,9 @@ export default function DataTable({
                 >
                   {columns.map((col) => (
                     <TableCell key={col.id || col.accessor} align={col.align || 'left'}>
-                      {col.render ? col.render(row[col.accessor], row) : row[col.accessor]}
+                      {col.render
+                        ? col.render(resolveAccessor(row, col.accessor), row)
+                        : resolveAccessor(row, col.accessor)}
                     </TableCell>
                   ))}
                   {hasActions && (

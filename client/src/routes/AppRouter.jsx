@@ -13,8 +13,10 @@ const StudentFormPage = lazy(() => import('../pages/Students/StudentFormPage'));
 const StudentDetailPage = lazy(() => import('../pages/Students/StudentDetailPage'));
 const TeacherListPage = lazy(() => import('../pages/Teachers/TeacherListPage'));
 const TeacherFormPage = lazy(() => import('../pages/Teachers/TeacherFormPage'));
+const TeacherDetailPage = lazy(() => import('../pages/Teachers/TeacherDetailPage'));
 const ParentListPage = lazy(() => import('../pages/Parents/ParentListPage'));
 const ParentFormPage = lazy(() => import('../pages/Parents/ParentFormPage'));
+const ParentDetailPage = lazy(() => import('../pages/Parents/ParentDetailPage'));
 const EmployeeListPage = lazy(() => import('../pages/Employees/EmployeeListPage'));
 const EmployeeFormPage = lazy(() => import('../pages/Employees/EmployeeFormPage'));
 const AttendanceListPage = lazy(() => import('../pages/Attendance/AttendanceListPage'));
@@ -71,6 +73,7 @@ export default function AppRouter() {
         } />
 
         <Route path="teachers" element={<TeacherListPage />} />
+        <Route path="teachers/:id" element={<TeacherDetailPage />} />
         <Route path="teachers/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><TeacherFormPage /></ProtectedRoute>
         } />
@@ -79,6 +82,7 @@ export default function AppRouter() {
         } />
 
         <Route path="parents" element={<ParentListPage />} />
+        <Route path="parents/:id" element={<ParentDetailPage />} />
         <Route path="parents/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><ParentFormPage /></ProtectedRoute>
         } />

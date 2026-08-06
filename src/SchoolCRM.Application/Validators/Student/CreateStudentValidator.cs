@@ -34,5 +34,27 @@ public class CreateStudentValidator : AbstractValidator<CreateStudentDto>
 
         RuleFor(x => x.AdmissionDate)
             .NotEmpty().WithMessage("Admission date is required");
+
+        RuleFor(x => x.AdmissionNumber)
+            .MaximumLength(50).WithMessage("Admission number must not exceed 50 characters");
+
+        RuleFor(x => x.ParentName)
+            .MaximumLength(200).WithMessage("Parent name must not exceed 200 characters");
+
+        RuleFor(x => x.ParentPhone)
+            .MaximumLength(50).WithMessage("Parent phone must not exceed 50 characters");
+
+        RuleFor(x => x.ParentEmail)
+            .EmailAddress().WithMessage("Invalid parent email address")
+            .MaximumLength(200).WithMessage("Parent email must not exceed 200 characters");
+
+        RuleFor(x => x.Address)
+            .MaximumLength(500).WithMessage("Address must not exceed 500 characters");
+
+        RuleFor(x => x.Notes)
+            .MaximumLength(5000).WithMessage("Notes must not exceed 5000 characters");
+
+        RuleFor(x => x.BloodGroup)
+            .MaximumLength(10).WithMessage("Blood group must not exceed 10 characters");
     }
 }

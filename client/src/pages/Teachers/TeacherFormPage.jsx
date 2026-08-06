@@ -21,6 +21,7 @@ import { createTeacher, updateTeacher, fetchTeacherById } from '../../store/slic
 import toast from 'react-hot-toast';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
+const STATUS_OPTIONS = ['Active', 'OnLeave', 'Inactive'];
 const DEPARTMENT_OPTIONS = [
   'Mathematics',
   'Science',
@@ -70,6 +71,7 @@ export default function TeacherFormPage() {
     experience: '',
     address: '',
     password: '',
+    status: 'Active',
   });
 
   useEffect(() => {
@@ -95,6 +97,7 @@ export default function TeacherFormPage() {
         experience: selectedTeacher.experience ?? '',
         address: selectedTeacher.address || '',
         password: '',
+        status: selectedTeacher.status || 'Active',
       });
     }
   }, [isEditMode, selectedTeacher]);
@@ -342,6 +345,23 @@ export default function TeacherFormPage() {
                     error={touched.experience && Boolean(errors.experience)}
                     helperText={touched.experience && errors.experience}
                   />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    select
+                    name="status"
+                    label="Status"
+                    value={values.status}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  >
+                    {STATUS_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
               </Grid>
             </Paper>

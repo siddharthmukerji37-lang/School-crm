@@ -48,6 +48,16 @@ function DetailRow({ label, value }) {
   );
 }
 
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = date.toLocaleDateString(undefined, { month: 'short' });
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
 export default function StudentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -159,7 +169,7 @@ export default function StudentDetailPage() {
               <DetailRow label="Last Name" value={student.lastName} />
               <DetailRow label="Email" value={student.email} />
               <DetailRow label="Phone" value={student.phone} />
-              <DetailRow label="Date of Birth" value={student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : ''} />
+              <DetailRow label="Date of Birth" value={formatDate(student.dateOfBirth)} />
               <DetailRow label="Gender" value={student.gender} />
               <DetailRow label="Blood Group" value={student.bloodGroup} />
               <DetailRow label="Address" value={student.address} />
@@ -170,7 +180,7 @@ export default function StudentDetailPage() {
               </Typography>
               <Divider sx={{ mb: 1 }} />
               <DetailRow label="Admission Number" value={student.admissionNumber} />
-              <DetailRow label="Admission Date" value={student.admissionDate ? new Date(student.admissionDate).toLocaleDateString() : ''} />
+              <DetailRow label="Admission Date" value={formatDate(student.admissionDate)} />
               <DetailRow label="Class" value={student.className} />
               <DetailRow label="Section" value={student.sectionName} />
 

@@ -66,6 +66,20 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
+export const fetchCurrentUser = createAsyncThunk(
+  'auth/fetchCurrentUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authService.getProfile();
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to load user'
+      );
+    }
+  }
+);
+
 export const logout = createAsyncThunk('auth/logout', async () => {
   try {
     await authService.logout();
@@ -147,6 +161,15 @@ const authSlice = createSlice({
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchCurrentUser.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload;
+      })
+      .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.error = action.payload;
       })
       .addCase(logout.fulfilled, (state) => {

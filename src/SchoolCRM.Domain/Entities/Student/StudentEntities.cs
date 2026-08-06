@@ -20,6 +20,12 @@ public class Student : BaseEntity
     public string? EmergencyContactPhone { get; set; }
     public string? TransportRoute { get; set; }
     public bool IsHostelResident { get; set; }
+    public bool TransportRequired { get; set; }
+    public bool HostelRequired { get; set; }
+    public string? ParentName { get; set; }
+    public string? ParentPhone { get; set; }
+    public string? ParentEmail { get; set; }
+    public string? Notes { get; set; }
     public string? BankAccountNumber { get; set; }
     public string? BankName { get; set; }
 

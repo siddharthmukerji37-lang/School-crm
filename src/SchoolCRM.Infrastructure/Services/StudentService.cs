@@ -71,10 +71,6 @@ public class StudentService : IStudentService
     {
         try
         {
-            var existing = await _unitOfWork.Students.GetStudentByAdmissionNumberAsync(dto.Email);
-            if (existing is not null)
-                return ApiResponse<StudentDto>.FailResponse(ApplicationMessages.DuplicateRecord);
-
             var classRoom = await _unitOfWork.ClassRooms.GetByIdAsync(dto.ClassRoomId);
             if (classRoom is null)
                 return ApiResponse<StudentDto>.FailResponse("Selected class not found.");
@@ -85,6 +81,13 @@ public class StudentService : IStudentService
 
             if (section.ClassRoomId != dto.ClassRoomId)
                 return ApiResponse<StudentDto>.FailResponse("Selected section does not belong to the chosen class.");
+
+            var admissionNumber = !string.IsNullOrWhiteSpace(dto.AdmissionNumber)
+                ? dto.AdmissionNumber.Trim()
+                : await _unitOfWork.Students.GenerateNextAdmissionNumberAsync(classRoom.SchoolId);
+
+            if (await _unitOfWork.Students.GetStudentByAdmissionNumberAsync(admissionNumber) is not null)
+                return ApiResponse<StudentDto>.FailResponse("A student with this admission number already exists.");
 
             var user = new ApplicationUser
             {
@@ -111,8 +114,6 @@ public class StudentService : IStudentService
 
             await _userManager.AddToRoleAsync(user, Roles.Student);
 
-            var admissionNumber = await _unitOfWork.Students.GenerateNextAdmissionNumberAsync(classRoom.SchoolId);
-
             var student = new Domain.Entities.Student.Student
             {
                 AdmissionNumber = admissionNumber,
@@ -123,6 +124,12 @@ public class StudentService : IStudentService
                 AdmissionDate = dto.AdmissionDate,
                 Status = StudentStatus.Active,
                 ParentId = dto.ParentId,
+                ParentName = dto.ParentName,
+                ParentPhone = dto.ParentPhone,
+                ParentEmail = dto.ParentEmail,
+                TransportRequired = dto.TransportRequired,
+                HostelRequired = dto.HostelRequired,
+                Notes = dto.Notes,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -147,8 +154,24 @@ public class StudentService : IStudentService
             if (student is null)
                 return ApiResponse<StudentDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
+            if (!string.IsNullOrWhiteSpace(dto.AdmissionNumber) &&
+                dto.AdmissionNumber.Trim() != student.AdmissionNumber &&
+                await _unitOfWork.Students.GetStudentByAdmissionNumberAsync(dto.AdmissionNumber.Trim()) is not null)
+            {
+                return ApiResponse<StudentDto>.FailResponse("A student with this admission number already exists.");
+            }
+
             student.SectionId = dto.SectionId;
+            student.AdmissionDate = dto.AdmissionDate;
+            if (!string.IsNullOrWhiteSpace(dto.AdmissionNumber))
+                student.AdmissionNumber = dto.AdmissionNumber.Trim();
             student.Status = Enum.Parse<StudentStatus>(dto.Status);
+            student.ParentName = dto.ParentName;
+            student.ParentPhone = dto.ParentPhone;
+            student.ParentEmail = dto.ParentEmail;
+            student.TransportRequired = dto.TransportRequired;
+            student.HostelRequired = dto.HostelRequired;
+            student.Notes = dto.Notes;
             student.UpdatedAt = DateTime.UtcNow;
 
             var user = await _userManager.FindByIdAsync(student.UserId.ToString());
@@ -289,14 +312,21 @@ public class StudentService : IStudentService
             ClassRoomId = student.Section?.ClassRoomId ?? Guid.Empty,
             ClassName = student.Section?.ClassRoom?.Name ?? string.Empty,
             ParentId = student.ParentId,
-            ParentName = student.Parent?.User is not null
-                ? $"{student.Parent.User.FirstName} {student.Parent.User.LastName}"
-                : null,
+            ParentName = !string.IsNullOrWhiteSpace(student.ParentName)
+                ? student.ParentName
+                : student.Parent?.User is not null
+                    ? $"{student.Parent.User.FirstName} {student.Parent.User.LastName}"
+                    : null,
+            ParentPhone = student.ParentPhone,
+            ParentEmail = student.ParentEmail,
+            TransportRequired = student.TransportRequired,
+            HostelRequired = student.HostelRequired,
+            Notes = student.Notes,
             AdmissionDate = student.AdmissionDate,
             Status = student.Status.ToString(),
             ProfilePictureUrl = student.User.ProfilePictureUrl,
             Address = student.User.Address,
-            BloodGroup = student.User.BloodGroup?.ToString()
+            BloodGroup = student.User.BloodGroup.ToDisplayString()
         };
     }
 }

@@ -7,6 +7,7 @@ import { fetchTeachers, deleteTeacher } from '../../store/slices/teacherSlice';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import { hasAdminRole } from '../../utils/roles';
 import toast from 'react-hot-toast';
 
 export default function TeacherListPage() {
@@ -14,7 +15,7 @@ export default function TeacherListPage() {
   const dispatch = useDispatch();
   const { teachers, loading } = useSelector((state) => state.teachers);
   const { user } = useSelector((state) => state.auth);
-  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const isAdmin = hasAdminRole(user?.roles);
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -64,6 +65,10 @@ export default function TeacherListPage() {
     navigate(`/teachers/${row.id}/edit`);
   };
 
+  const handleView = (row) => {
+    navigate(`/teachers/${row.id}`);
+  };
+
   const handleDelete = (row) => {
     setDeleteTarget(row);
   };
@@ -110,6 +115,7 @@ export default function TeacherListPage() {
         onRowsPerPageChange={handleRowsPerPageChange}
         onEdit={isAdmin ? handleEdit : undefined}
         onDelete={isAdmin ? handleDelete : undefined}
+        onView={handleView}
         emptyMessage="No teachers found"
       />
 

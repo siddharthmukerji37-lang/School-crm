@@ -13,6 +13,10 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.AdmissionNumber).IsRequired().HasMaxLength(50);
         builder.Property(s => s.RollNumber).IsRequired().HasMaxLength(50);
+        builder.Property(s => s.ParentName).HasMaxLength(200);
+        builder.Property(s => s.ParentPhone).HasMaxLength(50);
+        builder.Property(s => s.ParentEmail).HasMaxLength(200);
+        builder.Property(s => s.Notes).HasColumnType("text");
 
         builder.HasIndex(s => s.AdmissionNumber).IsUnique();
         builder.HasIndex(s => s.UserId);

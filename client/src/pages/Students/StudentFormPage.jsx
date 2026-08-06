@@ -26,6 +26,16 @@ import axiosInstance from '../../services/axiosInstance';
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 const BLOOD_GROUP_OPTIONS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
+const toDateInputValue = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function StudentFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -92,16 +102,12 @@ export default function StudentFormPage() {
         firstName: selectedStudent.firstName || '',
         lastName: selectedStudent.lastName || '',
         email: selectedStudent.email || '',
-        dateOfBirth: selectedStudent.dateOfBirth
-          ? new Date(selectedStudent.dateOfBirth).toISOString().split('T')[0]
-          : '',
+        dateOfBirth: toDateInputValue(selectedStudent.dateOfBirth),
         gender: selectedStudent.gender || '',
         classRoomId: selectedStudent.classRoomId || '',
         sectionId: selectedStudent.sectionId || '',
         admissionNumber: selectedStudent.admissionNumber || '',
-        admissionDate: selectedStudent.admissionDate
-          ? new Date(selectedStudent.admissionDate).toISOString().split('T')[0]
-          : '',
+        admissionDate: toDateInputValue(selectedStudent.admissionDate),
         phone: selectedStudent.phone || '',
         address: selectedStudent.address || '',
         parentName: selectedStudent.parentName || '',
@@ -128,6 +134,12 @@ export default function StudentFormPage() {
     }
   };
 
+  useEffect(() => {
+    if (isEditMode && selectedStudent?.classRoomId) {
+      fetchSections(selectedStudent.classRoomId);
+    }
+  }, [isEditMode, selectedStudent?.classRoomId]);
+
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const payload = {
@@ -139,9 +151,16 @@ export default function StudentFormPage() {
         dateOfBirth: values.dateOfBirth,
         sectionId: values.sectionId,
         classRoomId: values.classRoomId,
+        admissionNumber: values.admissionNumber || null,
         admissionDate: values.admissionDate,
         address: values.address,
         bloodGroup: values.bloodGroup || null,
+        parentName: values.parentName,
+        parentPhone: values.parentPhone,
+        parentEmail: values.parentEmail,
+        transportRequired: Boolean(values.transportRequired),
+        hostelRequired: Boolean(values.hostelRequired),
+        notes: values.notes,
       };
       if (isEditMode) {
         payload.status = selectedStudent?.status || 'Active';

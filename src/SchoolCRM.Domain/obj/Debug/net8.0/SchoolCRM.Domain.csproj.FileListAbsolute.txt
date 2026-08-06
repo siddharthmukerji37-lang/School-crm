@@ -10,3 +10,4 @@
 /var/www/html/school-crm/src/SchoolCRM.Domain/obj/Debug/net8.0/refint/SchoolCRM.Domain.dll
 /var/www/html/school-crm/src/SchoolCRM.Domain/obj/Debug/net8.0/SchoolCRM.Domain.pdb
 /var/www/html/school-crm/src/SchoolCRM.Domain/obj/Debug/net8.0/ref/SchoolCRM.Domain.dll
+/var/www/html/school-crm/src/SchoolCRM.Domain/obj/Debug/net8.0/SchoolCRM.Domain.sourcelink.json

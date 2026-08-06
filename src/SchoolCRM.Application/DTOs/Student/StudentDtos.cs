@@ -19,6 +19,11 @@ public sealed class StudentDto
     public string ClassName { get; set; } = string.Empty;
     public Guid? ParentId { get; set; }
     public string? ParentName { get; set; }
+    public string? ParentPhone { get; set; }
+    public string? ParentEmail { get; set; }
+    public bool TransportRequired { get; set; }
+    public bool HostelRequired { get; set; }
+    public string? Notes { get; set; }
     public DateTime AdmissionDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public string? ProfilePictureUrl { get; set; }
@@ -63,6 +68,25 @@ public sealed class CreateStudentDto
 
     [Required(ErrorMessage = "Admission date is required")]
     public DateTime AdmissionDate { get; set; }
+
+    [MaxLength(50)]
+    public string? AdmissionNumber { get; set; }
+
+    [MaxLength(200)]
+    public string? ParentName { get; set; }
+
+    [MaxLength(50)]
+    public string? ParentPhone { get; set; }
+
+    [MaxLength(200)]
+    public string? ParentEmail { get; set; }
+
+    public bool TransportRequired { get; set; }
+
+    public bool HostelRequired { get; set; }
+
+    [MaxLength(5000)]
+    public string? Notes { get; set; }
 
     [MaxLength(500)]
     public string? Address { get; set; }
@@ -109,6 +133,25 @@ public sealed class UpdateStudentDto
 
     public Guid? ParentId { get; set; }
 
+    [Required(ErrorMessage = "Admission date is required")]
+    public DateTime AdmissionDate { get; set; }
+
+    [MaxLength(200)]
+    public string? ParentName { get; set; }
+
+    [MaxLength(50)]
+    public string? ParentPhone { get; set; }
+
+    [MaxLength(200)]
+    public string? ParentEmail { get; set; }
+
+    public bool TransportRequired { get; set; }
+
+    public bool HostelRequired { get; set; }
+
+    [MaxLength(5000)]
+    public string? Notes { get; set; }
+
     [MaxLength(500)]
     public string? Address { get; set; }
 
@@ -122,6 +165,9 @@ public sealed class UpdateStudentDto
 
     [Required(ErrorMessage = "Status is required")]
     public string Status { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string? AdmissionNumber { get; set; }
 }
 
 public sealed class PromoteStudentDto

@@ -21,6 +21,8 @@ import { createEmployee, updateEmployee, fetchEmployeeById, clearSelectedEmploye
 import toast from 'react-hot-toast';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
+const EMPLOYEE_TYPE_OPTIONS = ['FullTime', 'PartTime', 'Contract', 'Intern', 'Temporary'];
+const STATUS_OPTIONS = ['Active', 'OnLeave', 'Inactive'];
 const DEPARTMENT_OPTIONS = [
   'Administration',
   'Mathematics',
@@ -44,7 +46,7 @@ const createEmployeeSchema = Yup.object({
   employeeId: Yup.string().trim().required('Employee ID is required'),
   department: Yup.string().required('Department is required'),
   gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required('Gender is required'),
-  dateOfJoining: Yup.date().nullable().required('Date of joining is required'),
+  joiningDate: Yup.date().nullable().required('Date of joining is required'),
   designation: Yup.string().trim(),
   address: Yup.string().trim(),
   password: Yup.string()
@@ -59,7 +61,7 @@ const updateEmployeeSchema = Yup.object({
   employeeId: Yup.string().trim().required('Employee ID is required'),
   department: Yup.string().required('Department is required'),
   gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required('Gender is required'),
-  dateOfJoining: Yup.date().nullable().required('Date of joining is required'),
+  joiningDate: Yup.date().nullable().required('Date of joining is required'),
   designation: Yup.string().trim(),
   address: Yup.string().trim(),
   password: Yup.string().min(8, 'Password must be at least 8 characters'),
@@ -80,8 +82,10 @@ export default function EmployeeFormPage() {
     employeeId: '',
     department: '',
     gender: '',
-    dateOfJoining: '',
+    joiningDate: '',
     designation: '',
+    employeeType: 'FullTime',
+    status: 'Active',
     address: '',
     password: '',
   });
@@ -105,10 +109,12 @@ export default function EmployeeFormPage() {
         employeeId: selectedEmployee.employeeId || '',
         department: selectedEmployee.department || '',
         gender: selectedEmployee.gender || '',
-        dateOfJoining: selectedEmployee.dateOfJoining
-          ? new Date(selectedEmployee.dateOfJoining).toISOString().split('T')[0]
+        joiningDate: selectedEmployee.joiningDate
+          ? new Date(selectedEmployee.joiningDate).toISOString().split('T')[0]
           : '',
         designation: selectedEmployee.designation || '',
+        employeeType: selectedEmployee.employeeType || 'FullTime',
+        status: selectedEmployee.status || 'Active',
         address: selectedEmployee.address || '',
         password: '',
       });
@@ -332,14 +338,50 @@ export default function EmployeeFormPage() {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
-                    name="dateOfJoining"
-                    label="Date of Joining"
-                    type="date"
-                    value={values.dateOfJoining}
+                    select
+                    name="employeeType"
+                    label="Employee Type"
+                    value={values.employeeType}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={touched.dateOfJoining && Boolean(errors.dateOfJoining)}
-                    helperText={touched.dateOfJoining && errors.dateOfJoining}
+                    error={touched.employeeType && Boolean(errors.employeeType)}
+                    helperText={touched.employeeType && errors.employeeType}
+                  >
+                    {EMPLOYEE_TYPE_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    select
+                    name="status"
+                    label="Status"
+                    value={values.status}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  >
+                    {STATUS_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    name="joiningDate"
+                    label="Date of Joining"
+                    type="date"
+                    value={values.joiningDate}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.joiningDate && Boolean(errors.joiningDate)}
+                    helperText={touched.joiningDate && errors.joiningDate}
                     slotProps={{ inputLabel: { shrink: true } }}
                   />
                 </Grid>
