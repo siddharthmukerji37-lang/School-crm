@@ -60,6 +60,8 @@ public interface ITransportService
         public string VehicleType { get; set; } = string.Empty;
         public string DriverName { get; set; } = string.Empty;
         public string DriverPhone { get; set; } = string.Empty;
+        public Guid RouteId { get; set; }
+        public string RouteName { get; set; } = string.Empty;
         public int Capacity { get; set; }
         public bool IsActive { get; set; }
     }
@@ -71,6 +73,8 @@ public interface ITransportService
         public string DriverName { get; set; } = string.Empty;
         public string DriverPhone { get; set; } = string.Empty;
         public int Capacity { get; set; }
+        public Guid RouteId { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 
     public sealed class TransportAllocationDto
@@ -80,8 +84,6 @@ public interface ITransportService
         public string StudentName { get; set; } = string.Empty;
         public Guid RouteId { get; set; }
         public string RouteName { get; set; } = string.Empty;
-        public Guid VehicleId { get; set; }
-        public string VehicleNumber { get; set; } = string.Empty;
         public string PickUpPoint { get; set; } = string.Empty;
         public decimal MonthlyFee { get; set; }
         public bool IsActive { get; set; }

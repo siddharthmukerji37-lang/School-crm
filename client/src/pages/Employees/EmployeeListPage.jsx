@@ -60,6 +60,10 @@ export default function EmployeeListPage() {
     setPage(0);
   };
 
+  const handleView = (row) => {
+    navigate(`/employees/${row.id}`);
+  };
+
   const handleEdit = (row) => {
     navigate(`/employees/${row.id}/edit`);
   };
@@ -108,6 +112,7 @@ export default function EmployeeListPage() {
         searchPlaceholder="Search employees..."
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
+        onView={handleView}
         onEdit={isAdmin ? handleEdit : undefined}
         onDelete={isAdmin ? handleDelete : undefined}
         emptyMessage="No employees found"

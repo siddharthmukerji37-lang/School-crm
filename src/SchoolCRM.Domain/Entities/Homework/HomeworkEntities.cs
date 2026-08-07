@@ -13,11 +13,13 @@ public class Homework : BaseEntity
     public string? AttachmentFileName { get; set; }
     public decimal? MaxMarks { get; set; }
     public Guid ClassRoomId { get; set; }
+    public Guid? SectionId { get; set; }
     public Guid SubjectId { get; set; }
     public Guid TeacherId { get; set; }
     public Guid SchoolId { get; set; }
 
     public School.ClassRoom ClassRoom { get; set; } = null!;
+    public School.Section? Section { get; set; }
     public School.Subject Subject { get; set; } = null!;
     public Teacher.Teacher Teacher { get; set; } = null!;
     public ICollection<HomeworkSubmission> Submissions { get; set; } = new List<HomeworkSubmission>();

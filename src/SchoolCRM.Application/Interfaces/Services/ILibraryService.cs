@@ -34,6 +34,7 @@ public interface ILibraryService
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
         public string ShelfNumber { get; set; } = string.Empty;
+        public string? Description { get; set; }
         public bool IsActive { get; set; }
     }
 
@@ -45,7 +46,9 @@ public interface ILibraryService
         public string Category { get; set; } = string.Empty;
         public string Publisher { get; set; } = string.Empty;
         public int TotalCopies { get; set; }
+        public int AvailableCopies { get; set; }
         public string ShelfNumber { get; set; } = string.Empty;
+        public string? Description { get; set; }
     }
 
     public sealed class BookIssueDto

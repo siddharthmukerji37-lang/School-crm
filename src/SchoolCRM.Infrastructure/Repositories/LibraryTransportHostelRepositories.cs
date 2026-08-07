@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Domain.Entities.Library;
@@ -90,6 +91,30 @@ public class BookIssueRepository : GenericRepository<BookIssue>, IBookIssueRepos
             && bi.StudentId == studentId
             && !bi.IsReturned);
     }
+
+    public async Task<(IReadOnlyList<BookIssue> Items, int TotalCount)> GetIssuedPagedAsync(
+        int pageNumber, int pageSize,
+        Expression<Func<BookIssue, bool>>? filter = null)
+    {
+        var query = _dbSet
+            .Include(bi => bi.Book)
+            .Include(bi => bi.Student)
+                .ThenInclude(s => s!.User)
+            .AsQueryable();
+
+        if (filter is not null)
+            query = query.Where(filter);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(bi => bi.IssueDate)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
 }
 
 public class TransportRouteRepository : GenericRepository<TransportRoute>, ITransportRouteRepository
@@ -106,6 +131,23 @@ public class TransportRouteRepository : GenericRepository<TransportRoute>, ITran
                 .ThenInclude(a => a.Student)
                     .ThenInclude(s => s!.User)
             .FirstOrDefaultAsync(tr => tr.Id == id);
+    }
+
+    public async Task<IReadOnlyList<Vehicle>> GetVehiclesWithDetailsAsync()
+    {
+        return await _context.Set<Vehicle>()
+            .Include(v => v.Driver)
+            .Include(v => v.Route)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<StudentTransportAllocation>> GetAllocationsWithDetailsAsync()
+    {
+        return await _context.Set<StudentTransportAllocation>()
+            .Include(a => a.Student)
+                .ThenInclude(s => s!.User)
+            .Include(a => a.Route)
+            .ToListAsync();
     }
 }
 

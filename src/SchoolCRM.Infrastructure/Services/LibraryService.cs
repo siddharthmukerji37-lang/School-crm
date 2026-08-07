@@ -1,7 +1,9 @@
 using System.Linq.Expressions;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
+using SchoolCRM.Domain.Entities.Library;
 using SchoolCRM.Domain.Enums;
+using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
 using static SchoolCRM.Application.Interfaces.Services.ILibraryService;
@@ -11,10 +13,12 @@ namespace SchoolCRM.Infrastructure.Services;
 public class LibraryService : ILibraryService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public LibraryService(IUnitOfWork unitOfWork)
+    public LibraryService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<PagedResult<BookDto>>> GetBooksAsync(PaginationQuery query, string? category, string? author)
@@ -38,6 +42,7 @@ public class LibraryService : ILibraryService
                     TotalCopies = b.TotalCopies,
                     AvailableCopies = b.AvailableCopies,
                     ShelfNumber = b.ShelfNumber ?? string.Empty,
+                    Description = b.Description,
                     IsActive = !b.IsDeleted
                 }).ToList();
 
@@ -76,6 +81,7 @@ public class LibraryService : ILibraryService
                 TotalCopies = book.TotalCopies,
                 AvailableCopies = book.AvailableCopies,
                 ShelfNumber = book.ShelfNumber ?? string.Empty,
+                Description = book.Description,
                 IsActive = !book.IsDeleted
             });
         }
@@ -89,18 +95,31 @@ public class LibraryService : ILibraryService
     {
         try
         {
-            var book = new Domain.Entities.Library.Book
+            var schoolId = _currentUserService.SchoolId;
+            if (schoolId is null || schoolId == Guid.Empty)
+            {
+                var schools = await _unitOfWork.Schools.GetAllAsync();
+                schoolId = schools.FirstOrDefault()?.Id;
+            }
+
+            if (schoolId is null || schoolId == Guid.Empty)
+                return ApiResponse<BookDto>.FailResponse("Unable to determine the current school context. Please sign in again.");
+
+            var categoryId = await ResolveCategoryAsync(dto.Category, schoolId.Value);
+
+            var book = new Book
             {
                 Title = dto.Title,
                 Author = dto.Author,
                 ISBN = dto.ISBN,
                 Publisher = dto.Publisher,
                 TotalCopies = dto.TotalCopies,
-                AvailableCopies = dto.TotalCopies,
+                AvailableCopies = dto.AvailableCopies > 0 ? dto.AvailableCopies : dto.TotalCopies,
                 ShelfNumber = dto.ShelfNumber,
+                Description = dto.Description,
                 Status = BookStatus.Available,
-                CategoryId = Guid.Empty,
-                SchoolId = Guid.Empty,
+                CategoryId = categoryId,
+                SchoolId = schoolId.Value,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -113,10 +132,14 @@ public class LibraryService : ILibraryService
                 Title = book.Title,
                 Author = book.Author ?? string.Empty,
                 ISBN = book.ISBN,
+                Category = book.Category?.Name ?? string.Empty,
+                Publisher = book.Publisher ?? string.Empty,
                 TotalCopies = book.TotalCopies,
                 AvailableCopies = book.AvailableCopies,
                 ShelfNumber = book.ShelfNumber ?? string.Empty,
+                Description = book.Description,
                 IsActive = true
+
             }, ApplicationMessages.CreateSuccess);
         }
         catch (Exception ex)
@@ -137,7 +160,11 @@ public class LibraryService : ILibraryService
             book.Author = dto.Author;
             book.ISBN = dto.ISBN;
             book.Publisher = dto.Publisher;
+            book.TotalCopies = dto.TotalCopies;
+            book.AvailableCopies = dto.AvailableCopies > 0 ? dto.AvailableCopies : dto.TotalCopies;
             book.ShelfNumber = dto.ShelfNumber;
+            book.Description = dto.Description;
+            book.CategoryId = await ResolveCategoryAsync(dto.Category, book.SchoolId);
             book.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Books.UpdateAsync(book);
@@ -149,9 +176,12 @@ public class LibraryService : ILibraryService
                 Title = book.Title,
                 Author = book.Author ?? string.Empty,
                 ISBN = book.ISBN,
+                Category = book.Category?.Name ?? string.Empty,
+                Publisher = book.Publisher ?? string.Empty,
                 TotalCopies = book.TotalCopies,
                 AvailableCopies = book.AvailableCopies,
                 ShelfNumber = book.ShelfNumber ?? string.Empty,
+                Description = book.Description,
                 IsActive = true
             }, ApplicationMessages.UpdateSuccess);
         }
@@ -283,7 +313,7 @@ public class LibraryService : ILibraryService
             if (studentId.HasValue)
                 filter = i => !i.IsDeleted && i.StudentId == studentId.Value;
 
-            var (items, totalCount) = await _unitOfWork.BookIssues.GetPagedAsync(
+            var (items, totalCount) = await _unitOfWork.BookIssues.GetIssuedPagedAsync(
                 query.PageNumber, query.PageSize, filter);
 
             var dtos = items.Select(i => new BookIssueDto
@@ -345,5 +375,30 @@ public class LibraryService : ILibraryService
         {
             return ApiResponse<List<BookIssueDto>>.FailResponse(ex.Message);
         }
+    }
+
+    private async Task<Guid> ResolveCategoryAsync(string categoryName, Guid schoolId)
+    {
+        if (string.IsNullOrWhiteSpace(categoryName))
+            categoryName = "Other";
+
+        var category = (await _unitOfWork.Repository<BookCategory>()
+                .FindAsync(c => c.SchoolId == schoolId && c.Name == categoryName))
+            .FirstOrDefault();
+
+        if (category is not null)
+            return category.Id;
+
+        var newCategory = new BookCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = categoryName,
+            Code = $"CAT{Math.Abs(categoryName.GetHashCode()) % 1000:D3}",
+            SchoolId = schoolId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<BookCategory>().AddAsync(newCategory);
+        return newCategory.Id;
     }
 }

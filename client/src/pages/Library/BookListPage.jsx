@@ -76,6 +76,7 @@ export default function BookListPage() {
         onPageChange={(_, p) => setPage(p)}
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
         onEdit={isAdmin ? (row) => navigate(`/library/${row.id}/edit`) : undefined}
+        onView={(row) => navigate(`/library/${row.id}`)}
         onDelete={isAdmin ? (row) => setDeleteTarget(row) : undefined}
         emptyMessage="No books found"
       />

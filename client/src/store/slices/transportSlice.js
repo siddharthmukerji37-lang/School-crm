@@ -127,6 +127,34 @@ export const fetchAllocations = createAsyncThunk(
   }
 );
 
+export const allocateTransport = createAsyncThunk(
+  'transport/allocateTransport',
+  async (allocationData, { rejectWithValue }) => {
+    try {
+      const response = await transportService.allocate(allocationData);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to allocate transport'
+      );
+    }
+  }
+);
+
+export const deallocateTransport = createAsyncThunk(
+  'transport/deallocateTransport',
+  async (allocationId, { rejectWithValue }) => {
+    try {
+      const response = await transportService.deallocate(allocationId);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to deallocate transport'
+      );
+    }
+  }
+);
+
 const transportSlice = createSlice({
   name: 'transport',
   initialState: {
@@ -284,6 +312,28 @@ const transportSlice = createSlice({
         state.allocations = action.payload;
       })
       .addCase(fetchAllocations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(allocateTransport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(allocateTransport.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(allocateTransport.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deallocateTransport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deallocateTransport.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deallocateTransport.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

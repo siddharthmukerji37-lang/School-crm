@@ -34,7 +34,7 @@ export default function HomeworkListPage() {
     { id: 'class', header: 'Class', accessor: 'className', minWidth: 100 },
     { id: 'section', header: 'Section', accessor: 'sectionName', minWidth: 90 },
     { id: 'dueDate', header: 'Due Date', accessor: 'dueDate', minWidth: 110 },
-    { id: 'assignedBy', header: 'Assigned By', accessor: 'assignedBy', minWidth: 130 },
+    { id: 'assignedBy', header: 'Assigned By', accessor: 'teacherName', minWidth: 130 },
     {
       id: 'status', header: 'Status', accessor: 'status', minWidth: 100,
       render: (v) => <Chip label={v || 'Pending'} color={statusColor(v)} size="small" variant="outlined" />,
@@ -76,6 +76,7 @@ export default function HomeworkListPage() {
         searchPlaceholder="Search homework..."
         onPageChange={(_, p) => setPage(p)}
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+        onView={(row) => navigate(`/homework/${row.id}`)}
         onEdit={isAdmin ? (row) => navigate(`/homework/${row.id}/edit`) : undefined}
         onDelete={isAdmin ? (row) => setDeleteTarget(row) : undefined}
         emptyMessage="No homework found"

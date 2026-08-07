@@ -20,7 +20,6 @@ const hwSchema = Yup.object({
   sectionId: Yup.string().required('Section is required'),
   subjectId: Yup.string().required('Subject is required'),
   dueDate: Yup.date().nullable().required('Due date is required'),
-  assignedBy: Yup.string().trim().required('Assigned by is required'),
 });
 
 export default function HomeworkFormPage() {
@@ -33,9 +32,10 @@ export default function HomeworkFormPage() {
   const [classes, setClasses] = useState([]);
   const [sections, setSections] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [schoolId, setSchoolId] = useState('');
   const [initialValues, setInitialValues] = useState({
     title: '', description: '', classRoomId: '', sectionId: '', subjectId: '',
-    dueDate: '', assignedBy: '',
+    dueDate: '',
   });
 
   useEffect(() => {
@@ -44,6 +44,7 @@ export default function HomeworkFormPage() {
         const res = await axiosInstance.get('/schools');
         const schools = res.data.data?.items || res.data.data || [];
         if (schools.length > 0) {
+          setSchoolId(schools[0].id);
           const classRes = await axiosInstance.get(`/schools/${schools[0].id}/classes`);
           setClasses(classRes.data.data || []);
         }
@@ -53,17 +54,21 @@ export default function HomeworkFormPage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedHomework) return;
-    const fetchSectionsAndSubjects = async () => {
-      if (selectedHomework.classRoomId) {
-        try {
-          const secRes = await axiosInstance.get(`/schools/classes/${selectedHomework.classRoomId}/sections`);
-          setSections(secRes.data.data || []);
-        } catch { setSections([]); }
-      }
+    if (!schoolId || !selectedHomework?.classRoomId) return;
+    const fetchForEdit = async () => {
+      try {
+        const secRes = await axiosInstance.get(`/schools/classes/${selectedHomework.classRoomId}/sections`);
+        setSections(secRes.data.data || []);
+      } catch { setSections([]); }
+      try {
+        const res = await axiosInstance.get(`/schools/${schoolId}/subjects`, {
+          params: { classRoomId: selectedHomework.classRoomId },
+        });
+        setSubjects(res.data.data || []);
+      } catch { setSubjects([]); }
     };
-    fetchSectionsAndSubjects();
-  }, [selectedHomework]);
+    fetchForEdit();
+  }, [schoolId, selectedHomework]);
 
   const fetchSections = async (classRoomId) => {
     if (!classRoomId) { setSections([]); return; }
@@ -71,6 +76,16 @@ export default function HomeworkFormPage() {
       const res = await axiosInstance.get(`/schools/classes/${classRoomId}/sections`);
       setSections(res.data.data || []);
     } catch { setSections([]); }
+  };
+
+  const fetchSubjects = async (classRoomId) => {
+    if (!classRoomId) { setSubjects([]); return; }
+    try {
+      const res = await axiosInstance.get(`/schools/${schoolId}/subjects`, {
+        params: { classRoomId },
+      });
+      setSubjects(res.data.data || []);
+    } catch { setSubjects([]); }
   };
 
   useEffect(() => {
@@ -87,7 +102,6 @@ export default function HomeworkFormPage() {
         sectionId: selectedHomework.sectionId || '',
         subjectId: selectedHomework.subjectId || '',
         dueDate: selectedHomework.dueDate ? new Date(selectedHomework.dueDate).toISOString().split('T')[0] : '',
-        assignedBy: selectedHomework.assignedBy || '',
       });
     }
   }, [isEditMode, selectedHomework]);
@@ -136,7 +150,7 @@ export default function HomeworkFormPage() {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <TextField fullWidth select name="classRoomId" label="Class" value={values.classRoomId}
-                    onChange={(e) => { handleChange(e); setFieldValue('sectionId', ''); fetchSections(e.target.value); }}
+                    onChange={(e) => { handleChange(e); setFieldValue('sectionId', ''); setFieldValue('subjectId', ''); fetchSections(e.target.value); fetchSubjects(e.target.value); }}
                     onBlur={handleBlur}
                     error={touched.classRoomId && Boolean(errors.classRoomId)} helperText={touched.classRoomId && errors.classRoomId}>
                     {classes.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
@@ -150,20 +164,17 @@ export default function HomeworkFormPage() {
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField fullWidth name="subjectId" label="Subject ID" value={values.subjectId}
-                    onChange={handleChange} onBlur={handleBlur}
-                    error={touched.subjectId && Boolean(errors.subjectId)} helperText={touched.subjectId && errors.subjectId} />
+                  <TextField fullWidth select name="subjectId" label="Subject" value={values.subjectId}
+                    onChange={handleChange} onBlur={handleBlur} disabled={!values.classRoomId}
+                    error={touched.subjectId && Boolean(errors.subjectId)} helperText={touched.subjectId && errors.subjectId}>
+                    {subjects.map((s) => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
+                  </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField fullWidth name="dueDate" label="Due Date" type="date" value={values.dueDate}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.dueDate && Boolean(errors.dueDate)} helperText={touched.dueDate && errors.dueDate}
                     slotProps={{ inputLabel: { shrink: true } }} />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField fullWidth name="assignedBy" label="Assigned By" value={values.assignedBy}
-                    onChange={handleChange} onBlur={handleBlur}
-                    error={touched.assignedBy && Boolean(errors.assignedBy)} helperText={touched.assignedBy && errors.assignedBy} />
                 </Grid>
               </Grid>
             </Paper>

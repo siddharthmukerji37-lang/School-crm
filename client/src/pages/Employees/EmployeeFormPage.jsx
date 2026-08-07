@@ -18,25 +18,12 @@ import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
 import { createEmployee, updateEmployee, fetchEmployeeById, clearSelectedEmployee } from '../../store/slices/employeeSlice';
+import axiosInstance from '../../services/axiosInstance';
 import toast from 'react-hot-toast';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 const EMPLOYEE_TYPE_OPTIONS = ['FullTime', 'PartTime', 'Contract', 'Intern', 'Temporary'];
 const STATUS_OPTIONS = ['Active', 'OnLeave', 'Inactive'];
-const DEPARTMENT_OPTIONS = [
-  'Administration',
-  'Mathematics',
-  'Science',
-  'English',
-  'History',
-  'Geography',
-  'Computer Science',
-  'Arts',
-  'Physical Education',
-  'Finance',
-  'HR',
-  'IT Support',
-];
 
 const createEmployeeSchema = Yup.object({
   firstName: Yup.string().trim().required('First name is required'),
@@ -44,7 +31,7 @@ const createEmployeeSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Email is required'),
   phone: Yup.string().matches(/^[0-9+\-\s()]*$/, 'Invalid phone number'),
   employeeId: Yup.string().trim().required('Employee ID is required'),
-  department: Yup.string().required('Department is required'),
+  departmentId: Yup.string().required('Department is required'),
   gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required('Gender is required'),
   joiningDate: Yup.date().nullable().required('Date of joining is required'),
   designation: Yup.string().trim(),
@@ -59,7 +46,7 @@ const updateEmployeeSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Email is required'),
   phone: Yup.string().matches(/^[0-9+\-\s()]*$/, 'Invalid phone number'),
   employeeId: Yup.string().trim().required('Employee ID is required'),
-  department: Yup.string().required('Department is required'),
+  departmentId: Yup.string().required('Department is required'),
   gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required('Gender is required'),
   joiningDate: Yup.date().nullable().required('Date of joining is required'),
   designation: Yup.string().trim(),
@@ -74,13 +61,16 @@ export default function EmployeeFormPage() {
   const { selectedEmployee, loading } = useSelector((state) => state.employees);
   const isEditMode = Boolean(id);
 
+  const [departments, setDepartments] = useState([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
+
   const [initialValues, setInitialValues] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     employeeId: '',
-    department: '',
+    departmentId: '',
     gender: '',
     joiningDate: '',
     designation: '',
@@ -89,6 +79,28 @@ export default function EmployeeFormPage() {
     address: '',
     password: '',
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadDepartments = async () => {
+      setDepartmentsLoading(true);
+      try {
+        const schoolsResponse = await axiosInstance.get('/schools', { params: { pageSize: 1 } });
+        const schoolId = schoolsResponse.data?.data?.items?.[0]?.id;
+        if (!schoolId) return;
+        const response = await axiosInstance.get(`/schools/${schoolId}/departments`);
+        if (!cancelled) setDepartments(response.data?.data || []);
+      } catch {
+        if (!cancelled) setDepartments([]);
+      } finally {
+        if (!cancelled) setDepartmentsLoading(false);
+      }
+    };
+    loadDepartments();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (isEditMode) {
@@ -106,8 +118,8 @@ export default function EmployeeFormPage() {
         lastName: selectedEmployee.lastName || '',
         email: selectedEmployee.email || '',
         phone: selectedEmployee.phone || '',
-        employeeId: selectedEmployee.employeeId || '',
-        department: selectedEmployee.department || '',
+        employeeId: selectedEmployee.employeeId || selectedEmployee.employeeCode || '',
+        departmentId: selectedEmployee.departmentId || '',
         gender: selectedEmployee.gender || '',
         joiningDate: selectedEmployee.joiningDate
           ? new Date(selectedEmployee.joiningDate).toISOString().split('T')[0]
@@ -310,19 +322,30 @@ export default function EmployeeFormPage() {
                   <TextField
                     fullWidth
                     select
-                    name="department"
+                    name="departmentId"
                     label="Department"
-                    value={values.department}
+                    value={values.departmentId}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={touched.department && Boolean(errors.department)}
-                    helperText={touched.department && errors.department}
+                    error={touched.departmentId && Boolean(errors.departmentId)}
+                    helperText={touched.departmentId && errors.departmentId}
                   >
-                    {DEPARTMENT_OPTIONS.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
+                    {departmentsLoading && (
+                      <MenuItem value="" disabled>
+                        Loading departments...
                       </MenuItem>
-                    ))}
+                    )}
+                    {!departmentsLoading &&
+                      departments.map((dept) => (
+                        <MenuItem key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </MenuItem>
+                      ))}
+                    {!departmentsLoading && departments.length === 0 && (
+                      <MenuItem value="" disabled>
+                        No departments available
+                      </MenuItem>
+                    )}
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>

@@ -17,6 +17,7 @@ using SchoolCRM.Domain.Entities.School;
 using SchoolCRM.Infrastructure.Repositories;
 using SchoolCRM.Infrastructure.Services;
 using SchoolCRM.Domain.Entities.Identity;
+using SchoolCRM.Domain.Entities.Library;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Domain.Enums;
 using SchoolCRM.API.Middleware;
@@ -460,6 +461,75 @@ using (var scope = app.Services.CreateScope())
 
         await db.SaveChangesAsync();
         Log.Information("Seeded school '{SchoolName}' with 12 classes and 36 sections", school.Name);
+    }
+
+    if (!db.Departments.Any())
+    {
+        var departmentNames = new[]
+        {
+            "Administration", "Mathematics", "Science", "English", "History",
+            "Geography", "Computer Science", "Arts", "Physical Education",
+            "Finance", "HR", "IT Support"
+        };
+
+        var departments = departmentNames.Select((name, index) => new Department
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Code = $"DEPT{(index + 1):D2}",
+            SchoolId = school.Id,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
+
+        db.Departments.AddRange(departments);
+        await db.SaveChangesAsync();
+        Log.Information("Seeded {DepartmentCount} departments", departments.Count);
+    }
+
+    if (!db.Subjects.Any())
+    {
+        var subjectNames = new[] { "Mathematics", "Science", "English", "Social Studies", "Computer Science" };
+        var classrooms = db.ClassRooms.Where(c => c.SchoolId == school.Id).ToList();
+
+        var subjects = classrooms.SelectMany(classroom =>
+            subjectNames.Select((name, index) => new Subject
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Code = $"SUB{name.Substring(0, 1).ToUpper()}{index + 1}",
+                ClassRoomId = classroom.Id,
+                TotalMarks = 100,
+                PassMarks = 40,
+                IsElective = false,
+                SortOrder = index + 1,
+                CreatedAt = DateTime.UtcNow
+            })).ToList();
+
+        db.Subjects.AddRange(subjects);
+        await db.SaveChangesAsync();
+        Log.Information("Seeded {SubjectCount} subjects across {ClassCount} classes", subjects.Count, classrooms.Count);
+    }
+
+    if (!db.BookCategories.Any())
+    {
+        var categoryNames = new[]
+        {
+            "Fiction", "Non-Fiction", "Science", "Mathematics", "History",
+            "Literature", "Reference", "Technology", "Arts", "Other"
+        };
+
+        var categories = categoryNames.Select((name, index) => new BookCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Code = $"CAT{(index + 1):D3}",
+            SchoolId = school.Id,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
+
+        db.BookCategories.AddRange(categories);
+        await db.SaveChangesAsync();
+        Log.Information("Seeded {CategoryCount} book categories", categories.Count);
     }
 }
 

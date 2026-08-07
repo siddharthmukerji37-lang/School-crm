@@ -19,14 +19,18 @@ const ParentFormPage = lazy(() => import('../pages/Parents/ParentFormPage'));
 const ParentDetailPage = lazy(() => import('../pages/Parents/ParentDetailPage'));
 const EmployeeListPage = lazy(() => import('../pages/Employees/EmployeeListPage'));
 const EmployeeFormPage = lazy(() => import('../pages/Employees/EmployeeFormPage'));
+const EmployeeDetailPage = lazy(() => import('../pages/Employees/EmployeeDetailPage'));
 const AttendanceListPage = lazy(() => import('../pages/Attendance/AttendanceListPage'));
 const AttendanceMarkPage = lazy(() => import('../pages/Attendance/AttendanceMarkPage'));
 const ExamListPage = lazy(() => import('../pages/Exams/ExamListPage'));
 const ExamFormPage = lazy(() => import('../pages/Exams/ExamFormPage'));
 const HomeworkListPage = lazy(() => import('../pages/Homework/HomeworkListPage'));
 const HomeworkFormPage = lazy(() => import('../pages/Homework/HomeworkFormPage'));
+const HomeworkDetailPage = lazy(() => import('../pages/Homework/HomeworkDetailPage'));
 const BookListPage = lazy(() => import('../pages/Library/BookListPage'));
 const BookFormPage = lazy(() => import('../pages/Library/BookFormPage'));
+const BookDetailPage = lazy(() => import('../pages/Library/BookDetailPage'));
+const IssuedBooksPage = lazy(() => import('../pages/Library/IssuedBooksPage'));
 const TransportPage = lazy(() => import('../pages/Transport/TransportPage'));
 const HostelPage = lazy(() => import('../pages/Hostel/HostelPage'));
 const FeeStructureListPage = lazy(() => import('../pages/Fees/FeeStructureListPage'));
@@ -93,6 +97,9 @@ export default function AppRouter() {
         <Route path="employees" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><EmployeeListPage /></ProtectedRoute>
         } />
+        <Route path="employees/:id" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><EmployeeDetailPage /></ProtectedRoute>
+        } />
         <Route path="employees/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><EmployeeFormPage /></ProtectedRoute>
         } />
@@ -114,6 +121,7 @@ export default function AppRouter() {
         } />
 
         <Route path="homework" element={<HomeworkListPage />} />
+        <Route path="homework/:id" element={<HomeworkDetailPage />} />
         <Route path="homework/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><HomeworkFormPage /></ProtectedRoute>
         } />
@@ -122,6 +130,8 @@ export default function AppRouter() {
         } />
 
         <Route path="library" element={<BookListPage />} />
+        <Route path="library/issued" element={<IssuedBooksPage />} />
+        <Route path="library/:id" element={<BookDetailPage />} />
         <Route path="library/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><BookFormPage /></ProtectedRoute>
         } />

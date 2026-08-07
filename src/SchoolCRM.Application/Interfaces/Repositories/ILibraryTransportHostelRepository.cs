@@ -16,11 +16,16 @@ public interface IBookIssueRepository : IGenericRepository<BookIssue>
     Task<IReadOnlyList<BookIssue>> GetByStudentAsync(Guid studentId);
     Task<IReadOnlyList<BookIssue>> GetOverdueBooksAsync();
     Task<bool> HasActiveIssueAsync(Guid bookId, Guid studentId);
+    Task<(IReadOnlyList<BookIssue> Items, int TotalCount)> GetIssuedPagedAsync(
+        int pageNumber, int pageSize,
+        System.Linq.Expressions.Expression<Func<BookIssue, bool>>? filter = null);
 }
 
 public interface ITransportRouteRepository : IGenericRepository<TransportRoute>
 {
     Task<TransportRoute?> GetRouteWithDetailsAsync(Guid id);
+    Task<IReadOnlyList<Vehicle>> GetVehiclesWithDetailsAsync();
+    Task<IReadOnlyList<StudentTransportAllocation>> GetAllocationsWithDetailsAsync();
 }
 
 public interface IHostelRoomRepository : IGenericRepository<HostelRoom>

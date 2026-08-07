@@ -14,6 +14,8 @@ public class ParentRepository : GenericRepository<Parent>, IParentRepository
         return await _dbSet
             .Include(p => p.User)
             .Include(p => p.Students)
+                .ThenInclude(s => s.User)
+            .Include(p => p.Students)
                 .ThenInclude(s => s.Section)
                     .ThenInclude(sec => sec.ClassRoom)
             .Include(p => p.GuardianDetails)
@@ -39,7 +41,11 @@ public class ParentRepository : GenericRepository<Parent>, IParentRepository
     {
         IQueryable<Parent> query = _dbSet
             .Include(p => p.User)
-            .Include(p => p.Students);
+            .Include(p => p.Students)
+                .ThenInclude(s => s.User)
+            .Include(p => p.Students)
+                .ThenInclude(s => s.Section)
+                    .ThenInclude(sec => sec.ClassRoom);
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {

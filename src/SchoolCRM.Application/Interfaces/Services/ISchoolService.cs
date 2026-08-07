@@ -41,6 +41,8 @@ public interface ISchoolService
 
     Task<ApiResponse<List<SubjectDto>>> GetSubjectsAsync(Guid schoolId, Guid? classRoomId);
 
+    Task<ApiResponse<List<DepartmentDto>>> GetDepartmentsAsync(Guid schoolId);
+
     Task<ApiResponse<SubjectDto>> CreateSubjectAsync(SubjectDto dto);
 
     Task<ApiResponse<SubjectDto>> UpdateSubjectAsync(Guid id, SubjectDto dto);

@@ -7,6 +7,8 @@ public class TransportRoute : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
+    public string StartPoint { get; set; } = string.Empty;
+    public string EndPoint { get; set; } = string.Empty;
     public decimal Distance { get; set; }
     public TimeSpan? MorningPickupTime { get; set; }
     public TimeSpan? EveningDropTime { get; set; }

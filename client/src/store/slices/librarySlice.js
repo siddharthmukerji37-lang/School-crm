@@ -85,6 +85,34 @@ export const fetchIssuedBooks = createAsyncThunk(
   }
 );
 
+export const issueBook = createAsyncThunk(
+  'library/issueBook',
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await libraryService.issueBook(data);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to issue book'
+      );
+    }
+  }
+);
+
+export const returnBook = createAsyncThunk(
+  'library/returnBook',
+  async (issueId, { rejectWithValue }) => {
+    try {
+      const response = await libraryService.returnBook(issueId);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to return book'
+      );
+    }
+  }
+);
+
 const librarySlice = createSlice({
   name: 'library',
   initialState: {
@@ -96,7 +124,13 @@ const librarySlice = createSlice({
       totalPages: 0,
     },
     selectedBook: null,
-    issuedBooks: [],
+    issuedBooks: {
+      items: [],
+      totalCount: 0,
+      pageNumber: 1,
+      pageSize: 10,
+      totalPages: 0,
+    },
     loading: false,
     error: null,
   },
@@ -191,6 +225,36 @@ const librarySlice = createSlice({
         state.issuedBooks = action.payload;
       })
       .addCase(fetchIssuedBooks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(issueBook.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(issueBook.fulfilled, (state, action) => {
+        state.loading = false;
+        state.issuedBooks.items.unshift(action.payload);
+        state.issuedBooks.totalCount += 1;
+      })
+      .addCase(issueBook.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(returnBook.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(returnBook.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.issuedBooks.items.findIndex(
+          (i) => i.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.issuedBooks.items[index] = action.payload;
+        }
+      })
+      .addCase(returnBook.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

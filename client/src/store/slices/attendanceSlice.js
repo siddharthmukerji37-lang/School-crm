@@ -19,7 +19,7 @@ export const markAttendance = createAsyncThunk(
   'attendance/markAttendance',
   async (attendanceData, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post('/attendance', attendanceData);
+      const response = await axiosInstance.post('/attendance/mark', attendanceData);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(

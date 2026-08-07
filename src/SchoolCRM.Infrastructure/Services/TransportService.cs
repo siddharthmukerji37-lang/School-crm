@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Enums;
+using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
 using static SchoolCRM.Application.Interfaces.Services.ITransportService;
@@ -11,10 +12,12 @@ namespace SchoolCRM.Infrastructure.Services;
 public class TransportService : ITransportService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public TransportService(IUnitOfWork unitOfWork)
+    public TransportService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<PagedResult<RouteDto>>> GetRoutesAsync(PaginationQuery query, Guid? schoolId)
@@ -23,6 +26,15 @@ public class TransportService : ITransportService
         {
             var routes = await _unitOfWork.TransportRoutes.GetAllAsync();
             var filtered = routes.Where(r => !r.IsDeleted).ToList();
+            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+            {
+                var term = query.SearchTerm.Trim().ToLower();
+                filtered = filtered.Where(r =>
+                    r.Name.ToLower().Contains(term) ||
+                    r.StartPoint.ToLower().Contains(term) ||
+                    r.EndPoint.ToLower().Contains(term) ||
+                    r.Code.ToLower().Contains(term)).ToList();
+            }
             var totalCount = filtered.Count;
 
             var pagedItems = filtered
@@ -32,6 +44,8 @@ public class TransportService : ITransportService
                 {
                     Id = r.Id,
                     Name = r.Name,
+                    StartPoint = r.StartPoint,
+                    EndPoint = r.EndPoint,
                     Distance = r.Distance,
                     MonthlyFee = r.MonthlyFee,
                     IsActive = r.IsActive
@@ -63,6 +77,8 @@ public class TransportService : ITransportService
             {
                 Id = route.Id,
                 Name = route.Name,
+                StartPoint = route.StartPoint,
+                EndPoint = route.EndPoint,
                 Distance = route.Distance,
                 MonthlyFee = route.MonthlyFee,
                 IsActive = route.IsActive
@@ -78,14 +94,23 @@ public class TransportService : ITransportService
     {
         try
         {
+            var schoolId = _currentUserService.SchoolId;
+            if (schoolId is null || schoolId == Guid.Empty)
+            {
+                var schools = await _unitOfWork.Schools.GetAllAsync();
+                schoolId = schools.FirstOrDefault()?.Id;
+            }
+
             var route = new Domain.Entities.Transport.TransportRoute
             {
                 Name = dto.Name,
                 Code = dto.Name[..Math.Min(3, dto.Name.Length)].ToUpper(),
+                StartPoint = dto.StartPoint,
+                EndPoint = dto.EndPoint,
                 Distance = dto.Distance,
                 MonthlyFee = dto.MonthlyFee,
                 IsActive = true,
-                SchoolId = Guid.Empty,
+                SchoolId = schoolId ?? Guid.Empty,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -96,6 +121,8 @@ public class TransportService : ITransportService
             {
                 Id = route.Id,
                 Name = route.Name,
+                StartPoint = route.StartPoint,
+                EndPoint = route.EndPoint,
                 Distance = route.Distance,
                 MonthlyFee = route.MonthlyFee,
                 IsActive = route.IsActive
@@ -116,6 +143,8 @@ public class TransportService : ITransportService
                 return ApiResponse<RouteDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
             route.Name = dto.Name;
+            route.StartPoint = dto.StartPoint;
+            route.EndPoint = dto.EndPoint;
             route.Distance = dto.Distance;
             route.MonthlyFee = dto.MonthlyFee;
             route.UpdatedAt = DateTime.UtcNow;
@@ -127,6 +156,8 @@ public class TransportService : ITransportService
             {
                 Id = route.Id,
                 Name = route.Name,
+                StartPoint = route.StartPoint,
+                EndPoint = route.EndPoint,
                 Distance = route.Distance,
                 MonthlyFee = route.MonthlyFee,
                 IsActive = route.IsActive
@@ -163,8 +194,17 @@ public class TransportService : ITransportService
     {
         try
         {
-            var vehicles = await _unitOfWork.Repository<Domain.Entities.Transport.Vehicle>().GetAllAsync();
+            var vehicles = await _unitOfWork.TransportRoutes.GetVehiclesWithDetailsAsync();
             var filtered = vehicles.Where(v => !v.IsDeleted).ToList();
+            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+            {
+                var term = query.SearchTerm.Trim().ToLower();
+                filtered = filtered.Where(v =>
+                    v.VehicleNumber.ToLower().Contains(term) ||
+                    v.VehicleType.ToLower().Contains(term) ||
+                    (v.Driver?.Name ?? string.Empty).ToLower().Contains(term) ||
+                    (v.Route?.Name ?? string.Empty).ToLower().Contains(term)).ToList();
+            }
             var totalCount = filtered.Count;
 
             var pagedItems = filtered
@@ -177,6 +217,8 @@ public class TransportService : ITransportService
                     VehicleType = v.VehicleType,
                     DriverName = v.Driver?.Name ?? string.Empty,
                     DriverPhone = v.Driver?.Phone ?? string.Empty,
+                    RouteId = v.RouteId,
+                    RouteName = v.Route?.Name ?? string.Empty,
                     Capacity = v.Capacity,
                     IsActive = v.IsActive
                 }).ToList();
@@ -199,7 +241,7 @@ public class TransportService : ITransportService
     {
         try
         {
-            var vehicle = await _unitOfWork.Repository<Domain.Entities.Transport.Vehicle>().GetByIdAsync(id);
+            var vehicle = (await _unitOfWork.TransportRoutes.GetVehiclesWithDetailsAsync()).FirstOrDefault(v => v.Id == id);
             if (vehicle is null)
                 return ApiResponse<VehicleDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
@@ -210,6 +252,8 @@ public class TransportService : ITransportService
                 VehicleType = vehicle.VehicleType,
                 DriverName = vehicle.Driver?.Name ?? string.Empty,
                 DriverPhone = vehicle.Driver?.Phone ?? string.Empty,
+                RouteId = vehicle.RouteId,
+                RouteName = vehicle.Route?.Name ?? string.Empty,
                 Capacity = vehicle.Capacity,
                 IsActive = vehicle.IsActive
             });
@@ -224,11 +268,28 @@ public class TransportService : ITransportService
     {
         try
         {
+            var schoolId = _currentUserService.SchoolId;
+            if (schoolId is null || schoolId == Guid.Empty)
+            {
+                var schools = await _unitOfWork.Schools.GetAllAsync();
+                schoolId = schools.FirstOrDefault()?.Id;
+            }
+
+            var routeId = dto.RouteId;
+            if (routeId == Guid.Empty)
+            {
+                var firstRoute = (await _unitOfWork.TransportRoutes.GetAllAsync()).FirstOrDefault();
+                routeId = firstRoute?.Id ?? Guid.Empty;
+            }
+
+            if (routeId == Guid.Empty)
+                return ApiResponse<VehicleDto>.FailResponse("No route exists. Create a route before adding a vehicle.");
+
             var driver = new Domain.Entities.Transport.Driver
             {
                 Name = dto.DriverName,
                 Phone = dto.DriverPhone,
-                SchoolId = Guid.Empty,
+                SchoolId = schoolId ?? Guid.Empty,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -241,8 +302,8 @@ public class TransportService : ITransportService
                 VehicleType = dto.VehicleType,
                 Capacity = dto.Capacity,
                 DriverId = driver.Id,
-                RouteId = Guid.Empty,
-                IsActive = true,
+                RouteId = routeId,
+                IsActive = dto.IsActive,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -256,8 +317,9 @@ public class TransportService : ITransportService
                 VehicleType = vehicle.VehicleType,
                 DriverName = driver.Name,
                 DriverPhone = driver.Phone,
+                RouteId = vehicle.RouteId,
                 Capacity = vehicle.Capacity,
-                IsActive = true
+                IsActive = vehicle.IsActive
             }, ApplicationMessages.CreateSuccess);
         }
         catch (Exception ex)
@@ -277,6 +339,9 @@ public class TransportService : ITransportService
             vehicle.VehicleNumber = dto.RegistrationNumber;
             vehicle.VehicleType = dto.VehicleType;
             vehicle.Capacity = dto.Capacity;
+            vehicle.IsActive = dto.IsActive;
+            if (dto.RouteId != Guid.Empty)
+                vehicle.RouteId = dto.RouteId;
             vehicle.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Repository<Domain.Entities.Transport.Vehicle>().UpdateAsync(vehicle);
@@ -372,11 +437,12 @@ public class TransportService : ITransportService
     {
         try
         {
-            var allocations = await _unitOfWork.Repository<Domain.Entities.Transport.StudentTransportAllocation>().GetAllAsync();
+            var allocations = await _unitOfWork.TransportRoutes.GetAllocationsWithDetailsAsync();
             var filtered = allocations.Where(a => !a.IsDeleted).ToList();
             var totalCount = filtered.Count;
 
             var pagedItems = filtered
+                .Where(a => !routeId.HasValue || a.RouteId == routeId.Value)
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .Select(a => new TransportAllocationDto

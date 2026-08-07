@@ -41,6 +41,13 @@ export default function ParentListPage() {
     { id: 'phone', header: 'Phone', accessor: 'phone', minWidth: 130 },
     { id: 'occupation', header: 'Occupation', accessor: 'occupation', minWidth: 140 },
     { id: 'relationship', header: 'Relationship', accessor: 'relationship', minWidth: 120 },
+    {
+      id: 'children',
+      header: 'Children',
+      accessor: (row) =>
+        (row.children || []).map((c) => c.studentName).join(', ') || '-',
+      minWidth: 200,
+    },
   ];
 
   const handlePageChange = (_, newPage) => {

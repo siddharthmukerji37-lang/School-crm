@@ -1,7 +1,9 @@
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Enums;
+using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
 using static SchoolCRM.Application.Interfaces.Services.IHomeworkService;
@@ -11,10 +13,35 @@ namespace SchoolCRM.Infrastructure.Services;
 public class HomeworkService : IHomeworkService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public HomeworkService(IUnitOfWork unitOfWork)
+    public HomeworkService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
+    }
+
+    private async Task<(Guid SchoolId, Guid TeacherId)> ResolveSchoolAndTeacherAsync()
+    {
+        var schoolId = _currentUserService.SchoolId;
+        if (schoolId is null || schoolId == Guid.Empty)
+        {
+            var schools = await _unitOfWork.Schools.GetAllAsync();
+            schoolId = schools.FirstOrDefault()?.Id;
+        }
+
+        Guid? teacherId = null;
+        if (!string.IsNullOrEmpty(_currentUserService.UserId))
+        {
+            var teachers = await _unitOfWork.Teachers.FindAsync(t =>
+                t.UserId == Guid.Parse(_currentUserService.UserId) && !t.IsDeleted);
+            teacherId = teachers.FirstOrDefault()?.Id;
+        }
+
+        teacherId ??= (await _unitOfWork.Teachers.FindAsync(t => !t.IsDeleted))
+            .FirstOrDefault()?.Id;
+
+        return (schoolId ?? Guid.Empty, teacherId ?? Guid.Empty);
     }
 
     public async Task<ApiResponse<PagedResult<HomeworkDto>>> GetHomeworkAsync(
@@ -23,19 +50,22 @@ public class HomeworkService : IHomeworkService
     {
         try
         {
-            var homeworks = await _unitOfWork.Repository<Domain.Entities.Homework.Homework>().GetAllAsync();
-            var filtered = homeworks.Where(h => !h.IsDeleted).ToList();
+            var repo = _unitOfWork.Repository<Domain.Entities.Homework.Homework>();
 
-            if (classRoomId.HasValue)
-                filtered = filtered.Where(h => h.ClassRoomId == classRoomId.Value).ToList();
-            if (subjectId.HasValue)
-                filtered = filtered.Where(h => h.SubjectId == subjectId.Value).ToList();
+            var (items, totalCount) = await repo.GetPagedAsync(
+                query.PageNumber,
+                query.PageSize,
+                filter: h => !h.IsDeleted &&
+                              (!classRoomId.HasValue || h.ClassRoomId == classRoomId.Value) &&
+                              (!subjectId.HasValue || h.SubjectId == subjectId.Value),
+                orderBy: q => q.OrderByDescending(h => h.AssignedDate),
+                include: q => q.Include(h => h.ClassRoom)
+                               .Include(h => h.Section)
+                               .Include(h => h.Subject)
+                               .Include(h => h.Teacher)
+                               .ThenInclude(t => t.User));
 
-            var totalCount = filtered.Count;
-            var pagedItems = filtered
-                .OrderByDescending(h => h.AssignedDate)
-                .Skip((query.PageNumber - 1) * query.PageSize)
-                .Take(query.PageSize)
+            var pagedItems = items
                 .Select(h => new HomeworkDto
                 {
                     Id = h.Id,
@@ -45,6 +75,8 @@ public class HomeworkService : IHomeworkService
                     SubjectName = h.Subject?.Name ?? string.Empty,
                     ClassRoomId = h.ClassRoomId,
                     ClassName = h.ClassRoom?.Name ?? string.Empty,
+                    SectionId = h.SectionId ?? Guid.Empty,
+                    SectionName = h.Section?.Name ?? string.Empty,
                     TeacherId = h.TeacherId,
                     TeacherName = h.Teacher?.User is not null
                         ? $"{h.Teacher.User.FirstName} {h.Teacher.User.LastName}"
@@ -73,7 +105,19 @@ public class HomeworkService : IHomeworkService
     {
         try
         {
-            var hw = await _unitOfWork.Repository<Domain.Entities.Homework.Homework>().GetByIdAsync(id);
+            var repo = _unitOfWork.Repository<Domain.Entities.Homework.Homework>();
+
+            var (items, _) = await repo.GetPagedAsync(
+                1,
+                1,
+                filter: h => h.Id == id && !h.IsDeleted,
+                include: q => q.Include(h => h.ClassRoom)
+                               .Include(h => h.Section)
+                               .Include(h => h.Subject)
+                               .Include(h => h.Teacher)
+                               .ThenInclude(t => t.User));
+
+            var hw = items.FirstOrDefault();
             if (hw is null)
                 return ApiResponse<HomeworkDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
@@ -86,6 +130,8 @@ public class HomeworkService : IHomeworkService
                 SubjectName = hw.Subject?.Name ?? string.Empty,
                 ClassRoomId = hw.ClassRoomId,
                 ClassName = hw.ClassRoom?.Name ?? string.Empty,
+                SectionId = hw.SectionId ?? Guid.Empty,
+                SectionName = hw.Section?.Name ?? string.Empty,
                 TeacherId = hw.TeacherId,
                 TeacherName = hw.Teacher?.User is not null
                     ? $"{hw.Teacher.User.FirstName} {hw.Teacher.User.LastName}"
@@ -106,15 +152,24 @@ public class HomeworkService : IHomeworkService
     {
         try
         {
+            var (schoolId, teacherId) = await ResolveSchoolAndTeacherAsync();
+            if (schoolId == Guid.Empty || teacherId == Guid.Empty)
+                return ApiResponse<HomeworkDto>.FailResponse("Unable to determine the current school or teacher context. Please sign in again.");
+
+            var assignedDate = dto.AssignedDate == default
+                ? DateOnly.FromDateTime(DateTime.UtcNow)
+                : dto.AssignedDate;
+
             var hw = new Domain.Entities.Homework.Homework
             {
                 Title = dto.Title,
                 Description = dto.Description,
                 SubjectId = dto.SubjectId,
                 ClassRoomId = dto.ClassRoomId,
-                TeacherId = Guid.Empty,
-                SchoolId = Guid.Empty,
-                AssignedDate = dto.AssignedDate.ToDateTime(TimeOnly.MinValue),
+                SectionId = dto.SectionId,
+                TeacherId = teacherId,
+                SchoolId = schoolId,
+                AssignedDate = assignedDate.ToDateTime(TimeOnly.MinValue),
                 DueDate = dto.DueDate.ToDateTime(TimeOnly.MinValue),
                 AttachmentUrl = dto.AttachmentUrl,
                 CreatedAt = DateTime.UtcNow
@@ -152,11 +207,20 @@ public class HomeworkService : IHomeworkService
             if (hw is null)
                 return ApiResponse<HomeworkDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
+            var (schoolId, teacherId) = await ResolveSchoolAndTeacherAsync();
+            if (schoolId == Guid.Empty || teacherId == Guid.Empty)
+                return ApiResponse<HomeworkDto>.FailResponse("Unable to determine the current school or teacher context. Please sign in again.");
+
             hw.Title = dto.Title;
             hw.Description = dto.Description;
             hw.SubjectId = dto.SubjectId;
             hw.ClassRoomId = dto.ClassRoomId;
-            hw.AssignedDate = dto.AssignedDate.ToDateTime(TimeOnly.MinValue);
+            hw.SectionId = dto.SectionId;
+            hw.TeacherId = teacherId;
+            hw.SchoolId = schoolId;
+            hw.AssignedDate = (dto.AssignedDate == default
+                ? DateOnly.FromDateTime(DateTime.UtcNow)
+                : dto.AssignedDate).ToDateTime(TimeOnly.MinValue);
             hw.DueDate = dto.DueDate.ToDateTime(TimeOnly.MinValue);
             hw.AttachmentUrl = dto.AttachmentUrl;
             hw.UpdatedAt = DateTime.UtcNow;

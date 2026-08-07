@@ -488,6 +488,36 @@ public class SchoolService : ISchoolService
         }
     }
 
+    public async Task<ApiResponse<List<DepartmentDto>>> GetDepartmentsAsync(Guid schoolId)
+    {
+        try
+        {
+            var school = await _unitOfWork.Schools.GetSchoolWithDetailsAsync(schoolId);
+            if (school is null)
+                return ApiResponse<List<DepartmentDto>>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            var dtos = school.Departments
+                .Where(d => !d.IsDeleted)
+                .OrderBy(d => d.Name)
+                .Select(d => new DepartmentDto
+                {
+                    Id = d.Id,
+                    SchoolId = d.SchoolId,
+                    Name = d.Name,
+                    Code = d.Code,
+                    Description = d.Description,
+                    HeadId = d.HeadOfDepartmentId
+                })
+                .ToList();
+
+            return ApiResponse<List<DepartmentDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<DepartmentDto>>.FailResponse(ex.Message);
+        }
+    }
+
     public async Task<ApiResponse<SubjectDto>> CreateSubjectAsync(SubjectDto dto)
     {
         try

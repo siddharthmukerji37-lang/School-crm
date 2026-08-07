@@ -2,6 +2,7 @@ using SchoolCRM.Application.DTOs.Attendance;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Enums;
+using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
 
@@ -10,16 +11,28 @@ namespace SchoolCRM.Infrastructure.Services;
 public class AttendanceService : IAttendanceService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public AttendanceService(IUnitOfWork unitOfWork)
+    public AttendanceService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse> MarkAttendanceAsync(MarkAttendanceDto dto)
     {
         try
         {
+            var schoolId = _currentUserService.SchoolId;
+            if (schoolId is null || schoolId == Guid.Empty)
+            {
+                var schools = await _unitOfWork.Schools.GetAllAsync();
+                schoolId = schools.FirstOrDefault()?.Id;
+            }
+
+            if (schoolId is null || schoolId == Guid.Empty)
+                return ApiResponse.FailResponse("Unable to determine the current school context. Please sign in again.");
+
             foreach (var record in dto.Records)
             {
                 var existing = (await _unitOfWork.Attendances.FindAsync(a =>
@@ -42,7 +55,7 @@ public class AttendanceService : IAttendanceService
                         Status = Enum.Parse<AttendanceStatus>(record.Status),
                         StudentId = record.StudentId,
                         Remarks = record.Remarks,
-                        SchoolId = Guid.Empty,
+                        SchoolId = schoolId.Value,
                         CreatedAt = DateTime.UtcNow
                     };
                     await _unitOfWork.Attendances.AddAsync(attendance);

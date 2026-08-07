@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
 import {
+  Autocomplete,
   Box,
   Grid,
   TextField,
@@ -13,14 +14,21 @@ import {
   CircularProgress,
   Divider,
   Stack,
+  Checkbox,
 } from '@mui/material';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
 import { createParent, updateParent, fetchParentById, clearSelectedParent } from '../../store/slices/parentSlice';
+import { fetchStudents } from '../../store/slices/studentSlice';
 import toast from 'react-hot-toast';
 
 const RELATIONSHIP_OPTIONS = ['Father', 'Mother', 'Guardian', 'Other'];
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 const parentSchema = Yup.object({
   firstName: Yup.string().trim().required('First name is required'),
@@ -30,6 +38,10 @@ const parentSchema = Yup.object({
   occupation: Yup.string().trim(),
   relationship: Yup.string().oneOf(['Father', 'Mother', 'Guardian', 'Other']).required('Relationship is required'),
   address: Yup.string().trim(),
+  city: Yup.string().trim(),
+  state: Yup.string().trim(),
+  country: Yup.string().trim(),
+  postalCode: Yup.string().trim(),
 });
 
 export default function ParentFormPage() {
@@ -37,6 +49,7 @@ export default function ParentFormPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { selectedParent, loading } = useSelector((state) => state.parents);
+  const { students, loading: studentsLoading } = useSelector((state) => state.students);
   const isEditMode = Boolean(id);
 
   const [initialValues, setInitialValues] = useState({
@@ -47,6 +60,11 @@ export default function ParentFormPage() {
     occupation: '',
     relationship: '',
     address: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: '',
+    childrenStudentIds: [],
   });
 
   useEffect(() => {
@@ -59,6 +77,10 @@ export default function ParentFormPage() {
   }, [dispatch, id, isEditMode]);
 
   useEffect(() => {
+    dispatch(fetchStudents({ page: 1, pageSize: 200 }));
+  }, [dispatch]);
+
+  useEffect(() => {
     if (isEditMode && selectedParent) {
       setInitialValues({
         firstName: selectedParent.firstName || '',
@@ -68,14 +90,23 @@ export default function ParentFormPage() {
         occupation: selectedParent.occupation || '',
         relationship: selectedParent.relationship || '',
         address: selectedParent.address || '',
+        city: selectedParent.city || '',
+        state: selectedParent.state || '',
+        country: selectedParent.country || '',
+        postalCode: selectedParent.postalCode || '',
+        childrenStudentIds: (selectedParent.children || []).map((c) => c.studentId),
       });
     }
   }, [isEditMode, selectedParent]);
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+      const payload = {
+        ...values,
+        childrenStudentIds: values.childrenStudentIds || [],
+      };
       if (isEditMode) {
-        const result = await dispatch(updateParent({ id, data: values }));
+        const result = await dispatch(updateParent({ id, data: payload }));
         if (updateParent.fulfilled.match(result)) {
           toast.success('Parent updated successfully');
           navigate('/parents');
@@ -83,7 +114,7 @@ export default function ParentFormPage() {
           toast.error(result.payload || 'Failed to update parent');
         }
       } else {
-        const result = await dispatch(createParent(values));
+        const result = await dispatch(createParent(payload));
         if (createParent.fulfilled.match(result)) {
           toast.success('Parent created successfully');
           navigate('/parents');
@@ -131,6 +162,7 @@ export default function ParentFormPage() {
           touched,
           handleChange,
           handleBlur,
+          setFieldValue,
           isSubmitting,
         }) => (
           <Form>
@@ -205,6 +237,46 @@ export default function ParentFormPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    name="city"
+                    label="City"
+                    value={values.city}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    name="state"
+                    label="State"
+                    value={values.state}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    name="country"
+                    label="Country"
+                    value={values.country}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    name="postalCode"
+                    label="Pin Code"
+                    value={values.postalCode}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </Grid>
               </Grid>
             </Paper>
 
@@ -240,6 +312,52 @@ export default function ParentFormPage() {
                   />
                 </Grid>
               </Grid>
+            </Paper>
+
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" fontWeight={600} gutterBottom>
+                Children
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Select the students linked to this parent. A student can be linked to multiple parents.
+              </Typography>
+              <Autocomplete
+                multiple
+                fullWidth
+                options={students.items || []}
+                loading={studentsLoading}
+                value={(students.items || []).filter((s) =>
+                  (values.childrenStudentIds || []).includes(s.id)
+                )}
+                onChange={(_, value) =>
+                  setFieldValue('childrenStudentIds', (value || []).map((s) => s.id))
+                }
+                getOptionLabel={(option) =>
+                  `${option.firstName || ''} ${option.lastName || ''}${option.admissionNumber ? ` (${option.admissionNumber})` : ''}`
+                }
+                disableCloseOnSelect
+                renderOption={(props, option, { selected }) => (
+                  <li {...props}>
+                    <Checkbox
+                      icon={icon}
+                      checkedIcon={checkedIcon}
+                      checked={selected}
+                      sx={{ mr: 1 }}
+                    />
+                    {`${option.firstName || ''} ${option.lastName || ''}`}
+                    {option.admissionNumber ? ` (${option.admissionNumber})` : ''}
+                    {option.className ? ` - ${option.className}${option.sectionName ? `, ${option.sectionName}` : ''}` : ''}
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Linked Students"
+                    placeholder="Select students"
+                  />
+                )}
+              />
             </Paper>
 
             <Stack direction="row" spacing={2} justifyContent="flex-end">

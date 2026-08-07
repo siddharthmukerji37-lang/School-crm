@@ -22,6 +22,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import UndoIcon from '@mui/icons-material/Undo';
 import InboxIcon from '@mui/icons-material/Inbox';
 
 function resolveAccessor(row, accessor) {
@@ -65,6 +66,7 @@ export default function DataTable({
   onView,
   onEdit,
   onDelete,
+  onReturn,
   emptyMessage = 'No records found',
   showActions = true,
   defaultSortBy = '',
@@ -101,7 +103,7 @@ export default function DataTable({
     [filteredRows, order, orderBy]
   );
 
-  const hasActions = showActions && (onView || onEdit || onDelete);
+  const hasActions = showActions && (onView || onEdit || onDelete || onReturn);
 
   if (loading) {
     return (
@@ -224,6 +226,20 @@ export default function DataTable({
                               }}
                             >
                               <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {onReturn && (
+                          <Tooltip title="Return">
+                            <IconButton
+                              size="small"
+                              color="success"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onReturn(row);
+                              }}
+                            >
+                              <UndoIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         )}

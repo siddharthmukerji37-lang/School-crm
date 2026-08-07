@@ -58,7 +58,12 @@ export default function BookFormPage() {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const payload = { ...values, totalCopies: Number(values.totalCopies), availableCopies: Number(values.availableCopies) };
+      const payload = {
+        ...values,
+        totalCopies: Number(values.totalCopies),
+        availableCopies: Number(values.availableCopies),
+        shelfNumber: values.location || '',
+      };
       const action = isEditMode
         ? await dispatch(updateBook({ id, data: payload }))
         : await dispatch(createBook(payload));

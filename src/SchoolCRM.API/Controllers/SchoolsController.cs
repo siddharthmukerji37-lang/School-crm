@@ -320,7 +320,18 @@ public class SchoolsController : ControllerBase
 
     #endregion
 
-    #region Timetable
+    #region Departments
+
+    [HttpGet("{schoolId:guid}/departments")]
+    [ProducesResponseType(typeof(ApiResponse<List<DepartmentDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<DepartmentDto>>>> GetDepartmentsAsync(
+        [FromRoute] Guid schoolId)
+    {
+        var result = await _schoolService.GetDepartmentsAsync(schoolId);
+        return Ok(result);
+    }
+
+    #endregion
 
     [HttpGet("sections/{sectionId:guid}/timetable")]
     [ProducesResponseType(typeof(ApiResponse<List<TimetableDto>>), StatusCodes.Status200OK)]
@@ -350,6 +361,4 @@ public class SchoolsController : ControllerBase
 
         return Ok(result);
     }
-
-    #endregion
 }

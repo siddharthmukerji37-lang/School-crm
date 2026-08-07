@@ -2,30 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Tabs, Tab, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Grid, Typography, IconButton, Stack,
+  TextField, Grid, Typography, Stack, MenuItem, Chip, CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import {
   fetchRoutes, createRoute, updateRoute, deleteRoute,
   fetchVehicles, createVehicle, updateVehicle, deleteVehicle,
-  fetchAllocations,
+  fetchAllocations, allocateTransport, deallocateTransport,
 } from '../../store/slices/transportSlice';
+import { fetchStudents } from '../../store/slices/studentSlice';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import { useDispatch as useAppDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
 
 const routeSchema = Yup.object({
   name: Yup.string().trim().required('Name is required'),
-  startLocation: Yup.string().trim().required('Start location is required'),
-  endLocation: Yup.string().trim().required('End location is required'),
+  startPoint: Yup.string().trim().required('Start location is required'),
+  endPoint: Yup.string().trim().required('End location is required'),
   distance: Yup.number().transform((v, o) => o === '' ? undefined : v).min(0),
-  fare: Yup.number().transform((v, o) => o === '' ? undefined : v).min(0).required('Fare is required'),
+  monthlyFee: Yup.number().transform((v, o) => o === '' ? undefined : v).min(0).required('Fare is required'),
 });
 
 const vehicleSchema = Yup.object({
@@ -33,7 +31,8 @@ const vehicleSchema = Yup.object({
   vehicleType: Yup.string().required('Vehicle type is required'),
   capacity: Yup.number().transform((v, o) => o === '' ? undefined : v).min(1).required('Capacity is required'),
   driverName: Yup.string().trim().required('Driver name is required'),
-  status: Yup.string(),
+  routeId: Yup.string().required('Route is required'),
+  isActive: Yup.boolean(),
 });
 
 const VEHICLE_TYPES = ['Bus', 'Van', 'Car', 'Mini Bus'];
@@ -41,6 +40,7 @@ const VEHICLE_TYPES = ['Bus', 'Van', 'Car', 'Mini Bus'];
 export default function TransportPage() {
   const dispatch = useDispatch();
   const { routes, vehicles, allocations } = useSelector((state) => state.transport);
+  const { students } = useSelector((state) => state.students);
   const { user } = useSelector((state) => state.auth);
   const userRole = user?.roles?.[0] || user?.role || 'Admin';
   const isAdmin = ['SuperAdmin', 'Admin'].includes(userRole);
@@ -52,6 +52,11 @@ export default function TransportPage() {
   const [editItem, setEditItem] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteType, setDeleteType] = useState('');
+  const [viewItem, setViewItem] = useState(null);
+  const [allocOpen, setAllocOpen] = useState(false);
+  const [allocForm, setAllocForm] = useState({ studentId: '', routeId: '' });
+  const [allocSubmitting, setAllocSubmitting] = useState(false);
+  const [deallocTarget, setDeallocTarget] = useState(null);
 
   useEffect(() => {
     const params = { page: page + 1, pageSize: rowsPerPage };
@@ -60,28 +65,63 @@ export default function TransportPage() {
     else dispatch(fetchAllocations(params));
   }, [dispatch, tab, page, rowsPerPage]);
 
+  useEffect(() => {
+    dispatch(fetchStudents({ page: 1, pageSize: 500 }));
+  }, [dispatch]);
+
   const routeColumns = [
     { id: 'name', header: 'Route Name', accessor: 'name', minWidth: 160 },
-    { id: 'startLocation', header: 'Start', accessor: 'startLocation', minWidth: 140 },
-    { id: 'endLocation', header: 'End', accessor: 'endLocation', minWidth: 140 },
+    { id: 'startPoint', header: 'Start', accessor: 'startPoint', minWidth: 140 },
+    { id: 'endPoint', header: 'End', accessor: 'endPoint', minWidth: 140 },
     { id: 'distance', header: 'Distance (km)', accessor: 'distance', minWidth: 110, align: 'center' },
-    { id: 'fare', header: 'Fare', accessor: 'fare', minWidth: 100, align: 'right', render: (v) => `$${Number(v || 0).toFixed(2)}` },
+    { id: 'monthlyFee', header: 'Fare', accessor: 'monthlyFee', minWidth: 100, align: 'right', render: (v) => `$${Number(v || 0).toFixed(2)}` },
+    {
+      id: 'isActive', header: 'Status', accessor: 'isActive', minWidth: 100,
+      render: (v) => (
+        <Chip
+          label={v ? 'Active' : 'Inactive'}
+          color={v ? 'success' : 'error'}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
   ];
 
   const vehicleColumns = [
     { id: 'registrationNumber', header: 'Reg. Number', accessor: 'registrationNumber', minWidth: 130 },
     { id: 'vehicleType', header: 'Type', accessor: 'vehicleType', minWidth: 100 },
+    { id: 'routeName', header: 'Route', accessor: 'routeName', minWidth: 130 },
     { id: 'capacity', header: 'Capacity', accessor: 'capacity', minWidth: 90, align: 'center' },
     { id: 'driverName', header: 'Driver', accessor: 'driverName', minWidth: 150 },
-    { id: 'status', header: 'Status', accessor: 'status', minWidth: 100 },
+    {
+      id: 'status', header: 'Status', accessor: 'isActive', minWidth: 100,
+      render: (v) => (
+        <Chip
+          label={v ? 'Active' : 'Inactive'}
+          color={v ? 'success' : 'error'}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
   ];
 
   const allocationColumns = [
     { id: 'studentName', header: 'Student', accessor: 'studentName', minWidth: 160 },
     { id: 'routeName', header: 'Route', accessor: 'routeName', minWidth: 140 },
-    { id: 'vehicleNumber', header: 'Vehicle', accessor: 'vehicleNumber', minWidth: 120 },
-    { id: 'pickupPoint', header: 'Pickup Point', accessor: 'pickupPoint', minWidth: 130 },
     { id: 'monthlyFee', header: 'Monthly Fee', accessor: 'monthlyFee', minWidth: 110, render: (v) => `$${Number(v || 0).toFixed(2)}` },
+    {
+      id: 'status', header: 'Status', accessor: 'isActive', minWidth: 100,
+      render: (v) => (
+        <Chip
+          label={v ? 'Active' : 'Inactive'}
+          color={v ? 'success' : 'error'}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
   ];
 
   const handleOpenDialog = (item = null) => { setEditItem(item); setDialogOpen(true); };
@@ -93,8 +133,7 @@ export default function TransportPage() {
     const action = deleteType === 'route'
       ? await dispatch(deleteRoute(deleteTarget.id))
       : await dispatch(deleteVehicle(deleteTarget.id));
-    const successAction = deleteType === 'route' ? deleteRoute : deleteVehicle;
-    if (successAction.fulfilled.match(action)) {
+    if ((deleteType === 'route' ? deleteRoute : deleteVehicle).fulfilled.match(action)) {
       toast.success(`${deleteType} deleted`);
       setDeleteTarget(null);
       setDeleteType('');
@@ -106,8 +145,57 @@ export default function TransportPage() {
     }
   };
 
+  const handleAllocate = async () => {
+    if (!allocForm.studentId || !allocForm.routeId) {
+      toast.error('Select both a student and a route');
+      return;
+    }
+    setAllocSubmitting(true);
+    try {
+      const result = await dispatch(allocateTransport(allocForm));
+      if (allocateTransport.fulfilled.match(result)) {
+        toast.success('Transport allocated');
+        setAllocOpen(false);
+        dispatch(fetchAllocations({ page: page + 1, pageSize: rowsPerPage }));
+      } else {
+        toast.error(result.payload || 'Failed to allocate');
+      }
+    } finally {
+      setAllocSubmitting(false);
+    }
+  };
+
+  const confirmDeallocate = async () => {
+    if (!deallocTarget) return;
+    const result = await dispatch(deallocateTransport(deallocTarget.id));
+    if (deallocateTransport.fulfilled.match(result)) {
+      toast.success('Transport deallocated');
+      setDeallocTarget(null);
+      dispatch(fetchAllocations({ page: page + 1, pageSize: rowsPerPage }));
+    } else {
+      toast.error(result.payload || 'Failed');
+    }
+  };
+
   const currentData = tab === 0 ? routes : tab === 1 ? vehicles : allocations;
   const currentColumns = tab === 0 ? routeColumns : tab === 1 ? vehicleColumns : allocationColumns;
+
+  const initialValues = tab === 0
+    ? {
+        name: editItem?.name || '',
+        startPoint: editItem?.startPoint || '',
+        endPoint: editItem?.endPoint || '',
+        distance: editItem?.distance ?? '',
+        monthlyFee: editItem?.monthlyFee ?? '',
+      }
+    : {
+        registrationNumber: editItem?.registrationNumber || '',
+        vehicleType: editItem?.vehicleType || '',
+        capacity: editItem?.capacity ?? '',
+        driverName: editItem?.driverName || '',
+        routeId: editItem?.routeId || '',
+        isActive: editItem?.isActive ?? true,
+      };
 
   return (
     <Box>
@@ -118,10 +206,14 @@ export default function TransportPage() {
         <Tab label="Allocations" />
       </Tabs>
 
-      {isAdmin && tab < 2 && (
+      {isAdmin && (
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
-            Add {tab === 0 ? 'Route' : 'Vehicle'}
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => (tab === 2 ? (() => { setAllocForm({ studentId: '', routeId: '' }); setAllocOpen(true); })() : handleOpenDialog())}
+          >
+            {tab === 0 ? 'Add Route' : tab === 1 ? 'Add Vehicle' : 'Allocate Transport'}
           </Button>
         </Box>
       )}
@@ -135,8 +227,10 @@ export default function TransportPage() {
         totalCount={currentData?.totalCount || 0}
         onPageChange={(_, p) => setPage(p)}
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+        onView={(row) => setViewItem(row)}
         onEdit={isAdmin && tab < 2 ? (row) => handleOpenDialog(row) : undefined}
         onDelete={isAdmin && tab < 2 ? (row) => handleDelete(row, tab === 0 ? 'route' : 'vehicle') : undefined}
+        onReturn={isAdmin && tab === 2 ? (row) => setDeallocTarget(row) : undefined}
         emptyMessage={`No ${tab === 0 ? 'routes' : tab === 1 ? 'vehicles' : 'allocations'} found`}
       />
 
@@ -149,19 +243,105 @@ export default function TransportPage() {
         onCancel={() => { setDeleteTarget(null); setDeleteType(''); }}
       />
 
+      <ConfirmDialog
+        open={!!deallocTarget}
+        title="Deallocate Transport"
+        message={`Remove "${deallocTarget?.studentName}" from the "${deallocTarget?.routeName}" route?`}
+        confirmText="Deallocate"
+        onConfirm={confirmDeallocate}
+        onCancel={() => setDeallocTarget(null)}
+      />
+
+      <Dialog open={!!viewItem} onClose={() => setViewItem(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>{tab === 0 ? 'Route Details' : tab === 1 ? 'Vehicle Details' : 'Allocation Details'}</DialogTitle>
+        <DialogContent dividers>
+          {tab === 0 && viewItem && (
+            <Stack spacing={1.5}>
+              <Typography><b>Name:</b> {viewItem.name}</Typography>
+              <Typography><b>Start:</b> {viewItem.startPoint}</Typography>
+              <Typography><b>End:</b> {viewItem.endPoint}</Typography>
+              <Typography><b>Distance:</b> {viewItem.distance} km</Typography>
+              <Typography><b>Fare:</b> ${Number(viewItem.monthlyFee || 0).toFixed(2)}</Typography>
+              <Typography><b>Status:</b> {viewItem.isActive ? 'Active' : 'Inactive'}</Typography>
+            </Stack>
+          )}
+          {tab === 1 && viewItem && (
+            <Stack spacing={1.5}>
+              <Typography><b>Reg. Number:</b> {viewItem.registrationNumber}</Typography>
+              <Typography><b>Type:</b> {viewItem.vehicleType}</Typography>
+              <Typography><b>Route:</b> {viewItem.routeName}</Typography>
+              <Typography><b>Capacity:</b> {viewItem.capacity}</Typography>
+              <Typography><b>Driver:</b> {viewItem.driverName}{viewItem.driverPhone ? ` (${viewItem.driverPhone})` : ''}</Typography>
+              <Typography><b>Status:</b> {viewItem.isActive ? 'Active' : 'Inactive'}</Typography>
+            </Stack>
+          )}
+          {tab === 2 && viewItem && (
+            <Stack spacing={1.5}>
+              <Typography><b>Student:</b> {viewItem.studentName}</Typography>
+              <Typography><b>Route:</b> {viewItem.routeName}</Typography>
+              <Typography><b>Monthly Fee:</b> ${Number(viewItem.monthlyFee || 0).toFixed(2)}</Typography>
+              <Typography><b>Status:</b> {viewItem.isActive ? 'Active' : 'Inactive'}</Typography>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewItem(null)} variant="outlined">Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={allocOpen} onClose={() => setAllocOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Allocate Transport</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              select
+              fullWidth
+              label="Select Student"
+              value={allocForm.studentId}
+              onChange={(e) => setAllocForm({ ...allocForm, studentId: e.target.value })}
+            >
+              {(students?.items || []).map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {s.firstName} {s.lastName}{s.admissionNumber ? ` (${s.admissionNumber})` : ''}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              fullWidth
+              label="Select Route"
+              value={allocForm.routeId}
+              onChange={(e) => setAllocForm({ ...allocForm, routeId: e.target.value })}
+            >
+              {(routes.items || [])
+                .filter((r) => r.isActive)
+                .map((r) => (
+                  <MenuItem key={r.id} value={r.id}>
+                    {r.name} ({r.startPoint} → {r.endPoint})
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setAllocOpen(false)} variant="outlined">Cancel</Button>
+          <Button onClick={handleAllocate} variant="contained" disabled={allocSubmitting}>
+            {allocSubmitting ? <CircularProgress size={20} /> : 'Allocate'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>{editItem ? `Edit ${tab === 0 ? 'Route' : 'Vehicle'}` : `Add ${tab === 0 ? 'Route' : 'Vehicle'}`}</DialogTitle>
         <Formik
-          initialValues={tab === 0
-            ? { name: editItem?.name || '', startLocation: editItem?.startLocation || '', endLocation: editItem?.endLocation || '', distance: editItem?.distance ?? '', fare: editItem?.fare ?? '' }
-            : { registrationNumber: editItem?.registrationNumber || '', vehicleType: editItem?.vehicleType || '', capacity: editItem?.capacity ?? '', driverName: editItem?.driverName || '', status: editItem?.status || 'Active' }
-          }
+          key={tab === 0 ? `route-${editItem?.id || 'new'}` : `vehicle-${editItem?.id || 'new'}`}
+          initialValues={initialValues}
           validationSchema={tab === 0 ? routeSchema : vehicleSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
               const payload = { ...values };
               if (payload.distance !== undefined && payload.distance !== '') payload.distance = Number(payload.distance);
-              if (payload.fare !== undefined && payload.fare !== '') payload.fare = Number(payload.fare);
+              if (payload.monthlyFee !== undefined && payload.monthlyFee !== '') payload.monthlyFee = Number(payload.monthlyFee);
               if (payload.capacity !== undefined && payload.capacity !== '') payload.capacity = Number(payload.capacity);
               const action = editItem
                 ? tab === 0 ? await dispatch(updateRoute({ id: editItem.id, data: payload })) : await dispatch(updateVehicle({ id: editItem.id, data: payload }))
@@ -190,23 +370,23 @@ export default function TransportPage() {
                         error={touched.name && Boolean(errors.name)} helperText={touched.name && errors.name} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField fullWidth name="startLocation" label="Start Location" value={values.startLocation}
+                      <TextField fullWidth name="startPoint" label="Start Location" value={values.startPoint}
                         onChange={handleChange} onBlur={handleBlur}
-                        error={touched.startLocation && Boolean(errors.startLocation)} helperText={touched.startLocation && errors.startLocation} />
+                        error={touched.startPoint && Boolean(errors.startPoint)} helperText={touched.startPoint && errors.startPoint} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField fullWidth name="endLocation" label="End Location" value={values.endLocation}
+                      <TextField fullWidth name="endPoint" label="End Location" value={values.endPoint}
                         onChange={handleChange} onBlur={handleBlur}
-                        error={touched.endLocation && Boolean(errors.endLocation)} helperText={touched.endLocation && errors.endLocation} />
+                        error={touched.endPoint && Boolean(errors.endPoint)} helperText={touched.endPoint && errors.endPoint} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <TextField fullWidth name="distance" label="Distance (km)" type="number" value={values.distance}
                         onChange={handleChange} onBlur={handleBlur} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField fullWidth name="fare" label="Fare" type="number" value={values.fare}
+                      <TextField fullWidth name="monthlyFee" label="Fare" type="number" value={values.monthlyFee}
                         onChange={handleChange} onBlur={handleBlur}
-                        error={touched.fare && Boolean(errors.fare)} helperText={touched.fare && errors.fare} />
+                        error={touched.monthlyFee && Boolean(errors.monthlyFee)} helperText={touched.monthlyFee && errors.monthlyFee} />
                     </Grid>
                   </Grid>
                 ) : (
@@ -220,7 +400,14 @@ export default function TransportPage() {
                       <TextField fullWidth select name="vehicleType" label="Vehicle Type" value={values.vehicleType}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.vehicleType && Boolean(errors.vehicleType)} helperText={touched.vehicleType && errors.vehicleType}>
-                        {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                        {VEHICLE_TYPES.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+                      </TextField>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField fullWidth select name="routeId" label="Route" value={values.routeId}
+                        onChange={handleChange} onBlur={handleBlur}
+                        error={touched.routeId && Boolean(errors.routeId)} helperText={touched.routeId && errors.routeId}>
+                        {(routes.items || []).map((r) => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
                       </TextField>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -233,9 +420,12 @@ export default function TransportPage() {
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.driverName && Boolean(errors.driverName)} helperText={touched.driverName && errors.driverName} />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <TextField fullWidth name="status" label="Status" value={values.status}
-                        onChange={handleChange} onBlur={handleBlur} />
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField fullWidth select name="isActive" label="Status" value={values.isActive}
+                        onChange={handleChange} onBlur={handleBlur}>
+                        <MenuItem value={true}>Active</MenuItem>
+                        <MenuItem value={false}>Inactive</MenuItem>
+                      </TextField>
                     </Grid>
                   </Grid>
                 )}

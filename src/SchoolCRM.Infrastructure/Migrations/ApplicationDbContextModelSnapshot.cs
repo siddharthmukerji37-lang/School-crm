@@ -1784,6 +1784,9 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("SectionId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("char(36)");
 
@@ -1804,6 +1807,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClassRoomId");
+
+                    b.HasIndex("SectionId");
 
                     b.HasIndex("SubjectId");
 
@@ -5468,6 +5473,10 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<decimal>("Distance")
                         .HasColumnType("decimal(65,30)");
 
+                    b.Property<string>("EndPoint")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<TimeSpan?>("EveningDropTime")
                         .HasColumnType("time(6)");
 
@@ -5491,6 +5500,10 @@ namespace SchoolCRM.Infrastructure.Migrations
 
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("StartPoint")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -5934,6 +5947,10 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SchoolCRM.Domain.Entities.School.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId");
+
                     b.HasOne("SchoolCRM.Domain.Entities.School.Subject", "Subject")
                         .WithMany()
                         .HasForeignKey("SubjectId")
@@ -5947,6 +5964,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("ClassRoom");
+
+                    b.Navigation("Section");
 
                     b.Navigation("Subject");
 
