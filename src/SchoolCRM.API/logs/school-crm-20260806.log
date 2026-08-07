@@ -873,3 +873,67 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
 2026-08-06 18:12:06.364 +05:30 [INF] [e0f1a41c-4978-4081-a5dc-239830bac173] GET /api/parents responded 200 in 25ms
 2026-08-06 18:12:06.410 +05:30 [INF] [cf0f44b1-8279-40b6-9a15-8f3df25f00f0] GET /api/parents from 127.0.0.1 by Anonymous
 2026-08-06 18:12:06.435 +05:30 [INF] [cf0f44b1-8279-40b6-9a15-8f3df25f00f0] GET /api/parents responded 200 in 25ms
+2026-08-06 18:59:54.151 +05:30 [WRN] Redis unavailable, falling back to in-memory cache and basic SignalR: Redis not connected
+2026-08-06 19:00:02.867 +05:30 [WRN] Entity 'ApplicationRole' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationRoleClaim'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-06 19:00:02.871 +05:30 [WRN] Entity 'ApplicationUser' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserClaim'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-06 19:00:02.872 +05:30 [WRN] Entity 'ApplicationUser' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserLogin'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-06 19:00:02.873 +05:30 [WRN] Entity 'ApplicationRole' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserRole'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-06 19:00:02.874 +05:30 [WRN] Entity 'ApplicationUser' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserToken'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-06 19:00:03.033 +05:30 [WRN] The foreign key property 'HomeworkSubmission.StudentId1' was created in shadow state because a conflicting property with the simple name 'StudentId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-08-06 19:00:04.517 +05:30 [INF] Database migrated successfully
+2026-08-06 19:00:05.849 +05:30 [INF] Roles seeded successfully
+2026-08-06 19:00:11.045 +05:30 [INF] [a1d8d48e-e3f8-4838-9790-e7d02683503b] POST /api/auth/login from 127.0.0.1 by Anonymous
+2026-08-06 19:00:11.092 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-08-06 19:00:12.475 +05:30 [INF] [a1d8d48e-e3f8-4838-9790-e7d02683503b] POST /api/auth/login responded 200 in 1425ms
+2026-08-06 19:00:14.544 +05:30 [INF] [1e3a5877-84f0-430d-805f-96320b6a96f3] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-06 19:00:14.546 +05:30 [INF] [39ebb297-cb2b-4163-9b73-44cba18bfc1a] GET /api/dashboard/fee-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:00:14.544 +05:30 [INF] [b975c881-65e7-4452-bb9c-63ba12ec9ec8] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:00:15.231 +05:30 [INF] [39ebb297-cb2b-4163-9b73-44cba18bfc1a] GET /api/dashboard/fee-chart responded 200 in 684ms
+2026-08-06 19:00:15.262 +05:30 [INF] [adebf274-7675-476c-ad67-988dddea8d6c] GET /api/dashboard/fee-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:00:15.339 +05:30 [INF] [adebf274-7675-476c-ad67-988dddea8d6c] GET /api/dashboard/fee-chart responded 200 in 76ms
+2026-08-06 19:00:16.145 +05:30 [WRN] The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+2026-08-06 19:00:16.147 +05:30 [WRN] The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+2026-08-06 19:00:16.229 +05:30 [INF] [1e3a5877-84f0-430d-805f-96320b6a96f3] GET /api/dashboard/stats responded 200 in 1685ms
+2026-08-06 19:00:16.250 +05:30 [INF] [47018a66-402c-4e6e-bf31-cf33d0d974bb] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-06 19:00:16.348 +05:30 [INF] [47018a66-402c-4e6e-bf31-cf33d0d974bb] GET /api/dashboard/stats responded 200 in 93ms
+2026-08-06 19:00:17.100 +05:30 [INF] [b975c881-65e7-4452-bb9c-63ba12ec9ec8] GET /api/dashboard/attendance-chart responded 200 in 2551ms
+2026-08-06 19:00:17.113 +05:30 [INF] [523af82c-38aa-4ba6-9cc2-6a3845571209] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:00:18.465 +05:30 [INF] [523af82c-38aa-4ba6-9cc2-6a3845571209] GET /api/dashboard/attendance-chart responded 200 in 1351ms
+2026-08-06 19:00:22.192 +05:30 [INF] [607aa501-d3f2-434f-bc9d-0014abb0f52e] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-06 19:00:23.055 +05:30 [INF] [607aa501-d3f2-434f-bc9d-0014abb0f52e] GET /api/students responded 200 in 861ms
+2026-08-06 19:00:23.062 +05:30 [INF] [f71d0f31-a4d6-422a-bc16-164b3473cd86] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-06 19:00:23.116 +05:30 [INF] [f71d0f31-a4d6-422a-bc16-164b3473cd86] GET /api/students responded 200 in 53ms
+2026-08-06 19:00:27.813 +05:30 [INF] [22e576c2-68d4-489f-b3df-d0b2a6014395] GET /api/employees from 127.0.0.1 by Anonymous
+2026-08-06 19:00:28.037 +05:30 [INF] [22e576c2-68d4-489f-b3df-d0b2a6014395] GET /api/employees responded 200 in 222ms
+2026-08-06 19:00:28.051 +05:30 [INF] [b3efcec4-0767-492e-98b8-850fe3870400] GET /api/employees from 127.0.0.1 by Anonymous
+2026-08-06 19:00:28.082 +05:30 [INF] [b3efcec4-0767-492e-98b8-850fe3870400] GET /api/employees responded 200 in 29ms
+2026-08-06 19:00:49.015 +05:30 [INF] [4c4eb85c-e466-4267-a238-f7261f0d2ce2] POST /api/employees from 127.0.0.1 by Anonymous
+2026-08-06 19:00:49.085 +05:30 [INF] [4c4eb85c-e466-4267-a238-f7261f0d2ce2] POST /api/employees responded 400 in 69ms
+2026-08-06 19:01:11.800 +05:30 [INF] [a4bfe8a4-dcc1-47c2-9e59-588d8024f747] GET /api/auth/me from 127.0.0.1 by Anonymous
+2026-08-06 19:01:11.878 +05:30 [INF] [a4bfe8a4-dcc1-47c2-9e59-588d8024f747] GET /api/auth/me responded 200 in 75ms
+2026-08-06 19:01:11.901 +05:30 [INF] [2981d7bc-3624-457d-8a6d-681bbb152091] GET /api/auth/me from 127.0.0.1 by Anonymous
+2026-08-06 19:01:11.945 +05:30 [INF] [2981d7bc-3624-457d-8a6d-681bbb152091] GET /api/auth/me responded 200 in 41ms
+2026-08-06 19:01:33.812 +05:30 [INF] [f505b568-c80a-493b-9c8c-2e740d307696] POST /api/employees from 127.0.0.1 by Anonymous
+2026-08-06 19:01:33.844 +05:30 [INF] [f505b568-c80a-493b-9c8c-2e740d307696] POST /api/employees responded 400 in 31ms
+2026-08-06 19:01:46.409 +05:30 [INF] [b84fb53c-d41a-43a0-aaf0-1d65112ec888] POST /api/auth/logout from 127.0.0.1 by Anonymous
+2026-08-06 19:01:46.548 +05:30 [INF] [b84fb53c-d41a-43a0-aaf0-1d65112ec888] POST /api/auth/logout responded 415 in 138ms
+2026-08-06 19:01:57.866 +05:30 [INF] [4ac40abe-8f39-48df-a2a4-75c9e956c08b] POST /api/auth/login from 127.0.0.1 by Anonymous
+2026-08-06 19:01:58.220 +05:30 [INF] [4ac40abe-8f39-48df-a2a4-75c9e956c08b] POST /api/auth/login responded 200 in 353ms
+2026-08-06 19:01:59.422 +05:30 [INF] [ded49664-69bd-4b26-9e39-cc84a125d0c1] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-06 19:01:59.451 +05:30 [INF] [b035e92d-b7ad-4cb5-8ed2-d4402a8acc8d] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:01:59.455 +05:30 [INF] [01f34701-c21c-4055-a2b5-bcfc103ea3f1] GET /api/dashboard/fee-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:01:59.506 +05:30 [INF] [01f34701-c21c-4055-a2b5-bcfc103ea3f1] GET /api/dashboard/fee-chart responded 200 in 49ms
+2026-08-06 19:01:59.520 +05:30 [INF] [ded49664-69bd-4b26-9e39-cc84a125d0c1] GET /api/dashboard/stats responded 200 in 97ms
+2026-08-06 19:01:59.579 +05:30 [INF] [00928bdf-2e2f-40f8-9e20-89ecfe6e71c7] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-06 19:01:59.581 +05:30 [INF] [4d7e47f8-e416-48a6-b1e0-5a0a420953d8] GET /api/dashboard/fee-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:01:59.634 +05:30 [INF] [4d7e47f8-e416-48a6-b1e0-5a0a420953d8] GET /api/dashboard/fee-chart responded 200 in 50ms
+2026-08-06 19:01:59.724 +05:30 [INF] [00928bdf-2e2f-40f8-9e20-89ecfe6e71c7] GET /api/dashboard/stats responded 200 in 141ms
+2026-08-06 19:02:00.699 +05:30 [INF] [b035e92d-b7ad-4cb5-8ed2-d4402a8acc8d] GET /api/dashboard/attendance-chart responded 200 in 1248ms
+2026-08-06 19:02:00.715 +05:30 [INF] [a78d3371-5258-4ae2-a641-55ad05dec472] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-06 19:02:01.819 +05:30 [INF] [a78d3371-5258-4ae2-a641-55ad05dec472] GET /api/dashboard/attendance-chart responded 200 in 1102ms
+2026-08-06 19:02:06.067 +05:30 [INF] [70a98c9f-00e2-4a94-b686-bab01eb1e7f9] GET /api/employees from 127.0.0.1 by Anonymous
+2026-08-06 19:02:06.112 +05:30 [INF] [70a98c9f-00e2-4a94-b686-bab01eb1e7f9] GET /api/employees responded 200 in 44ms
+2026-08-06 19:02:06.129 +05:30 [INF] [2ee46495-703c-4ee4-a8f2-8dafd62fcc5e] GET /api/employees from 127.0.0.1 by Anonymous
+2026-08-06 19:02:06.159 +05:30 [INF] [2ee46495-703c-4ee4-a8f2-8dafd62fcc5e] GET /api/employees responded 200 in 29ms
+2026-08-06 19:02:30.284 +05:30 [INF] [64f59106-ffff-4d74-ac3d-dc31061de5c5] POST /api/employees from 127.0.0.1 by Anonymous
+2026-08-06 19:02:30.320 +05:30 [INF] [64f59106-ffff-4d74-ac3d-dc31061de5c5] POST /api/employees responded 400 in 34ms
