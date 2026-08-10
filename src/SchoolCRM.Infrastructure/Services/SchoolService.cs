@@ -649,30 +649,49 @@ public class SchoolService : ISchoolService
     {
         try
         {
-            foreach (var dto in dtos)
+            var groups = dtos.GroupBy(d => new { d.SectionId, d.DayOfWeek });
+
+            foreach (var group in groups)
             {
-                if (dto.Id != Guid.Empty)
+                var incomingIds = group.Where(d => d.Id != Guid.Empty)
+                    .Select(d => d.Id).ToHashSet();
+
+                var existing = await _unitOfWork.Timetables.FindAsync(t =>
+                    t.SectionId == group.Key.SectionId && t.DayOfWeek == group.Key.DayOfWeek);
+
+                foreach (var item in existing.Where(t => !incomingIds.Contains(t.Id)))
                 {
-                    var existing = await _unitOfWork.Timetables.GetByIdAsync(dto.Id);
-                    if (existing is not null)
-                    {
-                        existing.DayOfWeek = dto.DayOfWeek;
-                        existing.StartTime = dto.StartTime.ToTimeSpan();
-                        existing.EndTime = dto.EndTime.ToTimeSpan();
-                        existing.SubjectId = dto.SubjectId;
-                        existing.TeacherId = dto.TeacherId ?? Guid.Empty;
-                        existing.UpdatedAt = DateTime.UtcNow;
-                        await _unitOfWork.Timetables.UpdateAsync(existing);
-                    }
+                    await _unitOfWork.Timetables.DeleteAsync(item);
                 }
-                else
+
+                var section = await _unitOfWork.Sections.GetByIdAsync(group.Key.SectionId);
+                var classRoomId = section?.ClassRoomId ?? Guid.Empty;
+
+                foreach (var dto in group)
                 {
+                    if (dto.Id != Guid.Empty)
+                    {
+                        var existingItem = existing.FirstOrDefault(t => t.Id == dto.Id);
+                        if (existingItem is not null)
+                        {
+                            existingItem.DayOfWeek = dto.DayOfWeek;
+                            existingItem.StartTime = dto.StartTime.ToTimeSpan();
+                            existingItem.EndTime = dto.EndTime.ToTimeSpan();
+                            existingItem.SubjectId = dto.SubjectId;
+                            existingItem.TeacherId = dto.TeacherId ?? Guid.Empty;
+                            existingItem.ClassRoomId = classRoomId;
+                            existingItem.UpdatedAt = DateTime.UtcNow;
+                            await _unitOfWork.Timetables.UpdateAsync(existingItem);
+                            continue;
+                        }
+                    }
+
                     var timetable = new Timetable
                     {
                         SectionId = dto.SectionId,
                         SubjectId = dto.SubjectId,
                         TeacherId = dto.TeacherId ?? Guid.Empty,
-                        ClassRoomId = Guid.Empty,
+                        ClassRoomId = classRoomId,
                         DayOfWeek = dto.DayOfWeek,
                         PeriodNumber = 0,
                         StartTime = dto.StartTime.ToTimeSpan(),
@@ -680,6 +699,18 @@ public class SchoolService : ISchoolService
                         CreatedAt = DateTime.UtcNow
                     };
                     await _unitOfWork.Timetables.AddAsync(timetable);
+                }
+
+                var refreshed = await _unitOfWork.Timetables.FindAsync(t =>
+                    t.SectionId == group.Key.SectionId && t.DayOfWeek == group.Key.DayOfWeek);
+                var ordered = refreshed.OrderBy(t => t.StartTime).ToList();
+                for (int i = 0; i < ordered.Count; i++)
+                {
+                    if (ordered[i].PeriodNumber != i + 1)
+                    {
+                        ordered[i].PeriodNumber = i + 1;
+                        await _unitOfWork.Timetables.UpdateAsync(ordered[i]);
+                    }
                 }
             }
 

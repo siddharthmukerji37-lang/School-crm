@@ -33,6 +33,7 @@ public interface IUnitOfWork : IDisposable
     IBookIssueRepository BookIssues { get; }
     ITransportRouteRepository TransportRoutes { get; }
     IHostelRoomRepository HostelRooms { get; }
+    IHostelRepository Hostels { get; }
     INotificationRepository Notifications { get; }
     IAnnouncementRepository Announcements { get; }
     IAuditLogRepository AuditLogs { get; }

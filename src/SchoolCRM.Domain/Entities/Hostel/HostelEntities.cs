@@ -3,6 +3,19 @@ using SchoolCRM.Domain.Enums;
 
 namespace SchoolCRM.Domain.Entities.Hostel;
 
+public class Hostel : BaseEntity
+{
+    public string Name { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string WardenName { get; set; } = string.Empty;
+    public string WardenPhone { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+    public Guid SchoolId { get; set; }
+
+    public ICollection<HostelRoom> Rooms { get; set; } = new List<HostelRoom>();
+}
+
 public class HostelRoom : BaseEntity
 {
     public string RoomNumber { get; set; } = string.Empty;
@@ -15,8 +28,10 @@ public class HostelRoom : BaseEntity
     public bool HasAC { get; set; }
     public bool HasWifi { get; set; }
     public bool IsActive { get; set; } = true;
+    public Guid? HostelId { get; set; }
     public Guid SchoolId { get; set; }
 
+    public Hostel? Hostel { get; set; }
     public ICollection<HostelBed> Beds { get; set; } = new List<HostelBed>();
     public ICollection<HostelAllocation> Allocations { get; set; } = new List<HostelAllocation>();
 }

@@ -100,6 +100,14 @@ public class HostelController : ControllerBase
 
     #region Rooms
 
+    [HttpGet("rooms")]
+    [ProducesResponseType(typeof(ApiResponse<List<RoomDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<RoomDto>>>> GetAllRoomsAsync()
+    {
+        var result = await _hostelService.GetRoomsAsync(null);
+        return Ok(result);
+    }
+
     [HttpGet("{hostelId:guid}/rooms")]
     [ProducesResponseType(typeof(ApiResponse<List<RoomDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<RoomDto>>>> GetRoomsAsync(

@@ -1516,6 +1516,10 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<Guid?>("FeeHeadId")
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("FeeType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
@@ -1888,6 +1892,69 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.ToTable("HomeworkSubmissions", (string)null);
                 });
 
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Hostel.Hostel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("WardenName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("WardenPhone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Hostels", (string)null);
+                });
+
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Hostel.HostelAllocation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2025,6 +2092,9 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<bool>("HasWifi")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<Guid?>("HostelId")
+                        .HasColumnType("char(36)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)");
 
@@ -2057,6 +2127,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("HostelId");
 
                     b.ToTable("HostelRooms", (string)null);
                 });
@@ -6032,6 +6104,16 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Navigation("Room");
                 });
 
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Hostel.HostelRoom", b =>
+                {
+                    b.HasOne("SchoolCRM.Domain.Entities.Hostel.Hostel", "Hostel")
+                        .WithMany("Rooms")
+                        .HasForeignKey("HostelId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Hostel");
+                });
+
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Hostel.HostelVisitor", b =>
                 {
                     b.HasOne("SchoolCRM.Domain.Entities.Hostel.HostelRoom", "Room")
@@ -6669,6 +6751,11 @@ namespace SchoolCRM.Infrastructure.Migrations
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Homework.Homework", b =>
                 {
                     b.Navigation("Submissions");
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Hostel.Hostel", b =>
+                {
+                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Hostel.HostelRoom", b =>

@@ -38,12 +38,14 @@ const FeeCollectPage = lazy(() => import('../pages/Fees/FeeCollectPage'));
 const FeeReceiptListPage = lazy(() => import('../pages/Fees/FeeReceiptListPage'));
 const InventoryListPage = lazy(() => import('../pages/Inventory/InventoryListPage'));
 const InventoryFormPage = lazy(() => import('../pages/Inventory/InventoryFormPage'));
+const VendorFormPage = lazy(() => import('../pages/Inventory/VendorFormPage'));
 const AccountsPage = lazy(() => import('../pages/Accounts/AccountsPage'));
 const NotificationListPage = lazy(() => import('../pages/Notifications/NotificationListPage'));
 const ReportsPage = lazy(() => import('../pages/Reports/ReportsPage'));
 const SettingsPage = lazy(() => import('../pages/Settings/SettingsPage'));
 const NoticeBoardPage = lazy(() => import('../pages/NoticeBoard/NoticeBoardPage'));
 const NoticeManagementPage = lazy(() => import('../pages/NoticeBoard/NoticeManagementPage'));
+const TimetablePage = lazy(() => import('../pages/Timetable/TimetablePage'));
 
 const ADMIN_ROLES = ['SuperAdmin', 'Admin'];
 
@@ -161,6 +163,12 @@ export default function AppRouter() {
         <Route path="inventory/:id/edit" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><InventoryFormPage /></ProtectedRoute>
         } />
+        <Route path="vendors/create" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><VendorFormPage /></ProtectedRoute>
+        } />
+        <Route path="vendors/:id/edit" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><VendorFormPage /></ProtectedRoute>
+        } />
 
         <Route path="accounts" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><AccountsPage /></ProtectedRoute>
@@ -180,6 +188,8 @@ export default function AppRouter() {
         <Route path="notices/manage" element={
           <ProtectedRoute allowedRoles={['SuperAdmin', 'Admin']}><NoticeManagementPage /></ProtectedRoute>
         } />
+
+        <Route path="timetable" element={<TimetablePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -110,7 +110,7 @@ export default function InventoryFormPage() {
     const payload = {
       ...values,
       quantity: values.quantity !== '' ? Number(values.quantity) : 0,
-      reorderLevel: values.reorderLevel !== '' ? Number(values.reorderLevel) : 0,
+      minimumStock: values.reorderLevel !== '' ? Number(values.reorderLevel) : 0,
       purchasePrice: values.purchasePrice !== '' ? Number(values.purchasePrice) : null,
       vendorId: values.vendorId || null,
     };

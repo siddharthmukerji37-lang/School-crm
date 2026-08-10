@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
+using SchoolCRM.Domain.Entities.Inventory;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
 using static SchoolCRM.Application.Interfaces.Services.IInventoryService;
@@ -20,25 +22,14 @@ public class InventoryService : IInventoryService
     {
         try
         {
-            var items = await _unitOfWork.InventoryItems.GetAllAsync();
-            var filtered = items.Where(i => !i.IsDeleted).ToList();
-            var totalCount = filtered.Count;
+            var (items, totalCount) = await _unitOfWork.InventoryItems.GetPagedAsync(
+                query.PageNumber, query.PageSize,
+                filter: i => !i.IsDeleted,
+                include: q => q
+                    .Include(i => i.Category)
+                    .Include(i => i.Vendor));
 
-            var pagedItems = filtered
-                .Skip((query.PageNumber - 1) * query.PageSize)
-                .Take(query.PageSize)
-                .Select(i => new ItemDto
-                {
-                    Id = i.Id,
-                    Name = i.Name,
-                    Description = i.Description ?? string.Empty,
-                    Category = i.Category?.Name ?? string.Empty,
-                    Unit = i.Unit,
-                    PurchasePrice = i.PurchasePrice,
-                    SellingPrice = i.SellingPrice,
-                    MinimumStock = i.MinimumStock,
-                    IsActive = i.IsActive
-                }).ToList();
+            var pagedItems = items.Select(MapItemToDto).ToList();
 
             return ApiResponse<PagedResult<ItemDto>>.SuccessResponse(new PagedResult<ItemDto>
             {
@@ -58,22 +49,14 @@ public class InventoryService : IInventoryService
     {
         try
         {
-            var item = await _unitOfWork.InventoryItems.GetByIdAsync(id);
+            var item = await _unitOfWork.InventoryItems.AsQueryable()
+                .Include(i => i.Category)
+                .Include(i => i.Vendor)
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
             if (item is null)
                 return ApiResponse<ItemDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
-            return ApiResponse<ItemDto>.SuccessResponse(new ItemDto
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Description = item.Description ?? string.Empty,
-                Category = item.Category?.Name ?? string.Empty,
-                Unit = item.Unit,
-                PurchasePrice = item.PurchasePrice,
-                SellingPrice = item.SellingPrice,
-                MinimumStock = item.MinimumStock,
-                IsActive = item.IsActive
-            });
+            return ApiResponse<ItemDto>.SuccessResponse(MapItemToDto(item));
         }
         catch (Exception ex)
         {
@@ -85,7 +68,11 @@ public class InventoryService : IInventoryService
     {
         try
         {
-            var item = new Domain.Entities.Inventory.InventoryItem
+            var categoryId = await ResolveCategoryIdAsync(dto.Category, dto.CategoryId);
+            if (categoryId == Guid.Empty)
+                return ApiResponse<ItemDto>.FailResponse("A valid category is required");
+
+            var item = new InventoryItem
             {
                 Name = dto.Name,
                 Code = dto.Name[..Math.Min(3, dto.Name.Length)].ToUpper(),
@@ -94,10 +81,11 @@ public class InventoryService : IInventoryService
                 PurchasePrice = dto.PurchasePrice,
                 SellingPrice = dto.SellingPrice,
                 MinimumStock = dto.MinimumStock,
-                MaximumStock = dto.MinimumStock * 10,
-                CurrentStock = 0,
+                MaximumStock = Math.Max(dto.MinimumStock * 10, 100),
+                CurrentStock = dto.Quantity,
                 IsActive = true,
-                CategoryId = Guid.Empty,
+                CategoryId = categoryId,
+                VendorId = dto.VendorId,
                 SchoolId = Guid.Empty,
                 CreatedAt = DateTime.UtcNow
             };
@@ -105,21 +93,17 @@ public class InventoryService : IInventoryService
             await _unitOfWork.InventoryItems.AddAsync(item);
             await _unitOfWork.SaveChangesAsync();
 
-            return ApiResponse<ItemDto>.SuccessResponse(new ItemDto
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Description = item.Description ?? string.Empty,
-                Unit = item.Unit,
-                PurchasePrice = item.PurchasePrice,
-                SellingPrice = item.SellingPrice,
-                MinimumStock = item.MinimumStock,
-                IsActive = true
-            }, ApplicationMessages.CreateSuccess);
+            var saved = await _unitOfWork.InventoryItems.AsQueryable()
+                .Include(i => i.Category)
+                .Include(i => i.Vendor)
+                .FirstOrDefaultAsync(i => i.Id == item.Id);
+
+            return ApiResponse<ItemDto>.SuccessResponse(MapItemToDto(saved ?? item), ApplicationMessages.CreateSuccess);
         }
         catch (Exception ex)
         {
-            return ApiResponse<ItemDto>.FailResponse(ex.Message);
+            var inner = ex.InnerException?.Message ?? ex.Message;
+            return ApiResponse<ItemDto>.FailResponse(inner);
         }
     }
 
@@ -131,32 +115,29 @@ public class InventoryService : IInventoryService
             if (item is null)
                 return ApiResponse<ItemDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
+            var categoryId = await ResolveCategoryIdAsync(dto.Category, dto.CategoryId);
+            if (categoryId == Guid.Empty)
+                return ApiResponse<ItemDto>.FailResponse("A valid category is required");
+
             item.Name = dto.Name;
             item.Description = dto.Description;
             item.Unit = dto.Unit;
             item.PurchasePrice = dto.PurchasePrice;
             item.SellingPrice = dto.SellingPrice;
             item.MinimumStock = dto.MinimumStock;
+            item.CategoryId = categoryId;
+            item.VendorId = dto.VendorId;
             item.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.InventoryItems.UpdateAsync(item);
             await _unitOfWork.SaveChangesAsync();
 
-            return ApiResponse<ItemDto>.SuccessResponse(new ItemDto
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Description = item.Description ?? string.Empty,
-                Unit = item.Unit,
-                PurchasePrice = item.PurchasePrice,
-                SellingPrice = item.SellingPrice,
-                MinimumStock = item.MinimumStock,
-                IsActive = item.IsActive
-            }, ApplicationMessages.UpdateSuccess);
+            return ApiResponse<ItemDto>.SuccessResponse(MapItemToDto(item), ApplicationMessages.UpdateSuccess);
         }
         catch (Exception ex)
         {
-            return ApiResponse<ItemDto>.FailResponse(ex.Message);
+            var inner = ex.InnerException?.Message ?? ex.Message;
+            return ApiResponse<ItemDto>.FailResponse(inner);
         }
     }
 
@@ -435,5 +416,50 @@ public class InventoryService : IInventoryService
         {
             return ApiResponse.FailResponse(ex.Message);
         }
+    }
+
+    private static ItemDto MapItemToDto(InventoryItem item)
+    {
+        return new ItemDto
+        {
+            Id = item.Id,
+            Name = item.Name,
+            Description = item.Description ?? string.Empty,
+            Category = item.Category?.Name ?? string.Empty,
+            Unit = item.Unit,
+            Quantity = item.CurrentStock,
+            ReorderLevel = item.MinimumStock,
+            PurchasePrice = item.PurchasePrice,
+            SellingPrice = item.SellingPrice,
+            VendorId = item.VendorId,
+            VendorName = item.Vendor?.Name ?? string.Empty,
+            IsActive = item.IsActive
+        };
+    }
+
+    private async Task<Guid> ResolveCategoryIdAsync(string? categoryName, Guid? categoryId)
+    {
+        if (categoryId.HasValue && categoryId.Value != Guid.Empty)
+            return categoryId.Value;
+
+        var name = categoryName?.Trim();
+        if (string.IsNullOrEmpty(name))
+            return Guid.Empty;
+
+        var categories = await _unitOfWork.Repository<InventoryCategory>().GetAllAsync();
+        var existing = categories.FirstOrDefault(c =>
+            !c.IsDeleted && c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+            return existing.Id;
+
+        var created = new InventoryCategory
+        {
+            Name = name,
+            SchoolId = Guid.Empty,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _unitOfWork.Repository<InventoryCategory>().AddAsync(created);
+        await _unitOfWork.SaveChangesAsync();
+        return created.Id;
     }
 }

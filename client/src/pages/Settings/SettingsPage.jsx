@@ -175,9 +175,16 @@ function AcademicYearTab() {
   useEffect(() => {
     const fetchYears = async () => {
       try {
-        const response = await axiosInstance.get('/academic-years');
-        const data = response.data.data || response.data;
-        setYears(Array.isArray(data) ? data : data.items || []);
+        const schoolRes = await axiosInstance.get('/schools');
+        const items = schoolRes.data.data?.items || schoolRes.data.data || [];
+        const school = Array.isArray(items) ? items[0] : null;
+        if (!school?.id) {
+          setYears([]);
+          return;
+        }
+        const response = await axiosInstance.get(`/schools/${school.id}/academic-years`);
+        const data = response.data.data;
+        setYears(Array.isArray(data) ? data : data?.items || []);
       } catch (error) {
         toast.error('Failed to load academic years');
       } finally {

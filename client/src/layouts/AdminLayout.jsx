@@ -46,6 +46,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import ClassIcon from '@mui/icons-material/Class';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { toggleSidebar } from '../store/slices/uiSlice';
 import { logout } from '../store/slices/authSlice';
 
@@ -60,6 +61,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Parents', icon: <FamilyRestroomIcon />, path: '/parents' },
     { label: 'Employees', icon: <BadgeIcon />, path: '/employees' },
     { label: 'Attendance', icon: <EventAvailableIcon />, path: '/attendance' },
+    { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
@@ -80,6 +82,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Parents', icon: <FamilyRestroomIcon />, path: '/parents' },
     { label: 'Employees', icon: <BadgeIcon />, path: '/employees' },
     { label: 'Attendance', icon: <EventAvailableIcon />, path: '/attendance' },
+    { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
@@ -98,6 +101,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { label: 'Students', icon: <SchoolIcon />, path: '/students' },
     { label: 'Teachers', icon: <PeopleIcon />, path: '/teachers' },
+    { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Parents', icon: <FamilyRestroomIcon />, path: '/parents' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },

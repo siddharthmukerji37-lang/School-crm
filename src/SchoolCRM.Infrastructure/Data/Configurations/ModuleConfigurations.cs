@@ -108,6 +108,20 @@ public class StudentTransportAllocationConfiguration : IEntityTypeConfiguration<
     }
 }
 
+public class HostelConfiguration : IEntityTypeConfiguration<Hostel>
+{
+    public void Configure(EntityTypeBuilder<Hostel> builder)
+    {
+        builder.ToTable("Hostels");
+        builder.HasKey(h => h.Id);
+        builder.Property(h => h.Name).IsRequired().HasMaxLength(150);
+        builder.Property(h => h.Type).HasMaxLength(50);
+        builder.Property(h => h.Address).HasMaxLength(500);
+        builder.Property(h => h.WardenName).HasMaxLength(150);
+        builder.Property(h => h.WardenPhone).HasMaxLength(20);
+    }
+}
+
 public class HostelRoomConfiguration : IEntityTypeConfiguration<HostelRoom>
 {
     public void Configure(EntityTypeBuilder<HostelRoom> builder)
@@ -116,6 +130,8 @@ public class HostelRoomConfiguration : IEntityTypeConfiguration<HostelRoom>
         builder.HasKey(h => h.Id);
         builder.Property(h => h.RoomNumber).IsRequired().HasMaxLength(50);
         builder.Property(h => h.MonthlyFee).HasPrecision(18, 2);
+
+        builder.HasOne(h => h.Hostel).WithMany(h => h.Rooms).HasForeignKey(h => h.HostelId).OnDelete(DeleteBehavior.SetNull);
     }
 }
 

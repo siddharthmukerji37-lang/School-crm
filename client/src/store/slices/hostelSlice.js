@@ -71,6 +71,20 @@ export const fetchRooms = createAsyncThunk(
   }
 );
 
+export const fetchAllRooms = createAsyncThunk(
+  'hostel/fetchAllRooms',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await hostelService.getAllRooms();
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch rooms'
+      );
+    }
+  }
+);
+
 export const createRoom = createAsyncThunk(
   'hostel/createRoom',
   async (roomData, { rejectWithValue }) => {
@@ -122,6 +136,34 @@ export const fetchAllocations = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch allocations'
+      );
+    }
+  }
+);
+
+export const allocateBed = createAsyncThunk(
+  'hostel/allocateBed',
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await hostelService.allocate(data);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to allocate bed'
+      );
+    }
+  }
+);
+
+export const checkout = createAsyncThunk(
+  'hostel/checkout',
+  async (allocationId, { rejectWithValue }) => {
+    try {
+      const response = await hostelService.checkout(allocationId);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to checkout'
       );
     }
   }
@@ -224,6 +266,18 @@ const hostelSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(fetchAllRooms.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllRooms.fulfilled, (state, action) => {
+        state.loading = false;
+        state.rooms = action.payload;
+      })
+      .addCase(fetchAllRooms.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(createRoom.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -278,6 +332,30 @@ const hostelSlice = createSlice({
         state.allocations = action.payload;
       })
       .addCase(fetchAllocations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(allocateBed.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(allocateBed.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(allocateBed.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkout.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkout.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(checkout.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

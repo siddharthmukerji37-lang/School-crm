@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Enums;
@@ -20,21 +21,19 @@ public class HostelService : IHostelService
     {
         try
         {
-            var rooms = await _unitOfWork.HostelRooms.GetAllAsync();
-            var filtered = rooms.Where(r => !r.IsDeleted).ToList();
+            var hostels = await _unitOfWork.Hostels.GetAllWithDetailsAsync();
+            var filtered = hostels
+                .Where(h => !h.IsDeleted && (!schoolId.HasValue || h.SchoolId == schoolId.Value))
+                .OrderBy(h => h.Name)
+                .ToList();
+
             var totalCount = filtered.Count;
 
             var pagedItems = filtered
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .Select(r => new HostelDto
-                {
-                    Id = r.Id,
-                    Name = $"{r.Building ?? string.Empty} - {r.RoomNumber}",
-                    Type = r.RoomType,
-                    TotalRooms = r.Capacity,
-                    IsActive = r.IsActive
-                }).ToList();
+                .Select(h => ToHostelDto(h))
+                .ToList();
 
             return ApiResponse<PagedResult<HostelDto>>.SuccessResponse(new PagedResult<HostelDto>
             {
@@ -54,18 +53,11 @@ public class HostelService : IHostelService
     {
         try
         {
-            var room = await _unitOfWork.HostelRooms.GetRoomWithDetailsAsync(id);
-            if (room is null)
+            var hostel = await _unitOfWork.Hostels.GetHostelWithDetailsAsync(id);
+            if (hostel is null)
                 return ApiResponse<HostelDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
-            return ApiResponse<HostelDto>.SuccessResponse(new HostelDto
-            {
-                Id = room.Id,
-                Name = $"{room.Building ?? string.Empty} - {room.RoomNumber}",
-                Type = room.RoomType,
-                TotalRooms = room.Capacity,
-                IsActive = room.IsActive
-            });
+            return ApiResponse<HostelDto>.SuccessResponse(ToHostelDto(hostel));
         }
         catch (Exception ex)
         {
@@ -77,27 +69,22 @@ public class HostelService : IHostelService
     {
         try
         {
-            var room = new Domain.Entities.Hostel.HostelRoom
+            var hostel = new Domain.Entities.Hostel.Hostel
             {
-                RoomNumber = dto.Name,
-                RoomType = dto.Type,
-                Capacity = dto.TotalRooms,
-                SchoolId = Guid.Empty,
+                Name = dto.Name,
+                Type = dto.Type,
+                Address = dto.Address ?? string.Empty,
+                WardenName = dto.WardenName ?? string.Empty,
+                WardenPhone = dto.WardenPhone ?? string.Empty,
+                SchoolId = dto.SchoolId == Guid.Empty ? Guid.Empty : dto.SchoolId,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.HostelRooms.AddAsync(room);
+            await _unitOfWork.Hostels.AddAsync(hostel);
             await _unitOfWork.SaveChangesAsync();
 
-            return ApiResponse<HostelDto>.SuccessResponse(new HostelDto
-            {
-                Id = room.Id,
-                Name = room.RoomNumber,
-                Type = room.RoomType,
-                TotalRooms = room.Capacity,
-                IsActive = true
-            }, ApplicationMessages.CreateSuccess);
+            return ApiResponse<HostelDto>.SuccessResponse(ToHostelDto(hostel), ApplicationMessages.CreateSuccess);
         }
         catch (Exception ex)
         {
@@ -109,26 +96,21 @@ public class HostelService : IHostelService
     {
         try
         {
-            var room = await _unitOfWork.HostelRooms.GetByIdAsync(id);
-            if (room is null)
+            var hostel = await _unitOfWork.Hostels.GetByIdAsync(id);
+            if (hostel is null)
                 return ApiResponse<HostelDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
-            room.RoomNumber = dto.Name;
-            room.RoomType = dto.Type;
-            room.Capacity = dto.TotalRooms;
-            room.UpdatedAt = DateTime.UtcNow;
+            hostel.Name = dto.Name;
+            hostel.Type = dto.Type;
+            hostel.Address = dto.Address ?? string.Empty;
+            hostel.WardenName = dto.WardenName ?? string.Empty;
+            hostel.WardenPhone = dto.WardenPhone ?? string.Empty;
+            hostel.UpdatedAt = DateTime.UtcNow;
 
-            await _unitOfWork.HostelRooms.UpdateAsync(room);
+            await _unitOfWork.Hostels.UpdateAsync(hostel);
             await _unitOfWork.SaveChangesAsync();
 
-            return ApiResponse<HostelDto>.SuccessResponse(new HostelDto
-            {
-                Id = room.Id,
-                Name = room.RoomNumber,
-                Type = room.RoomType,
-                TotalRooms = room.Capacity,
-                IsActive = room.IsActive
-            }, ApplicationMessages.UpdateSuccess);
+            return ApiResponse<HostelDto>.SuccessResponse(ToHostelDto(hostel), ApplicationMessages.UpdateSuccess);
         }
         catch (Exception ex)
         {
@@ -140,13 +122,11 @@ public class HostelService : IHostelService
     {
         try
         {
-            var room = await _unitOfWork.HostelRooms.GetByIdAsync(id);
-            if (room is null)
+            var hostel = await _unitOfWork.Hostels.GetByIdAsync(id);
+            if (hostel is null)
                 return ApiResponse.FailResponse(ApplicationMessages.NotFound);
 
-            room.IsDeleted = true;
-            room.DeletedAt = DateTime.UtcNow;
-            await _unitOfWork.HostelRooms.UpdateAsync(room);
+            await _unitOfWork.Hostels.DeleteAsync(hostel);
             await _unitOfWork.SaveChangesAsync();
 
             return ApiResponse.SuccessResponse(ApplicationMessages.DeleteSuccess);
@@ -157,34 +137,18 @@ public class HostelService : IHostelService
         }
     }
 
-    public async Task<ApiResponse<List<RoomDto>>> GetRoomsAsync(Guid hostelId)
+    public async Task<ApiResponse<List<RoomDto>>> GetRoomsAsync(Guid? hostelId)
     {
         try
         {
-            var room = await _unitOfWork.HostelRooms.GetRoomWithDetailsAsync(hostelId);
-            if (room is null)
-                return ApiResponse<List<RoomDto>>.NotFoundResponse(ApplicationMessages.NotFound);
+            var rooms = await _unitOfWork.HostelRooms.GetAllRoomsWithDetailsAsync();
+            var filtered = rooms
+                .Where(r => !r.IsDeleted && (!hostelId.HasValue || r.HostelId == hostelId.Value))
+                .ToList();
 
-            var beds = room.Beds?.Select(b => new BedDto
-            {
-                Id = b.Id,
-                RoomId = b.RoomId,
-                BedNumber = b.BedNumber,
-                IsOccupied = b.IsOccupied
-            }).ToList() ?? new List<BedDto>();
+            var roomDtos = filtered.Select(r => ToRoomDto(r)).ToList();
 
-            var roomDto = new RoomDto
-            {
-                Id = room.Id,
-                RoomNumber = room.RoomNumber,
-                RoomType = room.RoomType,
-                TotalBeds = room.Capacity,
-                AvailableBeds = room.Capacity - room.Occupied,
-                MonthlyFee = room.MonthlyFee,
-                IsActive = room.IsActive
-            };
-
-            return ApiResponse<List<RoomDto>>.SuccessResponse(new List<RoomDto> { roomDto });
+            return ApiResponse<List<RoomDto>>.SuccessResponse(roomDtos);
         }
         catch (Exception ex)
         {
@@ -196,13 +160,18 @@ public class HostelService : IHostelService
     {
         try
         {
+            var hostel = await _unitOfWork.Hostels.GetByIdAsync(dto.HostelId);
+            if (hostel is null || hostel.IsDeleted)
+                return ApiResponse<RoomDto>.FailResponse("Hostel not found. Create a hostel before adding a room.");
+
             var room = new Domain.Entities.Hostel.HostelRoom
             {
                 RoomNumber = dto.RoomNumber,
                 RoomType = dto.RoomType,
                 Capacity = dto.TotalBeds,
                 MonthlyFee = dto.MonthlyFee,
-                SchoolId = Guid.Empty,
+                HostelId = dto.HostelId,
+                SchoolId = hostel.SchoolId,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -223,16 +192,8 @@ public class HostelService : IHostelService
 
             await _unitOfWork.SaveChangesAsync();
 
-            return ApiResponse<RoomDto>.SuccessResponse(new RoomDto
-            {
-                Id = room.Id,
-                RoomNumber = room.RoomNumber,
-                RoomType = room.RoomType,
-                TotalBeds = room.Capacity,
-                AvailableBeds = room.Capacity,
-                MonthlyFee = room.MonthlyFee,
-                IsActive = true
-            }, ApplicationMessages.CreateSuccess);
+            room.Hostel = hostel;
+            return ApiResponse<RoomDto>.SuccessResponse(ToRoomDto(room), ApplicationMessages.CreateSuccess);
         }
         catch (Exception ex)
         {
@@ -248,6 +209,15 @@ public class HostelService : IHostelService
             if (room is null)
                 return ApiResponse<RoomDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
+            if (dto.HostelId != Guid.Empty)
+            {
+                var hostel = await _unitOfWork.Hostels.GetByIdAsync(dto.HostelId);
+                if (hostel is null || hostel.IsDeleted)
+                    return ApiResponse<RoomDto>.FailResponse("Hostel not found.");
+
+                room.HostelId = dto.HostelId;
+            }
+
             room.RoomNumber = dto.RoomNumber;
             room.RoomType = dto.RoomType;
             room.MonthlyFee = dto.MonthlyFee;
@@ -256,16 +226,8 @@ public class HostelService : IHostelService
             await _unitOfWork.HostelRooms.UpdateAsync(room);
             await _unitOfWork.SaveChangesAsync();
 
-            return ApiResponse<RoomDto>.SuccessResponse(new RoomDto
-            {
-                Id = room.Id,
-                RoomNumber = room.RoomNumber,
-                RoomType = room.RoomType,
-                TotalBeds = room.Capacity,
-                AvailableBeds = room.Capacity - room.Occupied,
-                MonthlyFee = room.MonthlyFee,
-                IsActive = room.IsActive
-            }, ApplicationMessages.UpdateSuccess);
+            var updated = await _unitOfWork.HostelRooms.GetRoomWithDetailsAsync(id);
+            return ApiResponse<RoomDto>.SuccessResponse(ToRoomDto(updated), ApplicationMessages.UpdateSuccess);
         }
         catch (Exception ex)
         {
@@ -281,9 +243,7 @@ public class HostelService : IHostelService
             if (room is null)
                 return ApiResponse.FailResponse(ApplicationMessages.NotFound);
 
-            room.IsDeleted = true;
-            room.DeletedAt = DateTime.UtcNow;
-            await _unitOfWork.HostelRooms.UpdateAsync(room);
+            await _unitOfWork.HostelRooms.DeleteAsync(room);
             await _unitOfWork.SaveChangesAsync();
 
             return ApiResponse.SuccessResponse(ApplicationMessages.DeleteSuccess);
@@ -302,13 +262,15 @@ public class HostelService : IHostelService
             if (room is null)
                 return ApiResponse<List<BedDto>>.NotFoundResponse(ApplicationMessages.NotFound);
 
-            var beds = room.Beds?.Select(b => new BedDto
-            {
-                Id = b.Id,
-                RoomId = b.RoomId,
-                BedNumber = b.BedNumber,
-                IsOccupied = b.IsOccupied
-            }).ToList() ?? new List<BedDto>();
+            var beds = room.Beds?
+                .Where(b => !b.IsDeleted)
+                .Select(b => new BedDto
+                {
+                    Id = b.Id,
+                    RoomId = b.RoomId,
+                    BedNumber = b.BedNumber,
+                    IsOccupied = b.IsOccupied
+                }).ToList() ?? new List<BedDto>();
 
             return ApiResponse<List<BedDto>>.SuccessResponse(beds);
         }
@@ -326,6 +288,10 @@ public class HostelService : IHostelService
             if (bed is null || bed.IsOccupied)
                 return ApiResponse.FailResponse("Bed is not available.");
 
+            var room = await _unitOfWork.HostelRooms.GetByIdAsync(bed.RoomId);
+            if (room is null || room.Occupied >= room.Capacity)
+                return ApiResponse.FailResponse("Room has no available beds.");
+
             var allocation = new Domain.Entities.Hostel.HostelAllocation
             {
                 StudentId = dto.StudentId,
@@ -341,12 +307,8 @@ public class HostelService : IHostelService
             bed.IsOccupied = true;
             await _unitOfWork.Repository<Domain.Entities.Hostel.HostelBed>().UpdateAsync(bed);
 
-            var room = await _unitOfWork.HostelRooms.GetByIdAsync(bed.RoomId);
-            if (room is not null)
-            {
-                room.Occupied++;
-                await _unitOfWork.HostelRooms.UpdateAsync(room);
-            }
+            room.Occupied++;
+            await _unitOfWork.HostelRooms.UpdateAsync(room);
 
             await _unitOfWork.SaveChangesAsync();
             return ApiResponse.SuccessResponse(ApplicationMessages.CreateSuccess);
@@ -402,11 +364,22 @@ public class HostelService : IHostelService
     {
         try
         {
-            var allocations = await _unitOfWork.Repository<Domain.Entities.Hostel.HostelAllocation>().GetAllAsync();
-            var filtered = allocations.Where(a => !a.IsDeleted).ToList();
+            var allocations = await _unitOfWork.Repository<Domain.Entities.Hostel.HostelAllocation>().AsQueryable()
+                .Include(a => a.Student)
+                    .ThenInclude(s => s!.User)
+                .Include(a => a.Room)
+                    .ThenInclude(r => r!.Hostel)
+                .Where(a => !a.IsDeleted)
+                .ToListAsync();
+
+            var filtered = hostelId.HasValue
+                ? allocations.Where(a => a.Room.HostelId == hostelId.Value).ToList()
+                : allocations;
+
             var totalCount = filtered.Count;
 
             var pagedItems = filtered
+                .OrderByDescending(a => a.AllocationDate)
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .Select(a => new BedAllocationDto
@@ -418,6 +391,8 @@ public class HostelService : IHostelService
                         : string.Empty,
                     BedId = a.BedId ?? Guid.Empty,
                     RoomNumber = a.Room?.RoomNumber ?? string.Empty,
+                    HostelName = a.Room?.Hostel?.Name ?? string.Empty,
+                    Status = a.Status.ToString(),
                     AllocationDate = a.AllocationDate,
                     DeallocationDate = a.CheckOutDate,
                     IsActive = a.Status == HostelAllocationStatus.Active
@@ -435,5 +410,38 @@ public class HostelService : IHostelService
         {
             return ApiResponse<PagedResult<BedAllocationDto>>.FailResponse(ex.Message);
         }
+    }
+
+    private static HostelDto ToHostelDto(Domain.Entities.Hostel.Hostel h)
+    {
+        var rooms = h.Rooms?.Where(r => !r.IsDeleted).ToList() ?? new List<Domain.Entities.Hostel.HostelRoom>();
+        return new HostelDto
+        {
+            Id = h.Id,
+            Name = h.Name,
+            Type = h.Type,
+            Address = h.Address,
+            WardenName = h.WardenName,
+            WardenPhone = h.WardenPhone,
+            TotalRooms = rooms.Count,
+            TotalBeds = rooms.Sum(r => r.Capacity),
+            IsActive = h.IsActive
+        };
+    }
+
+    private static RoomDto ToRoomDto(Domain.Entities.Hostel.HostelRoom r)
+    {
+        return new RoomDto
+        {
+            Id = r.Id,
+            HostelId = r.HostelId ?? Guid.Empty,
+            HostelName = r.Hostel?.Name ?? string.Empty,
+            RoomNumber = r.RoomNumber,
+            RoomType = r.RoomType,
+            TotalBeds = r.Capacity,
+            AvailableBeds = r.Capacity - r.Occupied,
+            MonthlyFee = r.MonthlyFee,
+            IsActive = r.IsActive
+        };
     }
 }

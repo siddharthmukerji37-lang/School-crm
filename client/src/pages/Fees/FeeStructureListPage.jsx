@@ -14,6 +14,8 @@ import {
   Divider,
   FormControlLabel,
   Switch,
+  Typography,
+  Stack,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
@@ -74,6 +76,7 @@ export default function FeeStructureListPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFee, setEditingFee] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
   const [classes, setClasses] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
 
@@ -272,6 +275,7 @@ export default function FeeStructureListPage() {
         searchPlaceholder="Search fee structures..."
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
+        onView={(row) => setViewItem(row)}
         onEdit={handleEdit}
         onDelete={handleDelete}
         emptyMessage="No fee structures found"
@@ -286,6 +290,29 @@ export default function FeeStructureListPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      <Dialog open={!!viewItem} onClose={() => setViewItem(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 600 }}>Fee Structure Details</DialogTitle>
+        <Divider />
+        <DialogContent dividers>
+          {viewItem && (
+            <Stack spacing={1.5}>
+              <Typography><b>Name:</b> {viewItem.name}</Typography>
+              <Typography><b>Fee Type:</b> {viewItem.feeType || '-'}</Typography>
+              <Typography><b>Class:</b> {viewItem.className || '-'}</Typography>
+              <Typography><b>Academic Year:</b> {viewItem.academicYearName || '-'}</Typography>
+              <Typography><b>Amount:</b> ${Number(viewItem.totalAmount || 0).toFixed(2)}</Typography>
+              <Typography><b>Status:</b> {viewItem.isActive ? 'Active' : 'Inactive'}</Typography>
+              <Typography><b>Description:</b> {viewItem.description || '-'}</Typography>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setViewItem(null)} variant="outlined">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={dialogOpen}

@@ -207,6 +207,7 @@ builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBookIssueRepository, BookIssueRepository>();
 builder.Services.AddScoped<ITransportRouteRepository, TransportRouteRepository>();
 builder.Services.AddScoped<IHostelRoomRepository, HostelRoomRepository>();
+builder.Services.AddScoped<IHostelRepository, HostelRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();

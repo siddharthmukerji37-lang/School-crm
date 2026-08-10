@@ -2,16 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Tabs, Tab, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Grid, Typography, MenuItem,
+  TextField, Grid, Typography, Stack, MenuItem, Chip, CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import {
   fetchHostels, createHostel, updateHostel, deleteHostel,
-  fetchRooms, createRoom, updateRoom, deleteRoom,
-  fetchAllocations,
+  fetchAllRooms, createRoom, updateRoom, deleteRoom,
+  fetchAllocations, allocateBed, checkout,
 } from '../../store/slices/hostelSlice';
+import { fetchStudents } from '../../store/slices/studentSlice';
+import hostelService from '../../services/hostelService';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
@@ -35,9 +37,16 @@ const roomSchema = Yup.object({
 const HOSTEL_TYPES = ['Boys', 'Girls', 'Co-ed'];
 const ROOM_TYPES = ['Single', 'Double', 'Triple', 'Dormitory', 'Suite'];
 
+const formatDate = (value) => {
+  if (!value) return '-';
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? '-' : d.toLocaleDateString();
+};
+
 export default function HostelPage() {
   const dispatch = useDispatch();
   const { hostels, rooms, allocations } = useSelector((state) => state.hostel);
+  const { students } = useSelector((state) => state.students);
 
   const [tab, setTab] = useState(0);
   const [page, setPage] = useState(0);
@@ -46,13 +55,47 @@ export default function HostelPage() {
   const [editItem, setEditItem] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteType, setDeleteType] = useState('');
+  const [viewItem, setViewItem] = useState(null);
+  const [allocOpen, setAllocOpen] = useState(false);
+  const [allocForm, setAllocForm] = useState({ studentId: '', roomId: '', bedId: '' });
+  const [beds, setBeds] = useState([]);
+  const [bedsLoading, setBedsLoading] = useState(false);
+  const [allocSubmitting, setAllocSubmitting] = useState(false);
+  const [checkoutTarget, setCheckoutTarget] = useState(null);
 
   useEffect(() => {
     const params = { page: page + 1, pageSize: rowsPerPage };
     if (tab === 0) dispatch(fetchHostels(params));
-    else if (tab === 1) dispatch(fetchHostels({ page: 1, pageSize: 1000 }));
-    else if (tab === 2) dispatch(fetchAllocations(params));
+    else if (tab === 1) {
+      dispatch(fetchAllRooms());
+      dispatch(fetchHostels({ page: 1, pageSize: 1000 }));
+    } else {
+      dispatch(fetchAllocations(params));
+      dispatch(fetchAllRooms());
+      dispatch(fetchHostels({ page: 1, pageSize: 1000 }));
+    }
   }, [dispatch, tab, page, rowsPerPage]);
+
+  useEffect(() => {
+    dispatch(fetchStudents({ page: 1, pageSize: 500 }));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!allocForm.roomId) {
+      setBeds([]);
+      setAllocForm((f) => ({ ...f, bedId: '' }));
+      return;
+    }
+    setBedsLoading(true);
+    hostelService.getBeds(allocForm.roomId)
+      .then((res) => {
+        const allBeds = (res.data?.data || []).filter((b) => !b.isOccupied);
+        setBeds(allBeds);
+        setAllocForm((f) => ({ ...f, bedId: '' }));
+      })
+      .catch(() => setBeds([]))
+      .finally(() => setBedsLoading(false));
+  }, [allocForm.roomId]);
 
   const hostelColumns = [
     { id: 'name', header: 'Hostel Name', accessor: 'name', minWidth: 160 },
@@ -67,7 +110,7 @@ export default function HostelPage() {
     { id: 'roomNumber', header: 'Room No.', accessor: 'roomNumber', minWidth: 100 },
     { id: 'hostelName', header: 'Hostel', accessor: 'hostelName', minWidth: 140 },
     { id: 'roomType', header: 'Type', accessor: 'roomType', minWidth: 100 },
-    { id: 'capacity', header: 'Capacity', accessor: 'capacity', minWidth: 80, align: 'center' },
+    { id: 'totalBeds', header: 'Capacity', accessor: 'totalBeds', minWidth: 80, align: 'center' },
     { id: 'availableBeds', header: 'Available', accessor: 'availableBeds', minWidth: 90, align: 'center' },
     { id: 'monthlyFee', header: 'Rent', accessor: 'monthlyFee', minWidth: 100, render: (v) => `$${Number(v || 0).toFixed(2)}` },
   ];
@@ -76,12 +119,41 @@ export default function HostelPage() {
     { id: 'studentName', header: 'Student', accessor: 'studentName', minWidth: 160 },
     { id: 'roomNumber', header: 'Room', accessor: 'roomNumber', minWidth: 100 },
     { id: 'hostelName', header: 'Hostel', accessor: 'hostelName', minWidth: 140 },
-    { id: 'allocatedDate', header: 'Allocated', accessor: 'allocatedDate', minWidth: 110 },
-    { id: 'status', header: 'Status', accessor: 'status', minWidth: 100 },
+    { id: 'allocationDate', header: 'Allocated', accessor: 'allocationDate', minWidth: 110, render: formatDate },
+    {
+      id: 'status', header: 'Status', accessor: 'status', minWidth: 110,
+      render: (v, row) => {
+        const active = row.isActive || v === 'Active';
+        return (
+          <Chip
+            label={active ? 'Active' : 'Checked Out'}
+            color={active ? 'success' : 'default'}
+            size="small"
+            variant="outlined"
+          />
+        );
+      },
+    },
   ];
 
   const handleOpenDialog = (item = null) => { setEditItem(item); setDialogOpen(true); };
   const handleCloseDialog = () => { setEditItem(null); setDialogOpen(false); };
+
+  const refreshAfterMutation = () => {
+    if (page === 0) {
+      if (tab === 0) dispatch(fetchHostels({ page: 1, pageSize: rowsPerPage }));
+      else if (tab === 1) {
+        dispatch(fetchAllRooms());
+        dispatch(fetchHostels({ page: 1, pageSize: 1000 }));
+      } else {
+        dispatch(fetchAllocations({ page: 1, pageSize: rowsPerPage }));
+        dispatch(fetchAllRooms());
+        dispatch(fetchHostels({ page: 1, pageSize: 1000 }));
+      }
+    } else {
+      setPage(0);
+    }
+  };
 
   const handleDelete = (item, type) => { setDeleteTarget(item); setDeleteType(type); };
   const confirmDelete = async () => {
@@ -94,15 +166,52 @@ export default function HostelPage() {
       toast.success(`${deleteType} deleted`);
       setDeleteTarget(null);
       setDeleteType('');
-      const params = { page: page + 1, pageSize: rowsPerPage };
-      if (tab === 0) dispatch(fetchHostels(params));
+      refreshAfterMutation();
     } else {
       toast.error(action.payload || 'Failed');
     }
   };
 
+  const handleAllocate = async () => {
+    if (!allocForm.studentId || !allocForm.bedId) {
+      toast.error('Select a student, room and bed');
+      return;
+    }
+    setAllocSubmitting(true);
+    try {
+      const result = await dispatch(allocateBed({
+        studentId: allocForm.studentId,
+        bedId: allocForm.bedId,
+      }));
+      if (allocateBed.fulfilled.match(result)) {
+        toast.success('Bed allocated');
+        setAllocOpen(false);
+        setAllocForm({ studentId: '', roomId: '', bedId: '' });
+        setBeds([]);
+        refreshAfterMutation();
+      } else {
+        toast.error(result.payload || 'Failed to allocate');
+      }
+    } finally {
+      setAllocSubmitting(false);
+    }
+  };
+
+  const confirmCheckout = async () => {
+    if (!checkoutTarget) return;
+    const result = await dispatch(checkout(checkoutTarget.id));
+    if (checkout.fulfilled.match(result)) {
+      toast.success('Student checked out');
+      setCheckoutTarget(null);
+      refreshAfterMutation();
+    } else {
+      toast.error(result.payload || 'Failed');
+    }
+  };
+
   const currentData = tab === 0 ? hostels : tab === 1 ? rooms : allocations;
   const currentColumns = tab === 0 ? hostelColumns : tab === 1 ? roomColumns : allocationColumns;
+  const hostelOptions = hostels?.items || hostels || [];
 
   return (
     <Box>
@@ -113,25 +222,29 @@ export default function HostelPage() {
         <Tab label="Allocations" />
       </Tabs>
 
-      {tab < 2 && (
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
-            Add {tab === 0 ? 'Hostel' : 'Room'}
-          </Button>
-        </Box>
-      )}
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => (tab === 2 ? (() => { setAllocForm({ studentId: '', roomId: '', bedId: '' }); setBeds([]); setAllocOpen(true); })() : handleOpenDialog())}
+        >
+          {tab === 0 ? 'Add Hostel' : tab === 1 ? 'Add Room' : 'Allocate Bed'}
+        </Button>
+      </Box>
 
       <DataTable
         columns={currentColumns}
-        rows={currentData?.items || currentData || []}
+        rows={currentData?.items || (Array.isArray(currentData) ? currentData : [])}
         loading={false}
         page={page}
         rowsPerPage={rowsPerPage}
         totalCount={currentData?.totalCount || 0}
         onPageChange={(_, p) => setPage(p)}
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+        onView={(row) => setViewItem(row)}
         onEdit={tab < 2 ? (row) => handleOpenDialog(row) : undefined}
         onDelete={tab < 2 ? (row) => handleDelete(row, tab === 0 ? 'hostel' : 'room') : undefined}
+        onReturn={tab === 2 ? (row) => setCheckoutTarget(row) : undefined}
         emptyMessage={`No ${tab === 0 ? 'hostels' : tab === 1 ? 'rooms' : 'allocations'} found`}
       />
 
@@ -144,9 +257,115 @@ export default function HostelPage() {
         onCancel={() => { setDeleteTarget(null); setDeleteType(''); }}
       />
 
+      <ConfirmDialog
+        open={!!checkoutTarget}
+        title="Check Out"
+        message={`Check out "${checkoutTarget?.studentName}" from room ${checkoutTarget?.roomNumber}?`}
+        confirmText="Check Out"
+        onConfirm={confirmCheckout}
+        onCancel={() => setCheckoutTarget(null)}
+      />
+
+      <Dialog open={!!viewItem} onClose={() => setViewItem(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>{tab === 0 ? 'Hostel Details' : tab === 1 ? 'Room Details' : 'Allocation Details'}</DialogTitle>
+        <DialogContent dividers>
+          {tab === 0 && viewItem && (
+            <Stack spacing={1.5}>
+              <Typography><b>Hostel Name:</b> {viewItem.name}</Typography>
+              <Typography><b>Type:</b> {viewItem.type}</Typography>
+              <Typography><b>Address:</b> {viewItem.address || '-'}</Typography>
+              <Typography><b>Warden:</b> {viewItem.wardenName || '-'}{viewItem.wardenPhone ? ` (${viewItem.wardenPhone})` : ''}</Typography>
+              <Typography><b>Rooms:</b> {viewItem.totalRooms ?? 0}</Typography>
+              <Typography><b>Beds:</b> {viewItem.totalBeds ?? 0}</Typography>
+              <Typography><b>Status:</b> {viewItem.isActive ? 'Active' : 'Inactive'}</Typography>
+            </Stack>
+          )}
+          {tab === 1 && viewItem && (
+            <Stack spacing={1.5}>
+              <Typography><b>Room No.:</b> {viewItem.roomNumber}</Typography>
+              <Typography><b>Hostel:</b> {viewItem.hostelName || '-'}</Typography>
+              <Typography><b>Type:</b> {viewItem.roomType}</Typography>
+              <Typography><b>Capacity:</b> {viewItem.totalBeds}</Typography>
+              <Typography><b>Available:</b> {viewItem.availableBeds}</Typography>
+              <Typography><b>Rent:</b> ${Number(viewItem.monthlyFee || 0).toFixed(2)}</Typography>
+            </Stack>
+          )}
+          {tab === 2 && viewItem && (
+            <Stack spacing={1.5}>
+              <Typography><b>Student:</b> {viewItem.studentName}</Typography>
+              <Typography><b>Hostel:</b> {viewItem.hostelName || '-'}</Typography>
+              <Typography><b>Room:</b> {viewItem.roomNumber}</Typography>
+              <Typography><b>Allocated:</b> {formatDate(viewItem.allocationDate)}</Typography>
+              <Typography><b>Checked Out:</b> {formatDate(viewItem.deallocationDate)}</Typography>
+              <Typography><b>Status:</b> {viewItem.isActive ? 'Active' : 'Checked Out'}</Typography>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewItem(null)} variant="outlined">Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={allocOpen} onClose={() => setAllocOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Allocate Bed</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              select
+              fullWidth
+              label="Select Student"
+              value={allocForm.studentId}
+              onChange={(e) => setAllocForm({ ...allocForm, studentId: e.target.value })}
+            >
+              {(students?.items || []).map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {s.firstName} {s.lastName}{s.admissionNumber ? ` (${s.admissionNumber})` : ''}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              fullWidth
+              label="Select Room"
+              value={allocForm.roomId}
+              onChange={(e) => setAllocForm({ ...allocForm, roomId: e.target.value })}
+            >
+              {(Array.isArray(rooms) ? rooms : [])
+                .filter((r) => r.availableBeds > 0)
+                .map((r) => (
+                  <MenuItem key={r.id} value={r.id}>
+                    {r.roomNumber} ({r.hostelName || 'No hostel'} - {r.availableBeds} available)
+                  </MenuItem>
+                ))}
+            </TextField>
+            <TextField
+              select
+              fullWidth
+              label="Select Bed"
+              value={allocForm.bedId}
+              onChange={(e) => setAllocForm({ ...allocForm, bedId: e.target.value })}
+              disabled={!allocForm.roomId || bedsLoading}
+            >
+              {bedsLoading && <MenuItem value="">Loading beds...</MenuItem>}
+              {!bedsLoading && beds.length === 0 && <MenuItem value="">No beds available</MenuItem>}
+              {!bedsLoading && beds.map((b) => (
+                <MenuItem key={b.id} value={b.id}>{b.bedNumber}</MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setAllocOpen(false)} variant="outlined">Cancel</Button>
+          <Button onClick={handleAllocate} variant="contained" disabled={allocSubmitting}>
+            {allocSubmitting ? <CircularProgress size={20} /> : 'Allocate'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>{editItem ? `Edit ${tab === 0 ? 'Hostel' : 'Room'}` : `Add ${tab === 0 ? 'Hostel' : 'Room'}`}</DialogTitle>
         <Formik
+          key={tab === 0 ? `hostel-${editItem?.id || 'new'}` : `room-${editItem?.id || 'new'}`}
           initialValues={tab === 0
             ? { name: editItem?.name || '', type: editItem?.type || '', address: editItem?.address || '', wardenName: editItem?.wardenName || '' }
             : { hostelId: editItem?.hostelId || '', roomNumber: editItem?.roomNumber || '', roomType: editItem?.roomType || '', totalBeds: editItem?.totalBeds ?? '', monthlyFee: editItem?.monthlyFee ?? editItem?.rentAmount ?? '' }
@@ -164,8 +383,7 @@ export default function HostelPage() {
               if (successAction.fulfilled.match(action)) {
                 toast.success(`${tab === 0 ? 'Hostel' : 'Room'} ${editItem ? 'updated' : 'created'}`);
                 handleCloseDialog();
-                const params = { page: page + 1, pageSize: rowsPerPage };
-                if (tab === 0) dispatch(fetchHostels(params));
+                refreshAfterMutation();
               } else {
                 toast.error(action.payload || 'Failed');
               }
@@ -204,7 +422,7 @@ export default function HostelPage() {
                       <TextField fullWidth select name="hostelId" label="Hostel" value={values.hostelId}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.hostelId && Boolean(errors.hostelId)} helperText={touched.hostelId && errors.hostelId}>
-                        {(hostels?.items || hostels || []).map((h) => (
+                        {hostelOptions.map((h) => (
                           <MenuItem key={h.id} value={h.id}>{h.name}</MenuItem>
                         ))}
                       </TextField>

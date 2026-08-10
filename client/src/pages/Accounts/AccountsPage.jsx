@@ -24,15 +24,18 @@ import * as Yup from 'yup';
 import {
   fetchIncome,
   createIncome,
+  updateIncome,
   deleteIncome,
   fetchExpense,
   createExpense,
+  updateExpense,
   deleteExpense,
   fetchLedger,
 } from '../../store/slices/accountSlice';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import axiosInstance from '../../services/axiosInstance';
 import toast from 'react-hot-toast';
 
 const INCOME_CATEGORIES = ['Tuition Fee', 'Donation', 'Government Fund', 'Service Income', 'Other'];
@@ -66,6 +69,21 @@ const expenseSchema = Yup.object({
   vendor: Yup.string().trim(),
 });
 
+const toISODate = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const defaultLedgerFromDate = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 30);
+  return toISODate(d);
+};
+
+const defaultLedgerToDate = () => toISODate(new Date());
+
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0);
 
@@ -78,8 +96,10 @@ export default function AccountsPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [editingTarget, setEditingTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
+  const [fromDate, setFromDate] = useState(defaultLedgerFromDate);
+  const [toDate, setToDate] = useState(defaultLedgerToDate);
 
   useEffect(() => {
     if (activeTab === 0) {
@@ -99,6 +119,8 @@ export default function AccountsPage() {
     setActiveTab(newValue);
     setPage(0);
     setDialogOpen(false);
+    setEditingTarget(null);
+    setViewTarget(null);
   };
 
   const handlePageChange = (_, newPage) => {
@@ -126,6 +148,15 @@ export default function AccountsPage() {
     } else {
       toast.error(result.payload || 'Failed to delete');
     }
+  };
+
+  const handleView = (row) => {
+    setViewTarget(row);
+  };
+
+  const handleEdit = (row) => {
+    setEditingTarget(row);
+    setDialogOpen(true);
   };
 
   const incomeColumns = [
@@ -160,7 +191,8 @@ export default function AccountsPage() {
         <Chip label={v} color={v === 'Income' ? 'success' : 'error'} size="small" variant="outlined" />
       ),
     },
-    { id: 'description', header: 'Description', accessor: 'description', minWidth: 200 },
+    { id: 'title', header: 'Description', accessor: 'title', minWidth: 200 },
+    { id: 'referenceNumber', header: 'Reference', accessor: 'referenceNumber', minWidth: 120 },
     { id: 'debit', header: 'Debit', accessor: 'debit', minWidth: 120, render: (v) => (v ? formatCurrency(v) : '-') },
     { id: 'credit', header: 'Credit', accessor: 'credit', minWidth: 120, render: (v) => (v ? formatCurrency(v) : '-') },
     { id: 'balance', header: 'Balance', accessor: 'balance', minWidth: 120, render: (v) => formatCurrency(v) },
@@ -175,7 +207,14 @@ export default function AccountsPage() {
         subtitle={summarySubtitle}
         actions={
           activeTab !== 2 ? (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditingTarget(null);
+                setDialogOpen(true);
+              }}
+            >
               {activeTab === 0 ? 'Add Income' : 'Add Expense'}
             </Button>
           ) : null
@@ -202,6 +241,8 @@ export default function AccountsPage() {
           searchPlaceholder="Search income..."
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleRowsPerPageChange}
+          onView={handleView}
+          onEdit={handleEdit}
           onDelete={handleDelete}
           emptyMessage="No income records found"
         />
@@ -218,6 +259,8 @@ export default function AccountsPage() {
           searchPlaceholder="Search expenses..."
           onPageChange={handlePageChange}
           onRowsPerPageChange={handleRowsPerPageChange}
+          onView={handleView}
+          onEdit={handleEdit}
           onDelete={handleDelete}
           emptyMessage="No expense records found"
         />
@@ -268,7 +311,20 @@ export default function AccountsPage() {
       {activeTab !== 2 && dialogOpen && (
         <AccountFormDialog
           open={dialogOpen}
-          onClose={() => setDialogOpen(false)}
+          onClose={() => {
+            setDialogOpen(false);
+            setEditingTarget(null);
+          }}
+          type={activeTab === 0 ? 'income' : 'expense'}
+          editingRecord={editingTarget}
+        />
+      )}
+
+      {viewTarget && (
+        <AccountViewDialog
+          open={!!viewTarget}
+          onClose={() => setViewTarget(null)}
+          record={viewTarget}
           type={activeTab === 0 ? 'income' : 'expense'}
         />
       )}
@@ -285,24 +341,37 @@ export default function AccountsPage() {
   );
 }
 
-function AccountFormDialog({ open, onClose, type }) {
+function AccountFormDialog({ open, onClose, type, editingRecord }) {
   const dispatch = useDispatch();
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const isEditing = Boolean(editingRecord);
 
-  const incomeInitialValues = {
-    title: '',
-    description: '',
-    amount: '',
-    category: '',
-    date: '',
-    referenceNumber: '',
-    paymentMethod: '',
+  const buildInitialValues = () => {
+    if (!editingRecord) {
+      return {
+        title: '',
+        description: '',
+        amount: '',
+        category: '',
+        date: '',
+        referenceNumber: '',
+        paymentMethod: '',
+        vendor: '',
+      };
+    }
+    return {
+      title: editingRecord.title || '',
+      description: editingRecord.description || '',
+      amount: editingRecord.amount ?? '',
+      category: editingRecord.category || '',
+      date: editingRecord.date ? toISODate(new Date(editingRecord.date)) : '',
+      referenceNumber: editingRecord.referenceNumber || '',
+      paymentMethod: editingRecord.paymentMethod || '',
+      vendor: editingRecord.vendor || '',
+    };
   };
 
-  const expenseInitialValues = {
-    ...incomeInitialValues,
-    vendor: '',
-  };
+  const initialValues = buildInitialValues();
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
@@ -313,14 +382,26 @@ function AccountFormDialog({ open, onClose, type }) {
         if (items.length > 0) schoolId = items[0].id;
       } catch {}
 
-      const action = type === 'income' ? createIncome : createExpense;
-      const payload = { ...values, schoolId };
-      const result = await dispatch(action(payload));
-      if (action.fulfilled.match(result)) {
-        toast.success(`${type === 'income' ? 'Income' : 'Expense'} created successfully`);
-        onClose();
+      const payload = { ...values, ...(schoolId ? { schoolId } : {}) };
+
+      if (isEditing) {
+        const action = type === 'income' ? updateIncome : updateExpense;
+        const result = await dispatch(action({ id: editingRecord.id, data: payload }));
+        if (action.fulfilled.match(result)) {
+          toast.success(`${type === 'income' ? 'Income' : 'Expense'} updated successfully`);
+          onClose();
+        } else {
+          toast.error(result.payload || 'Failed to update');
+        }
       } else {
-        toast.error(result.payload || 'Failed to create');
+        const action = type === 'income' ? createIncome : createExpense;
+        const result = await dispatch(action(payload));
+        if (action.fulfilled.match(result)) {
+          toast.success(`${type === 'income' ? 'Income' : 'Expense'} created successfully`);
+          onClose();
+        } else {
+          toast.error(result.payload || 'Failed to create');
+        }
       }
     } finally {
       setSubmitting(false);
@@ -330,10 +411,16 @@ function AccountFormDialog({ open, onClose, type }) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
       <DialogTitle sx={{ fontWeight: 600 }}>
-        {type === 'income' ? 'Add Income' : 'Add Expense'}
+        {type === 'income'
+          ? isEditing
+            ? 'Edit Income'
+            : 'Add Income'
+          : isEditing
+            ? 'Edit Expense'
+            : 'Add Expense'}
       </DialogTitle>
       <Formik
-        initialValues={type === 'income' ? incomeInitialValues : expenseInitialValues}
+        initialValues={initialValues}
         validationSchema={type === 'income' ? incomeSchema : expenseSchema}
         onSubmit={handleSubmit}
       >
@@ -459,12 +546,90 @@ function AccountFormDialog({ open, onClose, type }) {
                 Cancel
               </Button>
               <Button type="submit" variant="contained" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? 'Saving...' : isEditing ? 'Update' : 'Save'}
               </Button>
             </DialogActions>
           </Form>
         )}
       </Formik>
+    </Dialog>
+  );
+}
+
+function AccountViewDialog({ open, onClose, record, type }) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+      <DialogTitle sx={{ fontWeight: 600 }}>
+        {type === 'income' ? 'Income' : 'Expense'} Details
+      </DialogTitle>
+      <Divider />
+      <DialogContent>
+        {record && (
+          <Grid container spacing={2} sx={{ mt: 0 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Title
+              </Typography>
+              <Typography variant="body1" fontWeight={600}>
+                {record.title || 'N/A'}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Amount
+              </Typography>
+              <Typography variant="body1" fontWeight={600} color="primary.main">
+                {formatCurrency(record.amount)}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Description
+              </Typography>
+              <Typography variant="body1">{record.description || 'N/A'}</Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Category
+              </Typography>
+              <Typography variant="body1">{record.category || 'N/A'}</Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Date
+              </Typography>
+              <Typography variant="body1">
+                {record.date ? new Date(record.date).toLocaleDateString() : 'N/A'}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Payment Method
+              </Typography>
+              <Typography variant="body1">{record.paymentMethod || 'N/A'}</Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Reference Number
+              </Typography>
+              <Typography variant="body1">{record.referenceNumber || 'N/A'}</Typography>
+            </Grid>
+            {type === 'expense' && (
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Vendor
+                </Typography>
+                <Typography variant="body1">{record.vendor || 'N/A'}</Typography>
+              </Grid>
+            )}
+          </Grid>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+        <Button variant="outlined" onClick={onClose}>
+          Close
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

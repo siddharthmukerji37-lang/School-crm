@@ -13,6 +13,7 @@ const hostelService = {
   update: (id, data) => axiosInstance.put(`/hostel/${id}`, data),
   delete: (id) => axiosInstance.delete(`/hostel/${id}`),
   getRooms: (hostelId) => axiosInstance.get(`/hostel/${hostelId}/rooms`),
+  getAllRooms: () => axiosInstance.get('/hostel/rooms'),
   createRoom: (data) => axiosInstance.post('/hostel/rooms', data),
   updateRoom: (id, data) => axiosInstance.put(`/hostel/rooms/${id}`, data),
   deleteRoom: (id) => axiosInstance.delete(`/hostel/rooms/${id}`),

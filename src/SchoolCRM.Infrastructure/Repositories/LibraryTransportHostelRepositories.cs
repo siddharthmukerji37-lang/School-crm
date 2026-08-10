@@ -158,6 +158,7 @@ public class HostelRoomRepository : GenericRepository<HostelRoom>, IHostelRoomRe
     public async Task<HostelRoom?> GetRoomWithDetailsAsync(Guid id)
     {
         return await _dbSet
+            .Include(hr => hr.Hostel)
             .Include(hr => hr.Beds)
             .Include(hr => hr.Allocations)
                 .ThenInclude(a => a.Student)
@@ -168,6 +169,7 @@ public class HostelRoomRepository : GenericRepository<HostelRoom>, IHostelRoomRe
     public async Task<IReadOnlyList<HostelRoom>> GetAvailableRoomsAsync(Guid? schoolId)
     {
         var query = _dbSet
+            .Include(hr => hr.Hostel)
             .Where(hr => hr.IsActive && hr.Occupied < hr.Capacity);
 
         if (schoolId.HasValue)
@@ -175,6 +177,37 @@ public class HostelRoomRepository : GenericRepository<HostelRoom>, IHostelRoomRe
 
         return await query
             .OrderBy(hr => hr.RoomNumber)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<HostelRoom>> GetAllRoomsWithDetailsAsync()
+    {
+        return await _dbSet
+            .Include(hr => hr.Hostel)
+            .Include(hr => hr.Beds)
+            .OrderBy(hr => hr.RoomNumber)
+            .ToListAsync();
+    }
+}
+
+public class HostelRepository : GenericRepository<Hostel>, IHostelRepository
+{
+    public HostelRepository(ApplicationDbContext context) : base(context) { }
+
+    public async Task<Hostel?> GetHostelWithDetailsAsync(Guid id)
+    {
+        return await _dbSet
+            .Include(h => h.Rooms)
+                .ThenInclude(r => r.Beds)
+            .FirstOrDefaultAsync(h => h.Id == id);
+    }
+
+    public async Task<IReadOnlyList<Hostel>> GetAllWithDetailsAsync()
+    {
+        return await _dbSet
+            .Include(h => h.Rooms)
+                .ThenInclude(r => r.Beds)
+            .OrderBy(h => h.Name)
             .ToListAsync();
     }
 }

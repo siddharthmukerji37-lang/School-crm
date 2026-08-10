@@ -14,7 +14,7 @@ public interface IHostelService
 
     Task<ApiResponse> DeleteHostelAsync(Guid id);
 
-    Task<ApiResponse<List<RoomDto>>> GetRoomsAsync(Guid hostelId);
+    Task<ApiResponse<List<RoomDto>>> GetRoomsAsync(Guid? hostelId);
 
     Task<ApiResponse<RoomDto>> CreateRoomAsync(CreateRoomDto dto);
 
@@ -34,12 +34,14 @@ public interface IHostelService
     public sealed class HostelDto
     {
         public Guid Id { get; set; }
+        public Guid SchoolId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string WardenName { get; set; } = string.Empty;
         public string WardenPhone { get; set; } = string.Empty;
         public int TotalRooms { get; set; }
+        public int TotalBeds { get; set; }
         public bool IsActive { get; set; }
     }
 
@@ -47,6 +49,7 @@ public interface IHostelService
     {
         public Guid Id { get; set; }
         public Guid HostelId { get; set; }
+        public string HostelName { get; set; } = string.Empty;
         public string RoomNumber { get; set; } = string.Empty;
         public string RoomType { get; set; } = string.Empty;
         public int TotalBeds { get; set; }
@@ -80,6 +83,7 @@ public interface IHostelService
         public Guid BedId { get; set; }
         public string RoomNumber { get; set; } = string.Empty;
         public string HostelName { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public DateTime AllocationDate { get; set; }
         public DateTime? DeallocationDate { get; set; }
         public bool IsActive { get; set; }

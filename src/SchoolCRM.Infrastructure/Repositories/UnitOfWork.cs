@@ -49,6 +49,7 @@ public class UnitOfWork : IUnitOfWork
     public IBookIssueRepository BookIssues => ResolveRepository<IBookIssueRepository>();
     public ITransportRouteRepository TransportRoutes => ResolveRepository<ITransportRouteRepository>();
     public IHostelRoomRepository HostelRooms => ResolveRepository<IHostelRoomRepository>();
+    public IHostelRepository Hostels => ResolveRepository<IHostelRepository>();
     public INotificationRepository Notifications => ResolveRepository<INotificationRepository>();
     public IAnnouncementRepository Announcements => ResolveRepository<IAnnouncementRepository>();
     public IAuditLogRepository AuditLogs => ResolveRepository<IAuditLogRepository>();

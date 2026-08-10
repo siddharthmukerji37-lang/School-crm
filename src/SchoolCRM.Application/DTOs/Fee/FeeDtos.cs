@@ -50,6 +50,7 @@ public sealed class FeeReceiptDto
     public string ClassName { get; set; } = string.Empty;
     public Guid FeeStructureId { get; set; }
     public string FeeStructureName { get; set; } = string.Empty;
+    public string FeeType { get; set; } = string.Empty;
     public Guid? InstallmentId { get; set; }
     public string? InstallmentName { get; set; }
     public decimal Amount { get; set; }

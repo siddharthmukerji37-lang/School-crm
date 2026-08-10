@@ -102,6 +102,8 @@ export default function InventoryListPage() {
   const handleEdit = (row) => {
     if (tab === 0) {
       navigate(`/inventory/${row.id}/edit`);
+    } else {
+      navigate(`/vendors/${row.id}/edit`);
     }
   };
 
@@ -177,7 +179,7 @@ export default function InventoryListPage() {
         searchPlaceholder={tab === 0 ? 'Search items...' : 'Search vendors...'}
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
-        onEdit={tab === 0 ? handleEdit : undefined}
+        onEdit={handleEdit}
         onDelete={handleDelete}
         emptyMessage={tab === 0 ? 'No items found' : 'No vendors found'}
       />

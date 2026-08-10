@@ -23,22 +23,39 @@ public class DashboardService : IDashboardService
     {
         try
         {
+            schoolId = await ResolveSchoolIdAsync(schoolId);
+
             var totalStudents = await _unitOfWork.Students.CountAsync(s => !s.IsDeleted && s.SchoolId == schoolId);
             var totalTeachers = await _unitOfWork.Teachers.CountAsync(t => !t.IsDeleted && t.SchoolId == schoolId);
             var totalStaff = await _unitOfWork.Employees.CountAsync(e => !e.IsDeleted && e.SchoolId == schoolId);
             var totalClasses = await _unitOfWork.ClassRooms.CountAsync(c => !c.IsDeleted && c.SchoolId == schoolId);
 
             var today = DateTime.UtcNow.Date;
+            var monthlyStart = new DateTime(today.Year, today.Month, 1);
             var todayAttendance = await _unitOfWork.Attendances.GetByDateAsync(today, schoolId);
             var presentCount = todayAttendance.Count(a => a.Status == AttendanceStatus.Present);
             var absentCount = todayAttendance.Count(a => a.Status == AttendanceStatus.Absent);
             var lateCount = todayAttendance.Count(a => a.Status == AttendanceStatus.Late);
             var totalAttendance = todayAttendance.Count;
 
-            var monthlyStart = new DateTime(today.Year, today.Month, 1);
-            var receipts = await _unitOfWork.FeeReceipts.GetAllAsync();
-            var monthlyReceipts = receipts.Where(r => !r.IsDeleted && r.PaidAt >= monthlyStart).ToList();
-            var monthlyCollected = monthlyReceipts.Sum(r => r.TotalPaid);
+            var receipts = (await _unitOfWork.FeeReceipts.GetAllAsync())
+                .Where(r => !r.IsDeleted).ToList();
+            var totalCollected = receipts.Sum(r => r.TotalPaid);
+            var todayCollected = receipts.Where(r => r.PaidAt.Date == today).Sum(r => r.TotalPaid);
+            var monthlyCollected = receipts.Where(r => r.PaidAt >= monthlyStart).Sum(r => r.TotalPaid);
+
+            var studentIds = (await _unitOfWork.Students.GetBySchoolAsync(schoolId))
+                .Select(s => s.Id).ToHashSet();
+            var installments = (await _unitOfWork.FeeInstallments.GetAllAsync())
+                .Where(i => !i.IsDeleted && studentIds.Contains(i.StudentId)).ToList();
+            var totalPending = installments
+                .Where(i => i.PaidAmount < i.Amount)
+                .Sum(i => Math.Max(0, i.Amount - i.PaidAmount - i.Discount - i.Scholarship));
+            var overdueFees = installments
+                .Where(i => i.PaidAmount < i.Amount && i.DueDate.Date < today)
+                .Sum(i => Math.Max(0, i.Amount - i.PaidAmount - i.Discount - i.Scholarship));
+
+            var todayBirthdays = await GetTodayBirthdaysAsync(schoolId, today);
 
             var recentAdmissions = (await _unitOfWork.Students.GetPagedStudentsAsync(
                 1, 5, null, null, null, null, null, schoolId, null)).Items
@@ -93,9 +110,15 @@ public class DashboardService : IDashboardService
                 },
                 FeesCollected = new FeeOverviewDto
                 {
-                    MonthlyCollected = monthlyCollected
+                    TotalCollected = totalCollected,
+                    TodayCollected = todayCollected,
+                    MonthlyCollected = monthlyCollected,
+                    TotalPending = totalPending,
+                    OverdueFees = overdueFees
                 },
+                PendingFees = totalPending,
                 UpcomingExams = upcomingExamsList.Count,
+                TodayBirthdays = todayBirthdays,
                 LatestAnnouncements = latestAnnouncements,
                 RecentAdmissions = recentAdmissions,
                 UpcomingExamsList = upcomingExamsList
@@ -113,6 +136,7 @@ public class DashboardService : IDashboardService
     {
         try
         {
+            schoolId = await ResolveSchoolIdAsync(schoolId);
             var chartData = new List<ChartDataDto>();
             var today = DateTime.UtcNow.Date;
 
@@ -152,6 +176,7 @@ public class DashboardService : IDashboardService
     {
         try
         {
+            schoolId = await ResolveSchoolIdAsync(schoolId);
             var chartData = new List<ChartDataDto>();
             var today = DateTime.UtcNow.Date;
             var receipts = await _unitOfWork.FeeReceipts.GetAllAsync();
@@ -180,5 +205,51 @@ public class DashboardService : IDashboardService
         {
             return ApiResponse<List<ChartDataDto>>.FailResponse(ex.Message);
         }
+    }
+
+    private async Task<Guid> ResolveSchoolIdAsync(Guid schoolId)
+    {
+        if (schoolId != Guid.Empty)
+            return schoolId;
+
+        var schools = await _unitOfWork.Schools.GetAllAsync();
+        return schools.FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    private async Task<List<BirthdayDto>> GetTodayBirthdaysAsync(Guid schoolId, DateTime today)
+    {
+        var result = new List<BirthdayDto>();
+
+        var students = (await _unitOfWork.Students.GetPagedStudentsAsync(
+            1, int.MaxValue, null, null, null, null, null, schoolId, null)).Items;
+        foreach (var s in students.Where(s =>
+            s.User?.DateOfBirth is { } dob && dob.Month == today.Month && dob.Day == today.Day))
+        {
+            result.Add(new BirthdayDto
+            {
+                Id = s.Id,
+                Name = $"{s.User!.FirstName} {s.User!.LastName}".Trim(),
+                Type = "Student",
+                ClassName = s.Section?.ClassRoom?.Name,
+                DateOfBirth = s.User!.DateOfBirth!.Value
+            });
+        }
+
+        var teachers = (await _unitOfWork.Teachers.GetPagedTeachersAsync(
+            1, int.MaxValue, null, null, null, null, schoolId, null)).Items;
+        foreach (var t in teachers.Where(t =>
+            t.User?.DateOfBirth is { } dob && dob.Month == today.Month && dob.Day == today.Day))
+        {
+            result.Add(new BirthdayDto
+            {
+                Id = t.Id,
+                Name = $"{t.User!.FirstName} {t.User!.LastName}".Trim(),
+                Type = "Teacher",
+                ClassName = t.DepartmentName,
+                DateOfBirth = t.User!.DateOfBirth!.Value
+            });
+        }
+
+        return result;
     }
 }

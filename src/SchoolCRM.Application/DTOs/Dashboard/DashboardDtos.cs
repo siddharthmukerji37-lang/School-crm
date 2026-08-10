@@ -32,6 +32,7 @@ public sealed class FeeOverviewDto
     public decimal TodayCollected { get; set; }
     public decimal MonthlyCollected { get; set; }
     public decimal TotalPending { get; set; }
+    public decimal OverdueFees { get; set; }
 }
 
 public sealed class BirthdayDto

@@ -116,7 +116,9 @@ public class AccountService : IAccountService
                 Amount = income.Amount,
                 Category = income.Category ?? string.Empty,
                 Date = income.Date,
-                PaymentMethod = income.PaymentMethod.ToString()
+                PaymentMethod = income.PaymentMethod.ToString(),
+                ReferenceNumber = income.TransactionReference ?? string.Empty,
+                CreatedBy = income.ReceivedBy ?? string.Empty
             }, ApplicationMessages.CreateSuccess);
         }
         catch (Exception ex)
@@ -152,7 +154,9 @@ public class AccountService : IAccountService
                 Amount = income.Amount,
                 Category = income.Category ?? string.Empty,
                 Date = income.Date,
-                PaymentMethod = income.PaymentMethod.ToString()
+                PaymentMethod = income.PaymentMethod.ToString(),
+                ReferenceNumber = income.TransactionReference ?? string.Empty,
+                CreatedBy = income.ReceivedBy ?? string.Empty
             }, ApplicationMessages.UpdateSuccess);
         }
         catch (Exception ex)
@@ -285,7 +289,9 @@ public class AccountService : IAccountService
                 Category = expense.Category ?? string.Empty,
                 Date = expense.Date,
                 PaymentMethod = expense.PaymentMethod.ToString(),
-                Vendor = expense.PaidTo ?? string.Empty
+                Vendor = expense.PaidTo ?? string.Empty,
+                ReferenceNumber = expense.InvoiceNumber ?? string.Empty,
+                CreatedBy = expense.ApprovedBy ?? string.Empty
             }, ApplicationMessages.CreateSuccess);
         }
         catch (Exception ex)
@@ -323,7 +329,9 @@ public class AccountService : IAccountService
                 Category = expense.Category ?? string.Empty,
                 Date = expense.Date,
                 PaymentMethod = expense.PaymentMethod.ToString(),
-                Vendor = expense.PaidTo ?? string.Empty
+                Vendor = expense.PaidTo ?? string.Empty,
+                ReferenceNumber = expense.InvoiceNumber ?? string.Empty,
+                CreatedBy = expense.ApprovedBy ?? string.Empty
             }, ApplicationMessages.UpdateSuccess);
         }
         catch (Exception ex)

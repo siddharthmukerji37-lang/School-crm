@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using SchoolCRM.Application.DTOs.Fee;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
@@ -27,7 +28,11 @@ public class FeeService : IFeeService
                 filter = fs => !fs.IsDeleted && fs.ClassRoomId == classRoomId.Value;
 
             var (items, totalCount) = await _unitOfWork.FeeStructures.GetPagedAsync(
-                query.PageNumber, query.PageSize, filter);
+                query.PageNumber, query.PageSize, filter,
+                include: q => q
+                    .Include(fs => fs.ClassRoom)
+                    .Include(fs => fs.AcademicYear)
+                    .Include(fs => fs.FeeHead));
 
             var dtos = items.Select(MapFeeStructureToDto).ToList();
 
@@ -76,6 +81,7 @@ public class FeeService : IFeeService
             var structure = new Domain.Entities.Fee.FeeStructure
             {
                 Name = dto.Name,
+                FeeType = dto.FeeType,
                 Description = dto.Description,
                 Amount = dto.TotalAmount,
                 FeeHeadId = dto.Components.FirstOrDefault()?.Id,
@@ -106,6 +112,7 @@ public class FeeService : IFeeService
                 return ApiResponse<FeeStructureDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
             structure.Name = dto.Name;
+            structure.FeeType = dto.FeeType;
             structure.Description = dto.Description;
             structure.Amount = dto.TotalAmount;
             structure.ClassRoomId = dto.ClassRoomId;
@@ -302,7 +309,14 @@ public class FeeService : IFeeService
 
             var (items, totalCount) = await _unitOfWork.FeeReceipts.GetPagedAsync(
                 query.PageNumber, query.PageSize, filter,
-                q => q.OrderByDescending(r => r.PaidAt));
+                q => q.OrderByDescending(r => r.PaidAt),
+                include: q => q
+                    .Include(r => r.FeeInstallment)
+                        .ThenInclude(fi => fi.Student)
+                            .ThenInclude(s => s.User)
+                    .Include(r => r.FeeInstallment)
+                        .ThenInclude(fi => fi.FeeStructure)
+                            .ThenInclude(fs => fs.ClassRoom));
 
             var dtos = items.Select(MapReceiptToDto).ToList();
 
@@ -418,6 +432,7 @@ public class FeeService : IFeeService
             Id = structure.Id,
             Name = structure.Name,
             Description = structure.Description,
+            FeeType = structure.FeeType,
             ClassRoomId = structure.ClassRoomId,
             ClassName = structure.ClassRoom?.Name ?? string.Empty,
             AcademicYearId = structure.AcademicYearId,
@@ -456,6 +471,7 @@ public class FeeService : IFeeService
             ClassName = receipt.FeeInstallment?.FeeStructure?.ClassRoom?.Name ?? string.Empty,
             FeeStructureId = receipt.FeeInstallment?.FeeStructureId ?? Guid.Empty,
             FeeStructureName = receipt.FeeInstallment?.FeeStructure?.Name ?? string.Empty,
+            FeeType = receipt.FeeInstallment?.FeeStructure?.FeeType ?? string.Empty,
             InstallmentId = receipt.FeeInstallmentId,
             Amount = receipt.Amount,
             FineAmount = receipt.Fine,

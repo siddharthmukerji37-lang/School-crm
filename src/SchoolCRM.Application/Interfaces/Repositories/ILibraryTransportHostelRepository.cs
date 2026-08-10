@@ -32,4 +32,11 @@ public interface IHostelRoomRepository : IGenericRepository<HostelRoom>
 {
     Task<HostelRoom?> GetRoomWithDetailsAsync(Guid id);
     Task<IReadOnlyList<HostelRoom>> GetAvailableRoomsAsync(Guid? schoolId);
+    Task<IReadOnlyList<HostelRoom>> GetAllRoomsWithDetailsAsync();
+}
+
+public interface IHostelRepository : IGenericRepository<Hostel>
+{
+    Task<Hostel?> GetHostelWithDetailsAsync(Guid id);
+    Task<IReadOnlyList<Hostel>> GetAllWithDetailsAsync();
 }

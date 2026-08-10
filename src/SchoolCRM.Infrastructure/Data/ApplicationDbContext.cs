@@ -100,6 +100,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<PickupPoint> PickupPoints => Set<PickupPoint>();
     public DbSet<StudentTransportAllocation> StudentTransportAllocations => Set<StudentTransportAllocation>();
 
+    public DbSet<Hostel> Hostels => Set<Hostel>();
     public DbSet<HostelRoom> HostelRooms => Set<HostelRoom>();
     public DbSet<HostelBed> HostelBeds => Set<HostelBed>();
     public DbSet<HostelAllocation> HostelAllocations => Set<HostelAllocation>();

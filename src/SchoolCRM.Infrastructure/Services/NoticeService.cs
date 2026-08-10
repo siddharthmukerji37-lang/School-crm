@@ -68,6 +68,8 @@ public class NoticeService : INoticeService
     {
         try
         {
+            var school = (await _unitOfWork.Schools.GetAllAsync()).FirstOrDefault();
+
             var notice = new Announcement
             {
                 Title = dto.Title,
@@ -77,6 +79,7 @@ public class NoticeService : INoticeService
                 PublishDate = dto.PublishDate ?? DateTime.UtcNow,
                 ExpiryDate = dto.ExpiryDate,
                 IsPublished = dto.IsPublished,
+                SchoolId = school?.Id ?? Guid.Empty,
                 CreatedByName = createdByName,
                 CreatedAt = DateTime.UtcNow
             };

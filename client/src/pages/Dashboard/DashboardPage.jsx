@@ -41,7 +41,6 @@ import PageHeader from '../../components/common/PageHeader';
 import {
   fetchDashboardStats,
   fetchAttendanceChart,
-  fetchFeeChart,
 } from '../../store/slices/dashboardSlice';
 
 ChartJS.register(
@@ -79,26 +78,24 @@ const CHART_OPTIONS = {
 
 export default function DashboardPage() {
   const dispatch = useDispatch();
-  const { stats, attendanceChart, feeChart, loading } = useSelector(
+  const { stats, attendanceChart, loading } = useSelector(
     (state) => state.dashboard
   );
 
   useEffect(() => {
     dispatch(fetchDashboardStats());
-    dispatch(fetchAttendanceChart({ period: 'week' }));
-    if (!feeChart) {
-      dispatch(fetchFeeChart({ period: 'month' }));
-    }
+    dispatch(fetchAttendanceChart({ months: 6 }));
   }, [dispatch]);
 
   const statsData = stats || {};
 
+  const attendance = Array.isArray(attendanceChart) ? attendanceChart : [];
   const attendanceChartData = {
-    labels: attendanceChart?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    labels: attendance.length ? attendance.map((i) => i.label) : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
     datasets: [
       {
         label: 'Attendance %',
-        data: attendanceChart?.data || [92, 88, 95, 90, 87],
+        data: attendance.length ? attendance.map((i) => Number(i.value)) : [0, 0, 0, 0, 0],
         borderColor: '#1565C0',
         backgroundColor: 'rgba(21, 101, 192, 0.1)',
         fill: true,
@@ -109,50 +106,61 @@ export default function DashboardPage() {
     ],
   };
 
+  const fee = statsData.feesCollected || {};
   const feeChartData = {
-    labels: feeChart?.labels || ['Collected', 'Pending', 'Overdue'],
+    labels: ['Collected', 'Pending', 'Overdue'],
     datasets: [
       {
-        data: feeChart?.data || [statsData.feesCollected || 245000, statsData.pendingFees || 55000, statsData.overdueFees || 25000],
+        data: [
+          Number(fee.totalCollected || 0),
+          Number(fee.totalPending || 0),
+          Number(fee.overdueFees || 0),
+        ],
         backgroundColor: ['#2E7D32', '#F57C00', '#D32F2F'],
         borderWidth: 0,
       },
     ],
   };
 
-  const announcements = statsData.recentAnnouncements || [
-    { id: 1, title: 'Annual Day Celebration', date: 'Jan 15, 2026', icon: '🎉' },
-    { id: 2, title: 'Mid-Term Exam Schedule Released', date: 'Jan 12, 2026', icon: '📝' },
-    { id: 3, title: 'Parent-Teacher Meeting', date: 'Jan 10, 2026', icon: '🤝' },
-  ];
+  const priorityIcons = {
+    High: '🔴',
+    Medium: '🟡',
+    Low: '🔵',
+  };
+  const announcements = (statsData.latestAnnouncements || []).map((a) => ({
+    id: a.id,
+    title: a.title,
+    date: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',
+    icon: priorityIcons[a.priority] || '📢',
+  }));
 
-  const birthdays = statsData.todayBirthdays || [
-    { id: 1, name: 'Aarav Sharma', class: 'Class 8 - A' },
-    { id: 2, name: 'Priya Patel', class: 'Class 5 - B' },
-    { id: 3, name: 'Rohan Gupta', class: 'Class 10 - A' },
-  ];
+  const birthdays = (statsData.todayBirthdays || []).map((b) => ({
+    id: b.id,
+    name: b.name,
+    class: b.className || (b.type === 'Teacher' ? 'Teacher' : ''),
+  }));
 
   const statCards = [
     {
       icon: <SchoolIcon />,
       title: 'Total Students',
-      value: statsData.totalStudents || '1,245',
-      trend: 'up',
-      trendValue: '+12%',
+      value: Number(statsData.totalStudents || 0).toLocaleString(),
+      trend: 'neutral',
+      trendValue: '',
       color: 'primary',
     },
     {
       icon: <PeopleIcon />,
       title: 'Total Teachers',
-      value: statsData.totalTeachers || '68',
+      value: Number(statsData.totalTeachers || 0).toLocaleString(),
       trend: 'neutral',
-      trendValue: '+2%',
+      trendValue: '',
       color: 'secondary',
     },
     {
       icon: <BadgeIcon />,
       title: 'Total Staff',
-      value: statsData.totalStaff || '45',
+      value: Number(statsData.totalStaff || 0).toLocaleString(),
       trend: 'neutral',
       trendValue: '',
       color: 'info',
@@ -160,7 +168,7 @@ export default function DashboardPage() {
     {
       icon: <ClassIcon />,
       title: 'Total Classes',
-      value: statsData.totalClasses || '24',
+      value: Number(statsData.totalClasses || 0).toLocaleString(),
       trend: 'neutral',
       trendValue: '',
       color: 'warning',
@@ -168,39 +176,31 @@ export default function DashboardPage() {
     {
       icon: <EventAvailableIcon />,
       title: "Today's Attendance",
-      value: statsData.todayAttendance?.attendancePercentage != null
-        ? `${statsData.todayAttendance.attendancePercentage}%`
-        : typeof statsData.todayAttendance === 'string' || typeof statsData.todayAttendance === 'number'
-        ? statsData.todayAttendance
-        : '91%',
-      trend: 'up',
-      trendValue: '+3%',
+      value: `${Number(statsData.todayAttendance?.attendancePercentage ?? 0).toFixed(2)}%`,
+      trend: 'neutral',
+      trendValue: '',
       color: 'success',
     },
     {
       icon: <PaymentsIcon />,
       title: 'Fees Collected',
-      value: statsData.feesCollected
-        ? `$${Number(statsData.feesCollected).toLocaleString()}`
-        : '$245,000',
-      trend: 'up',
-      trendValue: '+8%',
+      value: `$${Number(fee.totalCollected || 0).toLocaleString()}`,
+      trend: 'neutral',
+      trendValue: '',
       color: 'success',
     },
     {
       icon: <PendingActionsIcon />,
       title: 'Pending Fees',
-      value: statsData.pendingFees
-        ? `$${Number(statsData.pendingFees).toLocaleString()}`
-        : '$55,000',
-      trend: 'down',
-      trendValue: '-5%',
+      value: `$${Number(statsData.pendingFees || 0).toLocaleString()}`,
+      trend: 'neutral',
+      trendValue: '',
       color: 'warning',
     },
     {
       icon: <QuizIcon />,
       title: 'Upcoming Exams',
-      value: statsData.upcomingExams || '3',
+      value: Number(statsData.upcomingExams || 0).toLocaleString(),
       trend: 'neutral',
       trendValue: '',
       color: 'error',
@@ -305,6 +305,11 @@ export default function DashboardPage() {
                   {index < announcements.length - 1 && <Divider />}
                 </React.Fragment>
               ))}
+              {announcements.length === 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                  No recent announcements
+                </Typography>
+              )}
             </List>
           </Paper>
         </Grid>

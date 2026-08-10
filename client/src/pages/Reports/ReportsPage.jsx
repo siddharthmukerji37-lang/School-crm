@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -28,16 +28,17 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import DownloadIcon from '@mui/icons-material/Download';
 import PageHeader from '../../components/common/PageHeader';
+import axiosInstance from '../../services/axiosInstance';
 import toast from 'react-hot-toast';
 
 const reportTypes = [
   {
-    id: 'student',
+    id: 'students',
     title: 'Student Report',
     description: 'Generate reports on student enrollment, demographics, and academic performance.',
     icon: <SchoolIcon />,
     color: '#1976d2',
-    filters: ['class', 'dateRange'],
+    filters: ['class', 'section'],
   },
   {
     id: 'attendance',
@@ -45,7 +46,7 @@ const reportTypes = [
     description: 'View attendance records, trends, and summary statistics.',
     icon: <EventAvailableIcon />,
     color: '#388e3c',
-    filters: ['class', 'dateRange'],
+    filters: ['dateRange', 'class', 'section'],
   },
   {
     id: 'fee',
@@ -53,7 +54,7 @@ const reportTypes = [
     description: 'Analyze fee collection, outstanding payments, and financial summaries.',
     icon: <AttachMoneyIcon />,
     color: '#f57c00',
-    filters: ['dateRange', 'feeType'],
+    filters: ['dateRange', 'class'],
   },
   {
     id: 'exam',
@@ -61,7 +62,7 @@ const reportTypes = [
     description: 'View examination results, grades, and performance analysis.',
     icon: <QuizIcon />,
     color: '#7b1fa2',
-    filters: ['class', 'examType'],
+    filters: ['class', 'exam'],
   },
   {
     id: 'employee',
@@ -69,7 +70,7 @@ const reportTypes = [
     description: 'Generate reports on staff, departments, and employment details.',
     icon: <PeopleIcon />,
     color: '#00838f',
-    filters: ['department', 'dateRange'],
+    filters: [],
   },
   {
     id: 'inventory',
@@ -77,7 +78,7 @@ const reportTypes = [
     description: 'Track inventory levels, stock movements, and asset valuation.',
     icon: <InventoryIcon />,
     color: '#5d4037',
-    filters: ['category'],
+    filters: [],
   },
   {
     id: 'account',
@@ -94,28 +95,68 @@ export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState(null);
   const [format, setFormat] = useState('pdf');
   const [filters, setFilters] = useState({
-    startDate: '',
-    endDate: '',
-    class: '',
-    department: '',
-    feeType: '',
-    examType: '',
-    category: '',
+    fromDate: '',
+    toDate: '',
+    classRoomId: '',
+    sectionId: '',
+    examId: '',
   });
   const [generating, setGenerating] = useState(false);
+
+  const [schoolId, setSchoolId] = useState('');
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [exams, setExams] = useState([]);
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const res = await axiosInstance.get('/schools');
+        const items = res.data.data?.items || res.data.data || [];
+        if (items.length === 0) return;
+        setSchoolId(items[0].id);
+        const classRes = await axiosInstance.get(`/schools/${items[0].id}/classes`);
+        setClasses(classRes.data.data || []);
+      } catch {}
+    };
+    fetchMeta();
+  }, []);
+
+  useEffect(() => {
+    setSections([]);
+    setFilters((prev) => ({ ...prev, sectionId: '' }));
+    if (!filters.classRoomId) return;
+    const fetchSections = async () => {
+      try {
+        const res = await axiosInstance.get(`/schools/classes/${filters.classRoomId}/sections`);
+        setSections(res.data.data || []);
+      } catch {
+        setSections([]);
+      }
+    };
+    fetchSections();
+  }, [filters.classRoomId]);
+
+  const loadExams = async () => {
+    try {
+      const res = await axiosInstance.get('/exams', { params: { pageSize: 100 } });
+      setExams(res.data.data?.items || []);
+    } catch {
+      setExams([]);
+    }
+  };
 
   const handleOpenDialog = (report) => {
     setSelectedReport(report);
     setFormat('pdf');
     setFilters({
-      startDate: '',
-      endDate: '',
-      class: '',
-      department: '',
-      feeType: '',
-      examType: '',
-      category: '',
+      fromDate: '',
+      toDate: '',
+      classRoomId: '',
+      sectionId: '',
+      examId: '',
     });
+    if (report.filters.includes('exam')) loadExams();
     setDialogOpen(true);
   };
 
@@ -130,15 +171,26 @@ export default function ReportsPage() {
 
   const handleGenerate = async () => {
     if (!selectedReport) return;
+
+    const reportFilters = selectedReport.filters || [];
+    if (reportFilters.includes('dateRange') && (!filters.fromDate || !filters.toDate)) {
+      toast.error('Please select start and end date');
+      return;
+    }
+    if (reportFilters.includes('exam') && !filters.examId) {
+      toast.error('Please select an exam');
+      return;
+    }
+
     setGenerating(true);
     try {
-      const params = {
-        format,
-        ...filters,
-      };
-      Object.keys(params).forEach((key) => {
-        if (!params[key]) delete params[key];
-      });
+      const params = { format };
+      if (filters.fromDate) params.fromDate = filters.fromDate;
+      if (filters.toDate) params.toDate = filters.toDate;
+      if (filters.classRoomId) params.classRoomId = filters.classRoomId;
+      if (filters.sectionId) params.sectionId = filters.sectionId;
+      if (filters.examId) params.examId = filters.examId;
+      if (schoolId) params.schoolId = schoolId;
 
       const token = localStorage.getItem('token');
       const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -171,8 +223,11 @@ export default function ReportsPage() {
     }
   };
 
-  const showDateRange = selectedReport?.filters?.includes('dateRange');
-  const showClass = selectedReport?.filters?.includes('class');
+  const reportFilters = selectedReport?.filters || [];
+  const showDateRange = reportFilters.includes('dateRange');
+  const showClass = reportFilters.includes('class');
+  const showSection = reportFilters.includes('section');
+  const showExam = reportFilters.includes('exam');
 
   return (
     <Box>
@@ -253,16 +308,16 @@ export default function ReportsPage() {
                 <TextField
                   label="Start Date"
                   type="date"
-                  value={filters.startDate}
-                  onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                  value={filters.fromDate}
+                  onChange={(e) => handleFilterChange('fromDate', e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   fullWidth
                 />
                 <TextField
                   label="End Date"
                   type="date"
-                  value={filters.endDate}
-                  onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                  value={filters.toDate}
+                  onChange={(e) => handleFilterChange('toDate', e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   fullWidth
                 />
@@ -270,58 +325,64 @@ export default function ReportsPage() {
             )}
 
             {showClass && (
-              <TextField
-                label="Class"
-                value={filters.class}
-                onChange={(e) => handleFilterChange('class', e.target.value)}
-                fullWidth
-                placeholder="e.g. 10A"
-              />
-            )}
-
-            {selectedReport?.filters?.includes('department') && (
-              <TextField
-                label="Department"
-                value={filters.department}
-                onChange={(e) => handleFilterChange('department', e.target.value)}
-                fullWidth
-              />
-            )}
-
-            {selectedReport?.filters?.includes('feeType') && (
               <FormControl fullWidth>
-                <InputLabel>Fee Type</InputLabel>
+                <InputLabel>Class</InputLabel>
                 <Select
-                  value={filters.feeType}
-                  label="Fee Type"
-                  onChange={(e) => handleFilterChange('feeType', e.target.value)}
+                  value={filters.classRoomId}
+                  label="Class"
+                  onChange={(e) => handleFilterChange('classRoomId', e.target.value)}
                 >
-                  <MenuItem value="tuition">Tuition</MenuItem>
-                  <MenuItem value="transport">Transport</MenuItem>
-                  <MenuItem value="hostel">Hostel</MenuItem>
-                  <MenuItem value="exam">Exam</MenuItem>
-                  <MenuItem value="other">Other</MenuItem>
+                  <MenuItem value="">
+                    <em>All Classes</em>
+                  </MenuItem>
+                  {classes.map((cls) => (
+                    <MenuItem key={cls.id} value={cls.id}>
+                      {cls.name}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             )}
 
-            {selectedReport?.filters?.includes('examType') && (
-              <TextField
-                label="Exam Type"
-                value={filters.examType}
-                onChange={(e) => handleFilterChange('examType', e.target.value)}
-                fullWidth
-                placeholder="e.g. Mid-term, Final"
-              />
+            {showSection && (
+              <FormControl fullWidth>
+                <InputLabel>Section</InputLabel>
+                <Select
+                  value={filters.sectionId}
+                  label="Section"
+                  onChange={(e) => handleFilterChange('sectionId', e.target.value)}
+                  disabled={!filters.classRoomId || sections.length === 0}
+                >
+                  <MenuItem value="">
+                    <em>All Sections</em>
+                  </MenuItem>
+                  {sections.map((section) => (
+                    <MenuItem key={section.id} value={section.id}>
+                      {section.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             )}
 
-            {selectedReport?.filters?.includes('category') && (
-              <TextField
-                label="Category"
-                value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
-                fullWidth
-              />
+            {showExam && (
+              <FormControl fullWidth>
+                <InputLabel>Exam</InputLabel>
+                <Select
+                  value={filters.examId}
+                  label="Exam"
+                  onChange={(e) => handleFilterChange('examId', e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>Select Exam</em>
+                  </MenuItem>
+                  {exams.map((exam) => (
+                    <MenuItem key={exam.id} value={exam.id}>
+                      {exam.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             )}
           </Stack>
         </DialogContent>

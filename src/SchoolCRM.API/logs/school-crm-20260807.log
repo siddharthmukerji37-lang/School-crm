@@ -2002,3 +2002,411 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
 2026-08-07 14:12:18.245 +05:30 [INF] [55136fdc-c346-4e35-ad0f-9db22ef68ad6] POST /api/transport/routes responded 201 in 51ms
 2026-08-07 14:12:18.524 +05:30 [INF] [cd15190f-96e5-46d0-a6ad-fe7faa3fb8fa] GET /api/transport/routes from 127.0.0.1 by Anonymous
 2026-08-07 14:12:18.546 +05:30 [INF] [cd15190f-96e5-46d0-a6ad-fe7faa3fb8fa] GET /api/transport/routes responded 200 in 20ms
+2026-08-07 15:33:34.418 +05:30 [WRN] Redis unavailable, falling back to in-memory cache and basic SignalR: Redis not connected
+2026-08-07 15:33:39.838 +05:30 [WRN] Entity 'ApplicationRole' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationRoleClaim'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-07 15:33:39.841 +05:30 [WRN] Entity 'ApplicationUser' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserClaim'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-07 15:33:39.841 +05:30 [WRN] Entity 'ApplicationUser' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserLogin'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-07 15:33:39.842 +05:30 [WRN] Entity 'ApplicationRole' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserRole'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-07 15:33:39.842 +05:30 [WRN] Entity 'ApplicationUser' has a global query filter defined and is the required end of a relationship with the entity 'ApplicationUserToken'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-08-07 15:33:40.028 +05:30 [WRN] The foreign key property 'HomeworkSubmission.StudentId1' was created in shadow state because a conflicting property with the simple name 'StudentId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2026-08-07 15:33:41.402 +05:30 [INF] Database migrated successfully
+2026-08-07 15:33:42.489 +05:30 [INF] Roles seeded successfully
+2026-08-07 15:33:44.189 +05:30 [INF] [33cde3b7-5a48-4aab-861a-c1b87852aacb] POST /api/auth/login from 127.0.0.1 by Anonymous
+2026-08-07 15:33:44.233 +05:30 [WRN] Failed to determine the https port for redirect.
+2026-08-07 15:33:45.251 +05:30 [ERR] An unhandled exception occurred: Invalid email or password.
+System.UnauthorizedAccessException: Invalid email or password.
+   at SchoolCRM.Infrastructure.Services.AuthService.LoginAsync(LoginDto dto, String ipAddress) in /var/www/html/school-crm/src/SchoolCRM.Infrastructure/Services/AuthService.cs:line 57
+   at SchoolCRM.API.Controllers.AuthController.LoginAsync(LoginDto dto) in /var/www/html/school-crm/src/SchoolCRM.API/Controllers/AuthController.cs:line 28
+   at lambda_method670(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at SchoolCRM.API.Middleware.RequestLoggingMiddleware.InvokeAsync(HttpContext context) in /var/www/html/school-crm/src/SchoolCRM.API/Middleware/RequestLoggingMiddleware.cs:line 33
+   at SchoolCRM.API.Middleware.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in /var/www/html/school-crm/src/SchoolCRM.API/Middleware/GlobalExceptionMiddleware.cs:line 23
+2026-08-07 15:34:06.787 +05:30 [INF] [98e0f070-500a-48eb-a98e-5b3a9e49c4c8] POST /api/auth/login from 127.0.0.1 by Anonymous
+2026-08-07 15:34:07.258 +05:30 [ERR] An unhandled exception occurred: Invalid email or password.
+System.UnauthorizedAccessException: Invalid email or password.
+   at SchoolCRM.Infrastructure.Services.AuthService.LoginAsync(LoginDto dto, String ipAddress) in /var/www/html/school-crm/src/SchoolCRM.Infrastructure/Services/AuthService.cs:line 57
+   at SchoolCRM.API.Controllers.AuthController.LoginAsync(LoginDto dto) in /var/www/html/school-crm/src/SchoolCRM.API/Controllers/AuthController.cs:line 28
+   at lambda_method670(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at SchoolCRM.API.Middleware.RequestLoggingMiddleware.InvokeAsync(HttpContext context) in /var/www/html/school-crm/src/SchoolCRM.API/Middleware/RequestLoggingMiddleware.cs:line 33
+   at SchoolCRM.API.Middleware.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in /var/www/html/school-crm/src/SchoolCRM.API/Middleware/GlobalExceptionMiddleware.cs:line 23
+2026-08-07 15:34:21.977 +05:30 [INF] [0f81c93e-0dcd-481d-9b9f-e13440b7905b] POST /api/auth/login from 127.0.0.1 by Anonymous
+2026-08-07 15:34:22.379 +05:30 [ERR] An unhandled exception occurred: Invalid email or password.
+System.UnauthorizedAccessException: Invalid email or password.
+   at SchoolCRM.Infrastructure.Services.AuthService.LoginAsync(LoginDto dto, String ipAddress) in /var/www/html/school-crm/src/SchoolCRM.Infrastructure/Services/AuthService.cs:line 57
+   at SchoolCRM.API.Controllers.AuthController.LoginAsync(LoginDto dto) in /var/www/html/school-crm/src/SchoolCRM.API/Controllers/AuthController.cs:line 28
+   at lambda_method670(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at SchoolCRM.API.Middleware.RequestLoggingMiddleware.InvokeAsync(HttpContext context) in /var/www/html/school-crm/src/SchoolCRM.API/Middleware/RequestLoggingMiddleware.cs:line 33
+   at SchoolCRM.API.Middleware.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in /var/www/html/school-crm/src/SchoolCRM.API/Middleware/GlobalExceptionMiddleware.cs:line 23
+2026-08-07 15:34:41.515 +05:30 [INF] [1e97dcc3-b5dd-497c-b5f3-7165e74a2e37] POST /api/auth/login from 127.0.0.1 by Anonymous
+2026-08-07 15:34:42.229 +05:30 [INF] [1e97dcc3-b5dd-497c-b5f3-7165e74a2e37] POST /api/auth/login responded 200 in 713ms
+2026-08-07 15:34:43.321 +05:30 [INF] [5e19ca4c-1ef0-4409-b2e5-cfa3e5bba15c] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:34:43.332 +05:30 [INF] [8a097429-a9f6-440f-9e6a-879fdf99f2c7] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:34:43.335 +05:30 [INF] [6635afa9-0912-4d7c-86e1-fef5e31ff391] GET /api/dashboard/fee-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:34:43.752 +05:30 [INF] [6635afa9-0912-4d7c-86e1-fef5e31ff391] GET /api/dashboard/fee-chart responded 200 in 412ms
+2026-08-07 15:34:43.764 +05:30 [INF] [bb870514-c5e9-480d-bb3f-f3f54a47aa60] GET /api/dashboard/fee-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:34:43.788 +05:30 [INF] [bb870514-c5e9-480d-bb3f-f3f54a47aa60] GET /api/dashboard/fee-chart responded 200 in 23ms
+2026-08-07 15:34:44.300 +05:30 [WRN] The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+2026-08-07 15:34:44.301 +05:30 [WRN] The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+2026-08-07 15:34:44.392 +05:30 [INF] [5e19ca4c-1ef0-4409-b2e5-cfa3e5bba15c] GET /api/dashboard/stats responded 200 in 1068ms
+2026-08-07 15:34:44.398 +05:30 [INF] [f7282b85-2e12-4ce7-94af-449e9eb7ad7a] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:34:44.568 +05:30 [INF] [f7282b85-2e12-4ce7-94af-449e9eb7ad7a] GET /api/dashboard/stats responded 200 in 169ms
+2026-08-07 15:34:44.722 +05:30 [INF] [8a097429-a9f6-440f-9e6a-879fdf99f2c7] GET /api/dashboard/attendance-chart responded 200 in 1383ms
+2026-08-07 15:34:44.733 +05:30 [INF] [a5bf4be0-0b8f-4f2a-8d3a-1ba552ef6e4e] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:34:45.571 +05:30 [INF] [a5bf4be0-0b8f-4f2a-8d3a-1ba552ef6e4e] GET /api/dashboard/attendance-chart responded 200 in 837ms
+2026-08-07 15:34:55.212 +05:30 [INF] [68254cf6-5246-4721-b3f1-b85df5742eae] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:34:55.739 +05:30 [INF] [68254cf6-5246-4721-b3f1-b85df5742eae] GET /api/students responded 200 in 526ms
+2026-08-07 15:34:55.748 +05:30 [INF] [3eefc13a-e248-4683-bea0-f96ac31f74e3] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:34:55.776 +05:30 [INF] [3eefc13a-e248-4683-bea0-f96ac31f74e3] GET /api/students responded 200 in 27ms
+2026-08-07 15:35:00.346 +05:30 [INF] [d8e0f1f2-993e-4efe-851f-ea48eb1524dc] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 from 127.0.0.1 by Anonymous
+2026-08-07 15:35:00.494 +05:30 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-08-07 15:35:00.632 +05:30 [INF] [d8e0f1f2-993e-4efe-851f-ea48eb1524dc] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 responded 200 in 284ms
+2026-08-07 15:35:00.637 +05:30 [INF] [a875a93e-c07d-4e39-93fe-a0b478740148] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 from 127.0.0.1 by Anonymous
+2026-08-07 15:35:00.666 +05:30 [INF] [a875a93e-c07d-4e39-93fe-a0b478740148] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 responded 200 in 28ms
+2026-08-07 15:35:05.608 +05:30 [INF] [836da0a0-5349-4b3f-8fed-c0caa35e56c7] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:35:05.616 +05:30 [INF] [9b180296-31db-4aa5-9558-b818f10811e6] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:35:05.759 +05:30 [INF] [836da0a0-5349-4b3f-8fed-c0caa35e56c7] GET /api/dashboard/stats responded 200 in 150ms
+2026-08-07 15:35:05.771 +05:30 [INF] [21073447-ff86-4221-a529-38d762a76eb8] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:35:05.820 +05:30 [INF] [21073447-ff86-4221-a529-38d762a76eb8] GET /api/dashboard/stats responded 200 in 48ms
+2026-08-07 15:35:06.378 +05:30 [INF] [9b180296-31db-4aa5-9558-b818f10811e6] GET /api/dashboard/attendance-chart responded 200 in 757ms
+2026-08-07 15:35:06.384 +05:30 [INF] [6f957ac7-c7a2-470b-9efb-9b5624538daf] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:35:07.039 +05:30 [INF] [6f957ac7-c7a2-470b-9efb-9b5624538daf] GET /api/dashboard/attendance-chart responded 200 in 653ms
+2026-08-07 15:35:08.648 +05:30 [INF] [cfab7664-f977-4834-83ab-6c5f4f7ddf81] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:35:08.707 +05:30 [INF] [cfab7664-f977-4834-83ab-6c5f4f7ddf81] GET /api/students responded 200 in 58ms
+2026-08-07 15:35:08.719 +05:30 [INF] [f6c410a0-bd9d-449c-a2bf-5f5ea3c25b1d] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:35:08.755 +05:30 [INF] [f6c410a0-bd9d-449c-a2bf-5f5ea3c25b1d] GET /api/students responded 200 in 35ms
+2026-08-07 15:35:10.845 +05:30 [INF] [f5113aae-925c-4367-9e5d-616d55b5523e] GET /api/teachers from 127.0.0.1 by Anonymous
+2026-08-07 15:35:11.151 +05:30 [INF] [f5113aae-925c-4367-9e5d-616d55b5523e] GET /api/teachers responded 200 in 305ms
+2026-08-07 15:35:11.160 +05:30 [INF] [ca2a8c6e-313d-46be-bc2d-4bbaf0cfe2fb] GET /api/teachers from 127.0.0.1 by Anonymous
+2026-08-07 15:35:11.183 +05:30 [INF] [ca2a8c6e-313d-46be-bc2d-4bbaf0cfe2fb] GET /api/teachers responded 200 in 22ms
+2026-08-07 15:35:13.653 +05:30 [INF] [05da58ec-34ac-4de6-97fe-20a542d2b296] GET /api/teachers/08dee7bf-c33f-46f2-8893-d01166523b99 from 127.0.0.1 by Anonymous
+2026-08-07 15:35:13.935 +05:30 [INF] [05da58ec-34ac-4de6-97fe-20a542d2b296] GET /api/teachers/08dee7bf-c33f-46f2-8893-d01166523b99 responded 200 in 281ms
+2026-08-07 15:35:13.943 +05:30 [INF] [564f040a-542d-406f-a34c-7f1c7c84762b] GET /api/teachers/08dee7bf-c33f-46f2-8893-d01166523b99 from 127.0.0.1 by Anonymous
+2026-08-07 15:35:13.972 +05:30 [INF] [564f040a-542d-406f-a34c-7f1c7c84762b] GET /api/teachers/08dee7bf-c33f-46f2-8893-d01166523b99 responded 200 in 28ms
+2026-08-07 15:35:15.643 +05:30 [INF] [15cf7e57-c1de-4ce2-8333-5c1f1902640b] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:35:15.654 +05:30 [INF] [51f8e35c-0ec4-4584-9f80-c224767058be] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:35:15.740 +05:30 [INF] [15cf7e57-c1de-4ce2-8333-5c1f1902640b] GET /api/dashboard/stats responded 200 in 96ms
+2026-08-07 15:35:15.755 +05:30 [INF] [67ddc513-9519-41cd-a9d7-bd37dfa0d5c4] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:35:15.847 +05:30 [INF] [67ddc513-9519-41cd-a9d7-bd37dfa0d5c4] GET /api/dashboard/stats responded 200 in 87ms
+2026-08-07 15:35:16.476 +05:30 [INF] [51f8e35c-0ec4-4584-9f80-c224767058be] GET /api/dashboard/attendance-chart responded 200 in 819ms
+2026-08-07 15:35:16.481 +05:30 [INF] [0fe18381-5280-4a7a-8702-3de73a60dbc2] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:35:17.165 +05:30 [INF] [0fe18381-5280-4a7a-8702-3de73a60dbc2] GET /api/dashboard/attendance-chart responded 200 in 682ms
+2026-08-07 15:35:18.164 +05:30 [INF] [421dfbc3-8540-4667-a198-9d793124ee8c] GET /api/teachers from 127.0.0.1 by Anonymous
+2026-08-07 15:35:18.236 +05:30 [INF] [421dfbc3-8540-4667-a198-9d793124ee8c] GET /api/teachers responded 200 in 71ms
+2026-08-07 15:35:18.246 +05:30 [INF] [cb8d8f8f-aa2a-4db3-8b58-ca2bf25c78cd] GET /api/teachers from 127.0.0.1 by Anonymous
+2026-08-07 15:35:18.274 +05:30 [INF] [cb8d8f8f-aa2a-4db3-8b58-ca2bf25c78cd] GET /api/teachers responded 200 in 27ms
+2026-08-07 15:35:19.403 +05:30 [INF] [47a2fbd1-449a-4ca2-b3f3-df93ec600b38] GET /api/parents from 127.0.0.1 by Anonymous
+2026-08-07 15:35:19.598 +05:30 [INF] [47a2fbd1-449a-4ca2-b3f3-df93ec600b38] GET /api/parents responded 200 in 194ms
+2026-08-07 15:35:19.603 +05:30 [INF] [5587e503-c10e-4b7a-ac82-8af556a3d3ff] GET /api/parents from 127.0.0.1 by Anonymous
+2026-08-07 15:35:19.630 +05:30 [INF] [5587e503-c10e-4b7a-ac82-8af556a3d3ff] GET /api/parents responded 200 in 25ms
+2026-08-07 15:35:24.686 +05:30 [INF] [89fab618-56c3-40d6-97db-dd24b3536897] GET /api/exams from 127.0.0.1 by Anonymous
+2026-08-07 15:35:25.024 +05:30 [INF] [89fab618-56c3-40d6-97db-dd24b3536897] GET /api/exams responded 200 in 338ms
+2026-08-07 15:35:25.030 +05:30 [INF] [395022c5-5f7e-4d64-85b9-f199ea89dcfe] GET /api/exams from 127.0.0.1 by Anonymous
+2026-08-07 15:35:25.051 +05:30 [INF] [395022c5-5f7e-4d64-85b9-f199ea89dcfe] GET /api/exams responded 200 in 20ms
+2026-08-07 15:35:31.664 +05:30 [INF] [cd7742c0-5e0f-42da-b04f-e621bdcba5eb] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:35:32.000 +05:30 [INF] [cd7742c0-5e0f-42da-b04f-e621bdcba5eb] GET /api/homework responded 200 in 335ms
+2026-08-07 15:35:32.009 +05:30 [INF] [ece3ddf9-d3f3-4245-8e12-45d586dfe95e] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:35:32.034 +05:30 [INF] [ece3ddf9-d3f3-4245-8e12-45d586dfe95e] GET /api/homework responded 200 in 23ms
+2026-08-07 15:35:42.803 +05:30 [INF] [07aa32b1-48cb-4f48-9160-85c9bec10f84] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:35:42.805 +05:30 [INF] [004416a7-f61b-4181-ad03-34d9bf42abc3] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:35:42.865 +05:30 [INF] [07aa32b1-48cb-4f48-9160-85c9bec10f84] GET /api/dashboard/stats responded 200 in 60ms
+2026-08-07 15:35:42.887 +05:30 [INF] [d43455fd-8b94-4bf8-a213-f6a8b76e78d6] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:35:42.964 +05:30 [INF] [d43455fd-8b94-4bf8-a213-f6a8b76e78d6] GET /api/dashboard/stats responded 200 in 75ms
+2026-08-07 15:35:43.541 +05:30 [INF] [004416a7-f61b-4181-ad03-34d9bf42abc3] GET /api/dashboard/attendance-chart responded 200 in 735ms
+2026-08-07 15:35:43.548 +05:30 [INF] [984b9117-9fa6-447c-bf20-dc19c33a9973] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:35:44.186 +05:30 [INF] [984b9117-9fa6-447c-bf20-dc19c33a9973] GET /api/dashboard/attendance-chart responded 200 in 637ms
+2026-08-07 15:35:45.408 +05:30 [INF] [5fc62a43-d898-4410-9a5a-7ace22b95261] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:35:45.525 +05:30 [INF] [5fc62a43-d898-4410-9a5a-7ace22b95261] GET /api/homework responded 200 in 116ms
+2026-08-07 15:35:45.531 +05:30 [INF] [ab3c3bcf-41cc-45b5-9ef0-e5015cb110d7] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:35:45.561 +05:30 [INF] [ab3c3bcf-41cc-45b5-9ef0-e5015cb110d7] GET /api/homework responded 200 in 29ms
+2026-08-07 15:35:47.051 +05:30 [INF] [236ab123-31d0-4844-a53d-81bb07150e59] GET /api/exams from 127.0.0.1 by Anonymous
+2026-08-07 15:35:47.113 +05:30 [INF] [236ab123-31d0-4844-a53d-81bb07150e59] GET /api/exams responded 200 in 61ms
+2026-08-07 15:35:47.118 +05:30 [INF] [7a81bff1-f715-4bf3-bae0-f4810749309c] GET /api/exams from 127.0.0.1 by Anonymous
+2026-08-07 15:35:47.146 +05:30 [INF] [7a81bff1-f715-4bf3-bae0-f4810749309c] GET /api/exams responded 200 in 27ms
+2026-08-07 15:35:59.882 +05:30 [INF] [e4a3f226-98fc-4dc2-8abe-008e8d2ecf82] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:35:59.919 +05:30 [INF] [e4a3f226-98fc-4dc2-8abe-008e8d2ecf82] GET /api/homework responded 200 in 34ms
+2026-08-07 15:35:59.936 +05:30 [INF] [2eb88c67-bd20-4754-a703-d26ba2d3dd02] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:35:59.987 +05:30 [INF] [2eb88c67-bd20-4754-a703-d26ba2d3dd02] GET /api/homework responded 200 in 50ms
+2026-08-07 15:36:02.798 +05:30 [INF] [90eb55a8-1127-4c60-b329-5483d87c46b4] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:02.799 +05:30 [INF] [b5ff5e77-7d45-43b2-a5ae-5fe8615da7b5] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:02.864 +05:30 [INF] [90eb55a8-1127-4c60-b329-5483d87c46b4] GET /api/dashboard/stats responded 200 in 64ms
+2026-08-07 15:36:02.874 +05:30 [INF] [55deee75-dae7-4300-83b9-91af3233499a] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:02.940 +05:30 [INF] [55deee75-dae7-4300-83b9-91af3233499a] GET /api/dashboard/stats responded 200 in 63ms
+2026-08-07 15:36:03.458 +05:30 [INF] [b5ff5e77-7d45-43b2-a5ae-5fe8615da7b5] GET /api/dashboard/attendance-chart responded 200 in 658ms
+2026-08-07 15:36:03.463 +05:30 [INF] [11d31113-c30e-4ae5-acfe-ad960ba166e2] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:04.122 +05:30 [INF] [11d31113-c30e-4ae5-acfe-ad960ba166e2] GET /api/dashboard/attendance-chart responded 200 in 658ms
+2026-08-07 15:36:04.811 +05:30 [INF] [aab18b31-fbb1-4797-b6e9-a9209f183b88] GET /api/transport/routes from 127.0.0.1 by Anonymous
+2026-08-07 15:36:04.824 +05:30 [INF] [e2c740ac-8386-4d1e-9a17-96db835432f4] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:36:04.878 +05:30 [INF] [e2c740ac-8386-4d1e-9a17-96db835432f4] GET /api/students responded 200 in 53ms
+2026-08-07 15:36:04.909 +05:30 [INF] [39cb8751-b9c7-4ef1-bbe3-173aef2e13fd] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:36:04.973 +05:30 [INF] [39cb8751-b9c7-4ef1-bbe3-173aef2e13fd] GET /api/students responded 200 in 63ms
+2026-08-07 15:36:05.087 +05:30 [INF] [aab18b31-fbb1-4797-b6e9-a9209f183b88] GET /api/transport/routes responded 200 in 274ms
+2026-08-07 15:36:05.108 +05:30 [INF] [bb4dcc19-9bd6-4f08-802d-1b91f1c26bb9] GET /api/transport/routes from 127.0.0.1 by Anonymous
+2026-08-07 15:36:05.133 +05:30 [INF] [bb4dcc19-9bd6-4f08-802d-1b91f1c26bb9] GET /api/transport/routes responded 200 in 23ms
+2026-08-07 15:36:08.292 +05:30 [INF] [b04d32ae-96b0-4178-88d0-660bcef6835b] GET /api/library from 127.0.0.1 by Anonymous
+2026-08-07 15:36:08.562 +05:30 [INF] [b04d32ae-96b0-4178-88d0-660bcef6835b] GET /api/library responded 200 in 269ms
+2026-08-07 15:36:08.575 +05:30 [INF] [df7b258a-9840-4375-b6e2-79720412b477] GET /api/library from 127.0.0.1 by Anonymous
+2026-08-07 15:36:08.604 +05:30 [INF] [df7b258a-9840-4375-b6e2-79720412b477] GET /api/library responded 200 in 27ms
+2026-08-07 15:36:12.482 +05:30 [INF] [f8b77483-89bd-4767-91a4-f3de225c33da] GET /api/notifications from 127.0.0.1 by Anonymous
+2026-08-07 15:36:12.613 +05:30 [INF] [f8b77483-89bd-4767-91a4-f3de225c33da] GET /api/notifications responded 200 in 130ms
+2026-08-07 15:36:12.618 +05:30 [INF] [f16b9bff-d1a2-403c-9e36-f890e6717dcd] GET /api/notifications from 127.0.0.1 by Anonymous
+2026-08-07 15:36:12.639 +05:30 [INF] [f16b9bff-d1a2-403c-9e36-f890e6717dcd] GET /api/notifications responded 200 in 18ms
+2026-08-07 15:36:14.284 +05:30 [INF] [0aa8ee24-9b63-41b6-8413-02034192881a] GET /api/notices/published from 127.0.0.1 by Anonymous
+2026-08-07 15:36:14.354 +05:30 [INF] [0aa8ee24-9b63-41b6-8413-02034192881a] GET /api/notices/published responded 200 in 69ms
+2026-08-07 15:36:14.364 +05:30 [INF] [dae684e9-6b99-49b6-8e7f-5ff8cdc44ac6] GET /api/notices/published from 127.0.0.1 by Anonymous
+2026-08-07 15:36:14.388 +05:30 [INF] [dae684e9-6b99-49b6-8e7f-5ff8cdc44ac6] GET /api/notices/published responded 200 in 23ms
+2026-08-07 15:36:17.910 +05:30 [INF] [e18d04ac-917b-44c1-bc1c-ed003b5975db] GET /api/notifications from 127.0.0.1 by Anonymous
+2026-08-07 15:36:17.944 +05:30 [INF] [e18d04ac-917b-44c1-bc1c-ed003b5975db] GET /api/notifications responded 200 in 34ms
+2026-08-07 15:36:17.951 +05:30 [INF] [d62abe79-38a6-48a8-abe9-221ff662cb25] GET /api/notifications from 127.0.0.1 by Anonymous
+2026-08-07 15:36:18.018 +05:30 [INF] [d62abe79-38a6-48a8-abe9-221ff662cb25] GET /api/notifications responded 200 in 64ms
+2026-08-07 15:36:21.016 +05:30 [INF] [2f07d54d-94a1-4b50-9253-5fd0b0fcae87] GET /api/notices/published from 127.0.0.1 by Anonymous
+2026-08-07 15:36:21.042 +05:30 [INF] [2f07d54d-94a1-4b50-9253-5fd0b0fcae87] GET /api/notices/published responded 200 in 25ms
+2026-08-07 15:36:21.064 +05:30 [INF] [1c5c44a3-d615-4f8f-b839-7950f30df8b4] GET /api/notices/published from 127.0.0.1 by Anonymous
+2026-08-07 15:36:21.084 +05:30 [INF] [1c5c44a3-d615-4f8f-b839-7950f30df8b4] GET /api/notices/published responded 200 in 19ms
+2026-08-07 15:36:27.585 +05:30 [INF] [edc95a8c-9c72-49af-b35c-f958ba6bf0a2] GET /api/parents from 127.0.0.1 by Anonymous
+2026-08-07 15:36:27.626 +05:30 [INF] [edc95a8c-9c72-49af-b35c-f958ba6bf0a2] GET /api/parents responded 200 in 40ms
+2026-08-07 15:36:27.631 +05:30 [INF] [d1eb79e4-454a-4f93-9664-562042cbe063] GET /api/parents from 127.0.0.1 by Anonymous
+2026-08-07 15:36:27.661 +05:30 [INF] [d1eb79e4-454a-4f93-9664-562042cbe063] GET /api/parents responded 200 in 29ms
+2026-08-07 15:36:29.393 +05:30 [INF] [7f4aecb5-10e3-4c96-bd10-ed65b252d6f9] GET /api/teachers from 127.0.0.1 by Anonymous
+2026-08-07 15:36:29.426 +05:30 [INF] [7f4aecb5-10e3-4c96-bd10-ed65b252d6f9] GET /api/teachers responded 200 in 31ms
+2026-08-07 15:36:29.432 +05:30 [INF] [fdcbebaf-2517-4a15-b8ff-cebda31d4a05] GET /api/teachers from 127.0.0.1 by Anonymous
+2026-08-07 15:36:29.456 +05:30 [INF] [fdcbebaf-2517-4a15-b8ff-cebda31d4a05] GET /api/teachers responded 200 in 23ms
+2026-08-07 15:36:30.224 +05:30 [INF] [21adc5ed-ea13-49f4-9a54-911f3f0879f2] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:36:30.265 +05:30 [INF] [21adc5ed-ea13-49f4-9a54-911f3f0879f2] GET /api/students responded 200 in 40ms
+2026-08-07 15:36:30.276 +05:30 [INF] [a93ee9ad-521c-4be2-bd4d-56e4afeace91] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:36:30.311 +05:30 [INF] [a93ee9ad-521c-4be2-bd4d-56e4afeace91] GET /api/students responded 200 in 33ms
+2026-08-07 15:36:31.375 +05:30 [INF] [803fd039-86f6-4f0c-a1b3-d19547776ba7] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:31.375 +05:30 [INF] [ba54237e-2660-4137-8eb9-5f0598ff1ada] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:31.453 +05:30 [INF] [803fd039-86f6-4f0c-a1b3-d19547776ba7] GET /api/dashboard/stats responded 200 in 77ms
+2026-08-07 15:36:31.464 +05:30 [INF] [0242e389-f61a-4e41-aa82-49f4ae22b121] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:31.535 +05:30 [INF] [0242e389-f61a-4e41-aa82-49f4ae22b121] GET /api/dashboard/stats responded 200 in 70ms
+2026-08-07 15:36:32.303 +05:30 [INF] [ba54237e-2660-4137-8eb9-5f0598ff1ada] GET /api/dashboard/attendance-chart responded 200 in 928ms
+2026-08-07 15:36:32.313 +05:30 [INF] [9ebb865f-a69f-423f-bd30-de102a716f46] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:32.945 +05:30 [INF] [9ebb865f-a69f-423f-bd30-de102a716f46] GET /api/dashboard/attendance-chart responded 200 in 631ms
+2026-08-07 15:36:36.626 +05:30 [INF] [cdfae6f0-1f31-4118-b53a-34e978cb2f1b] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:36.629 +05:30 [INF] [87f5e43e-1e40-42e2-a400-4b6db16c4da9] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:36.695 +05:30 [INF] [cdfae6f0-1f31-4118-b53a-34e978cb2f1b] GET /api/dashboard/stats responded 200 in 67ms
+2026-08-07 15:36:36.706 +05:30 [INF] [d7aeebd3-1ac9-4d37-8a87-b4506a05c10c] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:36.750 +05:30 [INF] [d7aeebd3-1ac9-4d37-8a87-b4506a05c10c] GET /api/dashboard/stats responded 200 in 42ms
+2026-08-07 15:36:37.268 +05:30 [INF] [87f5e43e-1e40-42e2-a400-4b6db16c4da9] GET /api/dashboard/attendance-chart responded 200 in 638ms
+2026-08-07 15:36:37.273 +05:30 [INF] [759a3676-eb53-43a3-a316-93ef77cc8e97] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:37.864 +05:30 [INF] [759a3676-eb53-43a3-a316-93ef77cc8e97] GET /api/dashboard/attendance-chart responded 200 in 591ms
+2026-08-07 15:36:40.215 +05:30 [INF] [56fabb80-2091-46d9-b7a9-498dfdda67ef] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:40.218 +05:30 [INF] [5fa421f1-1039-419b-9a95-d5b96eb0b9d1] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:40.298 +05:30 [INF] [56fabb80-2091-46d9-b7a9-498dfdda67ef] GET /api/dashboard/stats responded 200 in 82ms
+2026-08-07 15:36:40.310 +05:30 [INF] [fcdb2c96-d08f-4afa-b0fc-8d34030bb476] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:40.392 +05:30 [INF] [fcdb2c96-d08f-4afa-b0fc-8d34030bb476] GET /api/dashboard/stats responded 200 in 79ms
+2026-08-07 15:36:40.967 +05:30 [INF] [5fa421f1-1039-419b-9a95-d5b96eb0b9d1] GET /api/dashboard/attendance-chart responded 200 in 746ms
+2026-08-07 15:36:40.973 +05:30 [INF] [1552cd1f-39fc-4fb6-bcee-3e32d6116d2d] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:41.574 +05:30 [INF] [1552cd1f-39fc-4fb6-bcee-3e32d6116d2d] GET /api/dashboard/attendance-chart responded 200 in 600ms
+2026-08-07 15:36:45.261 +05:30 [INF] [64c1f761-ec52-4069-9b40-654fdb4b525e] POST /api/auth/logout from 127.0.0.1 by Anonymous
+2026-08-07 15:36:45.320 +05:30 [INF] [64c1f761-ec52-4069-9b40-654fdb4b525e] POST /api/auth/logout responded 415 in 58ms
+2026-08-07 15:36:58.248 +05:30 [INF] [cb43c2ce-c912-4070-8358-8e786172b21a] POST /api/auth/login from 127.0.0.1 by Anonymous
+2026-08-07 15:36:58.566 +05:30 [INF] [cb43c2ce-c912-4070-8358-8e786172b21a] POST /api/auth/login responded 200 in 318ms
+2026-08-07 15:36:58.794 +05:30 [INF] [fbb28b8a-2115-4657-988d-5ae965c4fbbb] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:58.794 +05:30 [INF] [1002f885-c40a-4d9c-8c92-31d57650ec21] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:36:58.906 +05:30 [INF] [fbb28b8a-2115-4657-988d-5ae965c4fbbb] GET /api/dashboard/stats responded 200 in 111ms
+2026-08-07 15:36:58.936 +05:30 [INF] [cf6154a9-2118-4898-84e3-59de634a5e50] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:36:58.987 +05:30 [INF] [cf6154a9-2118-4898-84e3-59de634a5e50] GET /api/dashboard/stats responded 200 in 50ms
+2026-08-07 15:36:59.512 +05:30 [INF] [1002f885-c40a-4d9c-8c92-31d57650ec21] GET /api/dashboard/attendance-chart responded 200 in 717ms
+2026-08-07 15:36:59.519 +05:30 [INF] [0a3fed76-c4ee-4cb2-856b-fa955591268a] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:37:00.065 +05:30 [INF] [0a3fed76-c4ee-4cb2-856b-fa955591268a] GET /api/dashboard/attendance-chart responded 200 in 545ms
+2026-08-07 15:37:06.258 +05:30 [INF] [a772f861-8df9-4a4c-bb01-6435b4892c31] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:37:26.262 +05:30 [INF] [4d08323c-60fa-4798-9aae-7b877db14c02] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:37:38.304 +05:30 [ERR] Failed executing DbCommand (32,004ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `t`.`Id`, `t`.`AdmissionDate`, `t`.`AdmissionNumber`, `t`.`Allergies`, `t`.`BankAccountNumber`, `t`.`BankName`, `t`.`CreatedAt`, `t`.`CreatedBy`, `t`.`DeletedAt`, `t`.`DeletedBy`, `t`.`EmergencyContactName`, `t`.`EmergencyContactPhone`, `t`.`HostelRequired`, `t`.`IsDeleted`, `t`.`IsHostelResident`, `t`.`MedicalCondition`, `t`.`Notes`, `t`.`ParentEmail`, `t`.`ParentId`, `t`.`ParentName`, `t`.`ParentPhone`, `t`.`PreviousSchool`, `t`.`RollNumber`, `t`.`SchoolId`, `t`.`SectionId`, `t`.`Status`, `t`.`TransferCertificateNumber`, `t`.`TransportRequired`, `t`.`TransportRoute`, `t`.`UpdatedAt`, `t`.`UpdatedBy`, `t`.`UserId`, `t0`.`Id`, `t0`.`AccessFailedCount`, `t0`.`Address`, `t0`.`BloodGroup`, `t0`.`City`, `t0`.`ConcurrencyStamp`, `t0`.`Country`, `t0`.`CreatedAt`, `t0`.`CreatedBy`, `t0`.`DateOfBirth`, `t0`.`DeletedAt`, `t0`.`DeletedBy`, `t0`.`Email`, `t0`.`EmailConfirmed`, `t0`.`FailedLoginAttempts`, `t0`.`FirstName`, `t0`.`Gender`, `t0`.`IsActive`, `t0`.`IsDeleted`, `t0`.`LastName`, `t0`.`LockoutEnabled`, `t0`.`LockoutEnd`, `t0`.`MiddleName`, `t0`.`Nationality`, `t0`.`NormalizedEmail`, `t0`.`NormalizedUserName`, `t0`.`PasswordHash`, `t0`.`PasswordResetToken`, `t0`.`PasswordResetTokenExpiry`, `t0`.`PhoneNumber`, `t0`.`PhoneNumber2`, `t0`.`PhoneNumberConfirmed`, `t0`.`PostalCode`, `t0`.`ProfilePictureUrl`, `t0`.`RefreshToken`, `t0`.`RefreshTokenExpiry`, `t0`.`Religion`, `t0`.`SecurityStamp`, `t0`.`State`, `t0`.`TwoFactorEnabled`, `t0`.`UpdatedAt`, `t0`.`UpdatedBy`, `t0`.`UserName`, `t1`.`Id`, `t1`.`AlternatePhone`, `t1`.`AnnualIncome`, `t1`.`CreatedAt`, `t1`.`CreatedBy`, `t1`.`DeletedAt`, `t1`.`DeletedBy`, `t1`.`IsDeleted`, `t1`.`IsEmergencyContact`, `t1`.`Occupation`, `t1`.`ParentCode`, `t1`.`Relationship`, `t1`.`UpdatedAt`, `t1`.`UpdatedBy`, `t1`.`UserId`, `t2`.`Id`, `t2`.`AccessFailedCount`, `t2`.`Address`, `t2`.`BloodGroup`, `t2`.`City`, `t2`.`ConcurrencyStamp`, `t2`.`Country`, `t2`.`CreatedAt`, `t2`.`CreatedBy`, `t2`.`DateOfBirth`, `t2`.`DeletedAt`, `t2`.`DeletedBy`, `t2`.`Email`, `t2`.`EmailConfirmed`, `t2`.`FailedLoginAttempts`, `t2`.`FirstName`, `t2`.`Gender`, `t2`.`IsActive`, `t2`.`IsDeleted`, `t2`.`LastName`, `t2`.`LockoutEnabled`, `t2`.`LockoutEnd`, `t2`.`MiddleName`, `t2`.`Nationality`, `t2`.`NormalizedEmail`, `t2`.`NormalizedUserName`, `t2`.`PasswordHash`, `t2`.`PasswordResetToken`, `t2`.`PasswordResetTokenExpiry`, `t2`.`PhoneNumber`, `t2`.`PhoneNumber2`, `t2`.`PhoneNumberConfirmed`, `t2`.`PostalCode`, `t2`.`ProfilePictureUrl`, `t2`.`RefreshToken`, `t2`.`RefreshTokenExpiry`, `t2`.`Religion`, `t2`.`SecurityStamp`, `t2`.`State`, `t2`.`TwoFactorEnabled`, `t2`.`UpdatedAt`, `t2`.`UpdatedBy`, `t2`.`UserName`, `t3`.`Id`, `t3`.`Capacity`, `t3`.`ClassRoomId`, `t3`.`ClassTeacherId`, `t3`.`Code`, `t3`.`CreatedAt`, `t3`.`CreatedBy`, `t3`.`DeletedAt`, `t3`.`DeletedBy`, `t3`.`IsDeleted`, `t3`.`Name`, `t3`.`UpdatedAt`, `t3`.`UpdatedBy`, `t4`.`Id`, `t4`.`AcademicYearId`, `t4`.`Building`, `t4`.`Capacity`, `t4`.`Code`, `t4`.`CreatedAt`, `t4`.`CreatedBy`, `t4`.`DeletedAt`, `t4`.`DeletedBy`, `t4`.`DepartmentId`, `t4`.`IsDeleted`, `t4`.`Name`, `t4`.`RoomNumber`, `t4`.`SchoolId`, `t4`.`UpdatedAt`, `t4`.`UpdatedBy`
+FROM (
+    SELECT `s`.`Id`, `s`.`AdmissionDate`, `s`.`AdmissionNumber`, `s`.`Allergies`, `s`.`BankAccountNumber`, `s`.`BankName`, `s`.`CreatedAt`, `s`.`CreatedBy`, `s`.`DeletedAt`, `s`.`DeletedBy`, `s`.`EmergencyContactName`, `s`.`EmergencyContactPhone`, `s`.`HostelRequired`, `s`.`IsDeleted`, `s`.`IsHostelResident`, `s`.`MedicalCondition`, `s`.`Notes`, `s`.`ParentEmail`, `s`.`ParentId`, `s`.`ParentName`, `s`.`ParentPhone`, `s`.`PreviousSchool`, `s`.`RollNumber`, `s`.`SchoolId`, `s`.`SectionId`, `s`.`Status`, `s`.`TransferCertificateNumber`, `s`.`TransportRequired`, `s`.`TransportRoute`, `s`.`UpdatedAt`, `s`.`UpdatedBy`, `s`.`UserId`, CAST(`s`.`CreatedAt` AS char) AS `c`
+    FROM `Students` AS `s`
+    WHERE NOT (`s`.`IsDeleted`)
+    ORDER BY CAST(`s`.`CreatedAt` AS char)
+    LIMIT @__p_1 OFFSET @__p_0
+) AS `t`
+INNER JOIN (
+    SELECT `a`.`Id`, `a`.`AccessFailedCount`, `a`.`Address`, `a`.`BloodGroup`, `a`.`City`, `a`.`ConcurrencyStamp`, `a`.`Country`, `a`.`CreatedAt`, `a`.`CreatedBy`, `a`.`DateOfBirth`, `a`.`DeletedAt`, `a`.`DeletedBy`, `a`.`Email`, `a`.`EmailConfirmed`, `a`.`FailedLoginAttempts`, `a`.`FirstName`, `a`.`Gender`, `a`.`IsActive`, `a`.`IsDeleted`, `a`.`LastName`, `a`.`LockoutEnabled`, `a`.`LockoutEnd`, `a`.`MiddleName`, `a`.`Nationality`, `a`.`NormalizedEmail`, `a`.`NormalizedUserName`, `a`.`PasswordHash`, `a`.`PasswordResetToken`, `a`.`PasswordResetTokenExpiry`, `a`.`PhoneNumber`, `a`.`PhoneNumber2`, `a`.`PhoneNumberConfirmed`, `a`.`PostalCode`, `a`.`ProfilePictureUrl`, `a`.`RefreshToken`, `a`.`RefreshTokenExpiry`, `a`.`Religion`, `a`.`SecurityStamp`, `a`.`State`, `a`.`TwoFactorEnabled`, `a`.`UpdatedAt`, `a`.`UpdatedBy`, `a`.`UserName`
+    FROM `AspNetUsers` AS `a`
+    WHERE NOT (`a`.`IsDeleted`)
+) AS `t0` ON `t`.`UserId` = `t0`.`Id`
+LEFT JOIN (
+    SELECT `p`.`Id`, `p`.`AlternatePhone`, `p`.`AnnualIncome`, `p`.`CreatedAt`, `p`.`CreatedBy`, `p`.`DeletedAt`, `p`.`DeletedBy`, `p`.`IsDeleted`, `p`.`IsEmergencyContact`, `p`.`Occupation`, `p`.`ParentCode`, `p`.`Relationship`, `p`.`UpdatedAt`, `p`.`UpdatedBy`, `p`.`UserId`
+    FROM `Parents` AS `p`
+    WHERE NOT (`p`.`IsDeleted`)
+) AS `t1` ON `t`.`ParentId` = `t1`.`Id`
+LEFT JOIN (
+    SELECT `a0`.`Id`, `a0`.`AccessFailedCount`, `a0`.`Address`, `a0`.`BloodGroup`, `a0`.`City`, `a0`.`ConcurrencyStamp`, `a0`.`Country`, `a0`.`CreatedAt`, `a0`.`CreatedBy`, `a0`.`DateOfBirth`, `a0`.`DeletedAt`, `a0`.`DeletedBy`, `a0`.`Email`, `a0`.`EmailConfirmed`, `a0`.`FailedLoginAttempts`, `a0`.`FirstName`, `a0`.`Gender`, `a0`.`IsActive`, `a0`.`IsDeleted`, `a0`.`LastName`, `a0`.`LockoutEnabled`, `a0`.`LockoutEnd`, `a0`.`MiddleName`, `a0`.`Nationality`, `a0`.`NormalizedEmail`, `a0`.`NormalizedUserName`, `a0`.`PasswordHash`, `a0`.`PasswordResetToken`, `a0`.`PasswordResetTokenExpiry`, `a0`.`PhoneNumber`, `a0`.`PhoneNumber2`, `a0`.`PhoneNumberConfirmed`, `a0`.`PostalCode`, `a0`.`ProfilePictureUrl`, `a0`.`RefreshToken`, `a0`.`RefreshTokenExpiry`, `a0`.`Religion`, `a0`.`SecurityStamp`, `a0`.`State`, `a0`.`TwoFactorEnabled`, `a0`.`UpdatedAt`, `a0`.`UpdatedBy`, `a0`.`UserName`
+    FROM `AspNetUsers` AS `a0`
+    WHERE NOT (`a0`.`IsDeleted`)
+) AS `t2` ON `t1`.`UserId` = `t2`.`Id`
+INNER JOIN (
+    SELECT `s0`.`Id`, `s0`.`Capacity`, `s0`.`ClassRoomId`, `s0`.`ClassTeacherId`, `s0`.`Code`, `s0`.`CreatedAt`, `s0`.`CreatedBy`, `s0`.`DeletedAt`, `s0`.`DeletedBy`, `s0`.`IsDeleted`, `s0`.`Name`, `s0`.`UpdatedAt`, `s0`.`UpdatedBy`
+    FROM `Sections` AS `s0`
+    WHERE NOT (`s0`.`IsDeleted`)
+) AS `t3` ON `t`.`SectionId` = `t3`.`Id`
+INNER JOIN (
+    SELECT `c`.`Id`, `c`.`AcademicYearId`, `c`.`Building`, `c`.`Capacity`, `c`.`Code`, `c`.`CreatedAt`, `c`.`CreatedBy`, `c`.`DeletedAt`, `c`.`DeletedBy`, `c`.`DepartmentId`, `c`.`IsDeleted`, `c`.`Name`, `c`.`RoomNumber`, `c`.`SchoolId`, `c`.`UpdatedAt`, `c`.`UpdatedBy`
+    FROM `ClassRooms` AS `c`
+    WHERE NOT (`c`.`IsDeleted`)
+) AS `t4` ON `t3`.`ClassRoomId` = `t4`.`Id`
+ORDER BY `t`.`c`
+2026-08-07 15:38:07.786 +05:30 [ERR] An exception occurred while iterating over the results of a query for context type 'SchoolCRM.Infrastructure.Data.ApplicationDbContext'.
+MySqlConnector.MySqlException (0x80004005): The Command Timeout expired before the operation completed.
+ ---> System.IO.IOException: Unable to read data from the transport connection: Operation canceled.
+ ---> System.Net.Sockets.SocketException (125): Operation canceled
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at MySqlConnector.Protocol.Serialization.StreamByteHandler.<ReadBytesAsync>g__DoReadBytesAsync|6_2(Memory`1 buffer) in /_/src/MySqlConnector/Protocol/Serialization/StreamByteHandler.cs:line 67
+   at MySqlConnector.Protocol.Serialization.StreamByteHandler.<ReadBytesAsync>g__DoReadBytesAsync|6_2(Memory`1 buffer) in /_/src/MySqlConnector/Protocol/Serialization/StreamByteHandler.cs:line 75
+   at MySqlConnector.Protocol.Serialization.BufferedByteReader.ReadBytesAsync(IByteHandler byteHandler, ArraySegment`1 buffer, Int32 totalBytesToRead, IOBehavior ioBehavior) in /_/src/MySqlConnector/Protocol/Serialization/BufferedByteReader.cs:line 34
+   at MySqlConnector.Protocol.Serialization.ProtocolUtility.ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func`1 getNextSequenceNumber, ArraySegmentHolder`1 previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) in /_/src/MySqlConnector/Protocol/Serialization/ProtocolUtility.cs:line 421
+   at MySqlConnector.Core.ServerSession.ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 882
+   at MySqlConnector.Core.ResultSet.ReadResultSetHeaderAsync(IOBehavior ioBehavior) in /_/src/MySqlConnector/Core/ResultSet.cs:line 37
+   at MySqlConnector.MySqlDataReader.ActivateResultSet(CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 130
+   at MySqlConnector.MySqlDataReader.InitAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary`2 cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 483
+   at MySqlConnector.Core.CommandExecutor.ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/CommandExecutor.cs:line 56
+   at MySqlConnector.MySqlCommand.ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlCommand.cs:line 357
+   at MySqlConnector.MySqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlCommand.cs:line 350
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.<>c__DisplayClass30_0`2.<<ExecuteAsync>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementationAsync[TState,TResult](Func`4 operation, Func`4 verifySucceeded, TState state, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementationAsync[TState,TResult](Func`4 operation, Func`4 verifySucceeded, TState state, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+MySqlConnector.MySqlException (0x80004005): The Command Timeout expired before the operation completed.
+ ---> System.IO.IOException: Unable to read data from the transport connection: Operation canceled.
+ ---> System.Net.Sockets.SocketException (125): Operation canceled
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at MySqlConnector.Protocol.Serialization.StreamByteHandler.<ReadBytesAsync>g__DoReadBytesAsync|6_2(Memory`1 buffer) in /_/src/MySqlConnector/Protocol/Serialization/StreamByteHandler.cs:line 67
+   at MySqlConnector.Protocol.Serialization.StreamByteHandler.<ReadBytesAsync>g__DoReadBytesAsync|6_2(Memory`1 buffer) in /_/src/MySqlConnector/Protocol/Serialization/StreamByteHandler.cs:line 75
+   at MySqlConnector.Protocol.Serialization.BufferedByteReader.ReadBytesAsync(IByteHandler byteHandler, ArraySegment`1 buffer, Int32 totalBytesToRead, IOBehavior ioBehavior) in /_/src/MySqlConnector/Protocol/Serialization/BufferedByteReader.cs:line 34
+   at MySqlConnector.Protocol.Serialization.ProtocolUtility.ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func`1 getNextSequenceNumber, ArraySegmentHolder`1 previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) in /_/src/MySqlConnector/Protocol/Serialization/ProtocolUtility.cs:line 421
+   at MySqlConnector.Core.ServerSession.ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 882
+   at MySqlConnector.Core.ResultSet.ReadResultSetHeaderAsync(IOBehavior ioBehavior) in /_/src/MySqlConnector/Core/ResultSet.cs:line 37
+   at MySqlConnector.MySqlDataReader.ActivateResultSet(CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 130
+   at MySqlConnector.MySqlDataReader.InitAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary`2 cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 483
+   at MySqlConnector.Core.CommandExecutor.ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/CommandExecutor.cs:line 56
+   at MySqlConnector.MySqlCommand.ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlCommand.cs:line 357
+   at MySqlConnector.MySqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlCommand.cs:line 350
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.<>c__DisplayClass30_0`2.<<ExecuteAsync>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementationAsync[TState,TResult](Func`4 operation, Func`4 verifySucceeded, TState state, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementationAsync[TState,TResult](Func`4 operation, Func`4 verifySucceeded, TState state, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+2026-08-07 15:38:07.808 +05:30 [INF] [a772f861-8df9-4a4c-bb01-6435b4892c31] GET /api/students responded 200 in 61547ms
+2026-08-07 15:38:07.813 +05:30 [INF] [4d08323c-60fa-4798-9aae-7b877db14c02] GET /api/students responded 200 in 68ms
+2026-08-07 15:38:07.816 +05:30 [INF] [8a2e788e-01cf-490d-a7b8-0bc715c19f5b] GET /api/exams from 127.0.0.1 by Anonymous
+2026-08-07 15:38:07.844 +05:30 [INF] [8a2e788e-01cf-490d-a7b8-0bc715c19f5b] GET /api/exams responded 200 in 26ms
+2026-08-07 15:38:08.707 +05:30 [INF] [738872e6-c8d9-480d-b610-957dcb6221df] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:38:08.732 +05:30 [INF] [738872e6-c8d9-480d-b610-957dcb6221df] GET /api/students responded 200 in 24ms
+2026-08-07 15:38:08.750 +05:30 [INF] [617a0045-d29b-4443-9fac-37cafad1b3c7] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:38:08.781 +05:30 [INF] [617a0045-d29b-4443-9fac-37cafad1b3c7] GET /api/students responded 200 in 29ms
+2026-08-07 15:38:14.220 +05:30 [INF] [bfad35df-4ade-4472-a823-94e34e5200c5] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 from 127.0.0.1 by Anonymous
+2026-08-07 15:38:14.251 +05:30 [INF] [bfad35df-4ade-4472-a823-94e34e5200c5] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 responded 200 in 30ms
+2026-08-07 15:38:14.288 +05:30 [INF] [24bdb261-9bf1-4b4d-b36f-c847fb258e0f] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 from 127.0.0.1 by Anonymous
+2026-08-07 15:38:14.319 +05:30 [INF] [24bdb261-9bf1-4b4d-b36f-c847fb258e0f] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 responded 200 in 30ms
+2026-08-07 15:38:17.397 +05:30 [INF] [cfea24d0-9ad7-42b9-b7e9-4395910062a7] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:38:17.402 +05:30 [INF] [e7b64010-0ed6-44f6-ba54-47969c7bb33b] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:38:17.460 +05:30 [INF] [cfea24d0-9ad7-42b9-b7e9-4395910062a7] GET /api/dashboard/stats responded 200 in 63ms
+2026-08-07 15:38:17.472 +05:30 [INF] [522584eb-c5bc-4b88-9cbf-0e7caf223d28] GET /api/dashboard/stats from 127.0.0.1 by Anonymous
+2026-08-07 15:38:17.555 +05:30 [INF] [522584eb-c5bc-4b88-9cbf-0e7caf223d28] GET /api/dashboard/stats responded 200 in 80ms
+2026-08-07 15:38:18.413 +05:30 [INF] [e7b64010-0ed6-44f6-ba54-47969c7bb33b] GET /api/dashboard/attendance-chart responded 200 in 1010ms
+2026-08-07 15:38:18.422 +05:30 [INF] [a697950b-3e6b-44e0-abda-a4ecbc7f3024] GET /api/dashboard/attendance-chart from 127.0.0.1 by Anonymous
+2026-08-07 15:38:19.297 +05:30 [INF] [a697950b-3e6b-44e0-abda-a4ecbc7f3024] GET /api/dashboard/attendance-chart responded 200 in 875ms
+2026-08-07 15:38:20.872 +05:30 [INF] [acb6765b-27ec-49b2-9241-b148e2b42cb2] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:38:20.918 +05:30 [INF] [acb6765b-27ec-49b2-9241-b148e2b42cb2] GET /api/students responded 200 in 46ms
+2026-08-07 15:38:20.926 +05:30 [INF] [52ff9544-b7bb-4790-88bc-08c6aa10f3aa] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:38:20.960 +05:30 [INF] [52ff9544-b7bb-4790-88bc-08c6aa10f3aa] GET /api/students responded 200 in 33ms
+2026-08-07 15:38:23.798 +05:30 [INF] [1f632a8d-95fd-4c42-b273-7eba54de88fe] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 from 127.0.0.1 by Anonymous
+2026-08-07 15:38:23.848 +05:30 [INF] [1f632a8d-95fd-4c42-b273-7eba54de88fe] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 responded 200 in 50ms
+2026-08-07 15:38:23.859 +05:30 [INF] [826ea958-5e92-489d-bd2c-e94f15402211] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 from 127.0.0.1 by Anonymous
+2026-08-07 15:38:23.890 +05:30 [INF] [826ea958-5e92-489d-bd2c-e94f15402211] GET /api/students/08dee7c6-325f-4751-84f1-0925ef1b04a7 responded 200 in 30ms
+2026-08-07 15:38:25.301 +05:30 [INF] [8556a793-4a02-4dc0-8800-47cd7fe41212] GET /api/exams from 127.0.0.1 by Anonymous
+2026-08-07 15:38:25.303 +05:30 [INF] [f87dd438-e808-474f-a275-b9959ec8348f] GET /api/exams from 127.0.0.1 by Anonymous
+2026-08-07 15:38:25.341 +05:30 [INF] [8556a793-4a02-4dc0-8800-47cd7fe41212] GET /api/exams responded 200 in 39ms
+2026-08-07 15:38:25.342 +05:30 [INF] [f87dd438-e808-474f-a275-b9959ec8348f] GET /api/exams responded 200 in 37ms
+2026-08-07 15:38:31.668 +05:30 [INF] [43d43310-a66f-418d-ae68-c83c51ad1bca] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:38:31.695 +05:30 [INF] [43d43310-a66f-418d-ae68-c83c51ad1bca] GET /api/homework responded 200 in 26ms
+2026-08-07 15:38:31.703 +05:30 [INF] [2013bce4-1b61-45a5-aa9f-88fcd20d3ead] GET /api/homework from 127.0.0.1 by Anonymous
+2026-08-07 15:38:31.729 +05:30 [INF] [2013bce4-1b61-45a5-aa9f-88fcd20d3ead] GET /api/homework responded 200 in 25ms
+2026-08-07 15:38:34.265 +05:30 [INF] [4e12efd8-1a49-48fd-8903-3e063de5b844] GET /api/homework/08def44f-e1e2-4760-80c6-42bedd641d01 from 127.0.0.1 by Anonymous
+2026-08-07 15:38:34.314 +05:30 [WRN] The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+2026-08-07 15:38:34.314 +05:30 [WRN] The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+2026-08-07 15:38:34.441 +05:30 [INF] [4e12efd8-1a49-48fd-8903-3e063de5b844] GET /api/homework/08def44f-e1e2-4760-80c6-42bedd641d01 responded 200 in 175ms
+2026-08-07 15:38:34.465 +05:30 [INF] [c482e881-1eaf-4a2a-8e7d-bd33e07aec4a] GET /api/homework/08def44f-e1e2-4760-80c6-42bedd641d01 from 127.0.0.1 by Anonymous
+2026-08-07 15:38:34.491 +05:30 [INF] [c482e881-1eaf-4a2a-8e7d-bd33e07aec4a] GET /api/homework/08def44f-e1e2-4760-80c6-42bedd641d01 responded 200 in 24ms
+2026-08-07 15:38:39.600 +05:30 [INF] [22e9b93a-df53-4821-a726-f59f2461262e] GET /api/transport/routes from 127.0.0.1 by Anonymous
+2026-08-07 15:38:39.602 +05:30 [INF] [0a290c7f-0ddd-4d15-82c5-a96ff091f446] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:38:40.096 +05:30 [INF] [0a290c7f-0ddd-4d15-82c5-a96ff091f446] GET /api/students responded 200 in 493ms
+2026-08-07 15:38:40.103 +05:30 [INF] [a147d53e-ed82-4154-a4e1-a3518b3bc1e0] GET /api/students from 127.0.0.1 by Anonymous
+2026-08-07 15:38:40.141 +05:30 [INF] [a147d53e-ed82-4154-a4e1-a3518b3bc1e0] GET /api/students responded 200 in 36ms
+2026-08-07 15:38:40.163 +05:30 [INF] [22e9b93a-df53-4821-a726-f59f2461262e] GET /api/transport/routes responded 200 in 562ms
+2026-08-07 15:38:40.185 +05:30 [INF] [27680213-ff74-4f19-82b4-1c70077ea603] GET /api/transport/routes from 127.0.0.1 by Anonymous
+2026-08-07 15:38:40.206 +05:30 [INF] [27680213-ff74-4f19-82b4-1c70077ea603] GET /api/transport/routes responded 200 in 20ms
+2026-08-07 15:38:42.253 +05:30 [INF] [4280b1b1-33b7-48ec-8ece-4e5026116c16] GET /api/library from 127.0.0.1 by Anonymous
+2026-08-07 15:38:42.357 +05:30 [INF] [4280b1b1-33b7-48ec-8ece-4e5026116c16] GET /api/library responded 200 in 103ms
+2026-08-07 15:38:42.365 +05:30 [INF] [ad4819b0-0b63-4a8c-b778-cf1b77607365] GET /api/library from 127.0.0.1 by Anonymous
+2026-08-07 15:38:42.385 +05:30 [INF] [ad4819b0-0b63-4a8c-b778-cf1b77607365] GET /api/library responded 200 in 19ms
+2026-08-07 15:38:44.665 +05:30 [INF] [ddd9631f-0131-4aba-98b3-6a26d6c6cb24] GET /api/notifications from 127.0.0.1 by Anonymous
+2026-08-07 15:38:44.742 +05:30 [INF] [ddd9631f-0131-4aba-98b3-6a26d6c6cb24] GET /api/notifications responded 200 in 76ms
+2026-08-07 15:38:44.785 +05:30 [INF] [32a8bcad-0136-49eb-9a4e-0f3d30ab77ad] GET /api/notifications from 127.0.0.1 by Anonymous
+2026-08-07 15:38:44.810 +05:30 [INF] [32a8bcad-0136-49eb-9a4e-0f3d30ab77ad] GET /api/notifications responded 200 in 23ms
+2026-08-07 15:38:46.029 +05:30 [INF] [9e606ccd-f21d-4799-972b-23e62ca64bc6] GET /api/notices/published from 127.0.0.1 by Anonymous
+2026-08-07 15:38:46.053 +05:30 [INF] [9e606ccd-f21d-4799-972b-23e62ca64bc6] GET /api/notices/published responded 200 in 22ms
+2026-08-07 15:38:46.068 +05:30 [INF] [6bb3aca7-7487-43d7-847f-0177bf1b5ac2] GET /api/notices/published from 127.0.0.1 by Anonymous
+2026-08-07 15:38:46.092 +05:30 [INF] [6bb3aca7-7487-43d7-847f-0177bf1b5ac2] GET /api/notices/published responded 200 in 23ms
+2026-08-07 15:38:55.163 +05:30 [INF] [b1c04689-c177-4eda-9dae-90f196d67f7d] POST /api/auth/logout from 127.0.0.1 by Anonymous
+2026-08-07 15:38:55.181 +05:30 [INF] [b1c04689-c177-4eda-9dae-90f196d67f7d] POST /api/auth/logout responded 415 in 17ms

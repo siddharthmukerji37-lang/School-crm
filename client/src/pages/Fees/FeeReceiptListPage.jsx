@@ -78,11 +78,11 @@ export default function FeeReceiptListPage() {
       render: (value) => value || 'N/A',
     },
     {
-      id: 'feeStructureName',
+      id: 'feeType',
       header: 'Fee Type',
-      accessor: 'feeStructureName',
+      accessor: 'feeType',
       minWidth: 130,
-      render: (value) => value || 'N/A',
+      render: (value, row) => value || row.feeStructureName || 'N/A',
     },
     {
       id: 'amount',
@@ -239,6 +239,14 @@ export default function FeeReceiptListPage() {
                 </Typography>
                 <Typography variant="body1">
                   {selectedReceipt.feeStructureName || 'N/A'}
+                </Typography>
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Fee Type
+                </Typography>
+                <Typography variant="body1">
+                  {selectedReceipt.feeType || selectedReceipt.feeStructureName || 'N/A'}
                 </Typography>
               </Grid>
               <Grid size={{ xs: 6 }}>

@@ -39,9 +39,12 @@ public interface IInventoryService
         public string Description { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
         public string Unit { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public int ReorderLevel { get; set; }
         public decimal PurchasePrice { get; set; }
         public decimal SellingPrice { get; set; }
-        public int MinimumStock { get; set; }
+        public Guid? VendorId { get; set; }
+        public string VendorName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
     }
 
@@ -50,10 +53,13 @@ public interface IInventoryService
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
+        public Guid? CategoryId { get; set; }
         public string Unit { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public int MinimumStock { get; set; }
         public decimal PurchasePrice { get; set; }
         public decimal SellingPrice { get; set; }
-        public int MinimumStock { get; set; }
+        public Guid? VendorId { get; set; }
     }
 
     public sealed class StockDto

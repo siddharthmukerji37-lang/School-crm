@@ -16,6 +16,7 @@ public class FeeHead : BaseEntity
 public class FeeStructure : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
+    public string FeeType { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public Guid? FeeHeadId { get; set; }
     public Guid ClassRoomId { get; set; }

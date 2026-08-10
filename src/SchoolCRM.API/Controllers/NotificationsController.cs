@@ -94,13 +94,17 @@ public class NotificationsController : ControllerBase
     [HttpPost("announcements")]
     public async Task<ActionResult> CreateAnnouncementAsync([FromBody] AnnouncementRequestDto dto)
     {
+        var school = (await _unitOfWork.Schools.GetAllAsync()).FirstOrDefault();
+
         var announcement = new Announcement
         {
             Title = dto.Title,
             Content = dto.Description,
             TargetAudience = dto.Type,
+            Priority = dto.Priority,
             PublishDate = dto.PublishDate ?? DateTime.UtcNow,
             IsPublished = true,
+            SchoolId = school?.Id ?? Guid.Empty,
             CreatedByName = User.Identity?.Name,
             CreatedAt = DateTime.UtcNow
         };
