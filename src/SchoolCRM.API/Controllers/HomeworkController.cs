@@ -167,5 +167,32 @@ public class HomeworkController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("{id:guid}/approve")]
+    [ProducesResponseType(typeof(ApiResponse<HomeworkDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<HomeworkDto>>> ApproveHomeworkAsync(
+        [FromRoute] Guid id,
+        [FromBody] ApproveHomeworkDto dto)
+    {
+        var result = await _homeworkService.ApproveHomeworkAsync(id, dto.Approved, dto.Reason);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/submit-for-approval")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> SubmitForApprovalAsync(
+        [FromRoute] Guid id)
+    {
+        var result = await _homeworkService.RequestHomeworkApprovalAsync(id);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     #endregion
 }

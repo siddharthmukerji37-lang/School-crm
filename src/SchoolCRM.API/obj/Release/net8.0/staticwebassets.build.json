@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "Dodp7yo2iRIyysTuEuXNA7m/mDumtaMq/mgNq2zW7vo=",
+  "Source": "SchoolCRM.API",
+  "BasePath": "_content/SchoolCRM.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "SchoolCRM.API/wwwroot",
+      "Source": "SchoolCRM.API",
+      "ContentRoot": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/",
+      "BasePath": "_content/SchoolCRM.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}

@@ -126,7 +126,7 @@ public class Timetable : BaseEntity
     public Guid ClassRoomId { get; set; }
     public Guid SectionId { get; set; }
     public Guid SubjectId { get; set; }
-    public Guid TeacherId { get; set; }
+    public Guid? TeacherId { get; set; }
 
     public ClassRoom ClassRoom { get; set; } = null!;
     public Section Section { get; set; } = null!;

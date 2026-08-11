@@ -110,6 +110,7 @@ public class TimetableRepository : GenericRepository<Timetable>, ITimetableRepos
         return await _dbSet
             .Include(t => t.Subject)
             .Include(t => t.Teacher)
+                .ThenInclude(t => t.User)
             .Where(t => t.SectionId == sectionId && t.DayOfWeek == dayOfWeek)
             .OrderBy(t => t.PeriodNumber)
             .ToListAsync();

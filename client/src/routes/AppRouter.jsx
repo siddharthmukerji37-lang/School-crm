@@ -24,6 +24,9 @@ const AttendanceListPage = lazy(() => import('../pages/Attendance/AttendanceList
 const AttendanceMarkPage = lazy(() => import('../pages/Attendance/AttendanceMarkPage'));
 const ExamListPage = lazy(() => import('../pages/Exams/ExamListPage'));
 const ExamFormPage = lazy(() => import('../pages/Exams/ExamFormPage'));
+const ExamQuestionsPage = lazy(() => import('../pages/Exams/ExamQuestionsPage'));
+const ExamSubmissionsPage = lazy(() => import('../pages/Exams/ExamSubmissionsPage'));
+const StudentExamTakePage = lazy(() => import('../pages/Exams/StudentExamTakePage'));
 const HomeworkListPage = lazy(() => import('../pages/Homework/HomeworkListPage'));
 const HomeworkFormPage = lazy(() => import('../pages/Homework/HomeworkFormPage'));
 const HomeworkDetailPage = lazy(() => import('../pages/Homework/HomeworkDetailPage'));
@@ -48,6 +51,7 @@ const NoticeManagementPage = lazy(() => import('../pages/NoticeBoard/NoticeManag
 const TimetablePage = lazy(() => import('../pages/Timetable/TimetablePage'));
 
 const ADMIN_ROLES = ['SuperAdmin', 'Admin'];
+const STAFF_ROLES = ['SuperAdmin', 'Admin', 'Teacher', 'ClassTeacher'];
 
 export default function AppRouter() {
   return (
@@ -116,19 +120,28 @@ export default function AppRouter() {
 
         <Route path="exams" element={<ExamListPage />} />
         <Route path="exams/create" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><ExamFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><ExamFormPage /></ProtectedRoute>
         } />
         <Route path="exams/:id/edit" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><ExamFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><ExamFormPage /></ProtectedRoute>
+        } />
+        <Route path="exams/:id/questions" element={
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><ExamQuestionsPage /></ProtectedRoute>
+        } />
+        <Route path="exams/:id/submissions" element={
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><ExamSubmissionsPage /></ProtectedRoute>
+        } />
+        <Route path="exams/:id/take" element={
+          <ProtectedRoute allowedRoles={['Student']}><StudentExamTakePage /></ProtectedRoute>
         } />
 
         <Route path="homework" element={<HomeworkListPage />} />
         <Route path="homework/:id" element={<HomeworkDetailPage />} />
         <Route path="homework/create" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><HomeworkFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><HomeworkFormPage /></ProtectedRoute>
         } />
         <Route path="homework/:id/edit" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><HomeworkFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><HomeworkFormPage /></ProtectedRoute>
         } />
 
         <Route path="library" element={<BookListPage />} />

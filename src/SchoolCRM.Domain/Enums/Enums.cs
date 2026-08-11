@@ -235,3 +235,23 @@ public enum AuditAction
     Export = 6,
     Import = 7
 }
+
+public enum QuestionType
+{
+    MCQ = 1,
+    Descriptive = 2
+}
+
+public enum ApprovalStatus
+{
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3
+}
+
+public enum GradingStatus
+{
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3
+}

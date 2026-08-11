@@ -61,6 +61,45 @@ public class ExamConfiguration : IEntityTypeConfiguration<Exam>
         builder.HasOne(e => e.School).WithMany().HasForeignKey(e => e.SchoolId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(e => e.ClassRoom).WithMany().HasForeignKey(e => e.ClassRoomId).OnDelete(DeleteBehavior.SetNull);
         builder.HasOne(e => e.AcademicYear).WithMany().HasForeignKey(e => e.AcademicYearId).OnDelete(DeleteBehavior.SetNull);
+        builder.HasOne(e => e.Teacher).WithMany().HasForeignKey(e => e.TeacherId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+public class ExamQuestionConfiguration : IEntityTypeConfiguration<ExamQuestion>
+{
+    public void Configure(EntityTypeBuilder<ExamQuestion> builder)
+    {
+        builder.ToTable("ExamQuestions");
+        builder.HasKey(q => q.Id);
+
+        builder.HasOne(q => q.Exam).WithMany(e => e.Questions).HasForeignKey(q => q.ExamId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(q => q.Subject).WithMany().HasForeignKey(q => q.SubjectId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+public class ExamSubmissionConfiguration : IEntityTypeConfiguration<ExamSubmission>
+{
+    public void Configure(EntityTypeBuilder<ExamSubmission> builder)
+    {
+        builder.ToTable("ExamSubmissions");
+        builder.HasKey(s => s.Id);
+
+        builder.HasOne(s => s.Exam).WithMany(e => e.Submissions).HasForeignKey(s => s.ExamId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(s => s.Student).WithMany().HasForeignKey(s => s.StudentId).OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(s => new { s.ExamId, s.StudentId }).IsUnique();
+    }
+}
+
+public class ExamAnswerConfiguration : IEntityTypeConfiguration<ExamAnswer>
+{
+    public void Configure(EntityTypeBuilder<ExamAnswer> builder)
+    {
+        builder.ToTable("ExamAnswers");
+        builder.HasKey(a => a.Id);
+
+        builder.HasOne(a => a.ExamSubmission).WithMany(s => s.Answers).HasForeignKey(a => a.ExamSubmissionId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(a => a.ExamQuestion).WithMany(q => q.Answers).HasForeignKey(a => a.ExamQuestionId).OnDelete(DeleteBehavior.NoAction);
     }
 }
 

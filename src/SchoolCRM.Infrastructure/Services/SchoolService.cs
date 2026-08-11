@@ -665,7 +665,11 @@ public class SchoolService : ISchoolService
                 }
 
                 var section = await _unitOfWork.Sections.GetByIdAsync(group.Key.SectionId);
-                var classRoomId = section?.ClassRoomId ?? Guid.Empty;
+                if (section is null)
+                    return ApiResponse.FailResponse(ApplicationMessages.NotFound);
+
+                var classRoomId = section.ClassRoomId;
+                var surviving = new List<Timetable>();
 
                 foreach (var dto in group)
                 {
@@ -678,10 +682,11 @@ public class SchoolService : ISchoolService
                             existingItem.StartTime = dto.StartTime.ToTimeSpan();
                             existingItem.EndTime = dto.EndTime.ToTimeSpan();
                             existingItem.SubjectId = dto.SubjectId;
-                            existingItem.TeacherId = dto.TeacherId ?? Guid.Empty;
+                            existingItem.TeacherId = dto.TeacherId;
                             existingItem.ClassRoomId = classRoomId;
                             existingItem.UpdatedAt = DateTime.UtcNow;
                             await _unitOfWork.Timetables.UpdateAsync(existingItem);
+                            surviving.Add(existingItem);
                             continue;
                         }
                     }
@@ -690,7 +695,7 @@ public class SchoolService : ISchoolService
                     {
                         SectionId = dto.SectionId,
                         SubjectId = dto.SubjectId,
-                        TeacherId = dto.TeacherId ?? Guid.Empty,
+                        TeacherId = dto.TeacherId,
                         ClassRoomId = classRoomId,
                         DayOfWeek = dto.DayOfWeek,
                         PeriodNumber = 0,
@@ -699,11 +704,10 @@ public class SchoolService : ISchoolService
                         CreatedAt = DateTime.UtcNow
                     };
                     await _unitOfWork.Timetables.AddAsync(timetable);
+                    surviving.Add(timetable);
                 }
 
-                var refreshed = await _unitOfWork.Timetables.FindAsync(t =>
-                    t.SectionId == group.Key.SectionId && t.DayOfWeek == group.Key.DayOfWeek);
-                var ordered = refreshed.OrderBy(t => t.StartTime).ToList();
+                var ordered = surviving.OrderBy(t => t.StartTime).ToList();
                 for (int i = 0; i < ordered.Count; i++)
                 {
                     if (ordered[i].PeriodNumber != i + 1)

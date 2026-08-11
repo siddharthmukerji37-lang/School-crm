@@ -8,8 +8,12 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import UploadIcon from '@mui/icons-material/Upload';
+import LinkIcon from '@mui/icons-material/Link';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import * as Yup from 'yup';
 import { createHomework, updateHomework, fetchHomeworkById, clearSelectedHomework } from '../../store/slices/homeworkSlice';
+import { uploadFile } from '../../utils/upload';
 import axiosInstance from '../../services/axiosInstance';
 import toast from 'react-hot-toast';
 
@@ -33,9 +37,10 @@ export default function HomeworkFormPage() {
   const [sections, setSections] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [schoolId, setSchoolId] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [initialValues, setInitialValues] = useState({
     title: '', description: '', classRoomId: '', sectionId: '', subjectId: '',
-    dueDate: '',
+    dueDate: '', attachmentUrl: '',
   });
 
   useEffect(() => {
@@ -102,9 +107,29 @@ export default function HomeworkFormPage() {
         sectionId: selectedHomework.sectionId || '',
         subjectId: selectedHomework.subjectId || '',
         dueDate: selectedHomework.dueDate ? new Date(selectedHomework.dueDate).toISOString().split('T')[0] : '',
+        attachmentUrl: selectedHomework.attachmentUrl || '',
       });
     }
   }, [isEditMode, selectedHomework]);
+
+  const handleAttachmentUpload = async (e, setFieldValue) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadFile(file);
+      if (res.success) {
+        setFieldValue('attachmentUrl', res.url);
+        toast.success('Attachment uploaded');
+      } else {
+        toast.error(res.message || 'Upload failed');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
@@ -177,6 +202,37 @@ export default function HomeworkFormPage() {
                     slotProps={{ inputLabel: { shrink: true } }} />
                 </Grid>
               </Grid>
+            </Paper>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" fontWeight={600} gutterBottom>Attachment</Typography>
+              <Divider sx={{ mb: 3 }} />
+              {values.attachmentUrl ? (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <LinkIcon color="primary" />
+                  <Button
+                    size="small" href={values.attachmentUrl} target="_blank" variant="outlined"
+                    startIcon={<UploadIcon />}
+                  >
+                    View Attachment
+                  </Button>
+                  <Button
+                    size="small" color="error" startIcon={<DeleteOutlineIcon />}
+                    onClick={() => setFieldValue('attachmentUrl', '')}
+                  >
+                    Remove
+                  </Button>
+                </Stack>
+              ) : (
+                <Box>
+                  <Button variant="outlined" component="label" startIcon={<UploadIcon />} disabled={uploading}>
+                    {uploading ? 'Uploading...' : 'Upload Attachment'}
+                    <input type="file" hidden onChange={(e) => handleAttachmentUpload(e, setFieldValue)} />
+                  </Button>
+                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1.5 }}>
+                    PDF, Word or image (max 10 MB)
+                  </Typography>
+                </Box>
+              )}
             </Paper>
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button variant="outlined" onClick={() => navigate('/homework')}>Cancel</Button>

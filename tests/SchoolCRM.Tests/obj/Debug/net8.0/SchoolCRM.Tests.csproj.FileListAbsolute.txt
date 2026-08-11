@@ -568,3 +568,4 @@
 /var/www/html/school-crm/tests/SchoolCRM.Tests/obj/Debug/net8.0/SchoolCRM.Tests.genruntimeconfig.cache
 /var/www/html/school-crm/tests/SchoolCRM.Tests/obj/Debug/net8.0/ref/SchoolCRM.Tests.dll
 /var/www/html/school-crm/tests/SchoolCRM.Tests/obj/Debug/net8.0/SchoolCRM.Tests.sourcelink.json
+/var/www/html/school-crm/tests/SchoolCRM.Tests/bin/Debug/net8.0/SchoolCRM.API.staticwebassets.runtime.json

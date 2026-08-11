@@ -24,7 +24,30 @@ const examService = {
     if (params.pageSize) queryParams.append('pageSize', params.pageSize);
     return axiosInstance.get(`/exams/${id}/results?${queryParams.toString()}`);
   },
+  getStudentResults: (studentId) =>
+    axiosInstance.get(`/exams/student/${studentId}/results`),
   publishResults: (id) => axiosInstance.post(`/exams/${id}/publish`),
+  getQuestions: (examId) => axiosInstance.get(`/exams/${examId}/questions`),
+  addQuestions: (examId, questions) =>
+    axiosInstance.post(`/exams/${examId}/questions`, questions),
+  updateQuestion: (examId, questionId, data) =>
+    axiosInstance.put(`/exams/${examId}/questions/${questionId}`, data),
+  deleteQuestion: (examId, questionId) =>
+    axiosInstance.delete(`/exams/${examId}/questions/${questionId}`),
+  approveExam: (examId, data) =>
+    axiosInstance.post(`/exams/${examId}/approve`, data),
+  uploadQuestionPaper: (examId, data) =>
+    axiosInstance.post(`/exams/${examId}/question-paper`, data),
+  getSubmissions: (examId) => axiosInstance.get(`/exams/${examId}/submissions`),
+  getMySubmissions: () => axiosInstance.get('/exams/submissions/mine'),
+  getSubmission: (examId, studentId) =>
+    axiosInstance.get(`/exams/${examId}/submissions/student/${studentId}`),
+  submitExam: (examId, data) =>
+    axiosInstance.post(`/exams/${examId}/submit`, data),
+  gradeSubmission: (submissionId, data) =>
+    axiosInstance.post(`/exams/submissions/${submissionId}/grade`, data),
+  approveGrading: (submissionId, data) =>
+    axiosInstance.post(`/exams/submissions/${submissionId}/grade-approval`, data),
 };
 
 export default examService;

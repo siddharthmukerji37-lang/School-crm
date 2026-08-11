@@ -294,6 +294,32 @@ public class StudentService : IStudentService
         }
     }
 
+    public async Task<ApiResponse<List<StudentDocumentDto>>> GetStudentDocumentsAsync(Guid studentId)
+    {
+        try
+        {
+            var documents = await _unitOfWork.StudentDocuments.GetByStudentAsync(studentId);
+
+            var dtos = documents.Select(d => new StudentDocumentDto
+            {
+                Id = d.Id,
+                StudentId = d.StudentId,
+                DocumentName = d.DocumentName,
+                DocumentType = d.DocumentType.ToString(),
+                FileUrl = d.FileUrl,
+                FileName = d.FileName,
+                FileSize = d.FileSize,
+                UploadedAt = d.CreatedAt
+            }).ToList();
+
+            return ApiResponse<List<StudentDocumentDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<StudentDocumentDto>>.FailResponse(ex.Message);
+        }
+    }
+
     private static StudentDto MapToDto(Domain.Entities.Student.Student student)
     {
         return new StudentDto

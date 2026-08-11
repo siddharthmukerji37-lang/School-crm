@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SchoolCRM.Domain.Enums;
 
 namespace SchoolCRM.Application.DTOs.Exam;
 
@@ -19,6 +20,15 @@ public sealed class ExamDto
     public bool IsPublished { get; set; }
     public bool IsActive { get; set; }
     public DateTime? ResultDate { get; set; }
+    public string? TeacherName { get; set; }
+    public string? QuestionPaperUrl { get; set; }
+    public string? QuestionPaperFileName { get; set; }
+    public string ApprovalStatus { get; set; } = SchoolCRM.Domain.Enums.ApprovalStatus.Pending.ToString();
+    public string? ApprovedBy { get; set; }
+    public DateTime? ApprovedAt { get; set; }
+    public string? RejectionReason { get; set; }
+    public int QuestionCount { get; set; }
+    public decimal TotalMarks { get; set; }
 }
 
 public sealed class CreateExamDto

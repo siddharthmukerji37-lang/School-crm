@@ -19,4 +19,6 @@ public interface IStudentService
     Task<ApiResponse<StudentDto>> PromoteStudentAsync(Guid id, PromoteStudentDto dto);
 
     Task<ApiResponse<PagedResult<StudentDto>>> SearchStudentsAsync(string searchTerm, PaginationQuery query);
+
+    Task<ApiResponse<List<StudentDocumentDto>>> GetStudentDocumentsAsync(Guid studentId);
 }

@@ -26,6 +26,9 @@ public interface IUnitOfWork : IDisposable
     IExamScheduleRepository ExamSchedules { get; }
     IMarkRepository Marks { get; }
     IReportCardRepository ReportCards { get; }
+    IExamQuestionRepository ExamQuestions { get; }
+    IExamSubmissionRepository ExamSubmissions { get; }
+    IExamAnswerRepository ExamAnswers { get; }
     IFeeStructureRepository FeeStructures { get; }
     IFeeInstallmentRepository FeeInstallments { get; }
     IFeeReceiptRepository FeeReceipts { get; }

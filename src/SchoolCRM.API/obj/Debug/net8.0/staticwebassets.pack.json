@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/75293a5a5e4b4769817d3c437936b2ed.png",
+      "PackagePath": "staticwebassets/uploads/75293a5a5e4b4769817d3c437936b2ed.png"
+    },
+    {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/a26186f1df2b4a36acb7c39141dc2e8f.png",
+      "PackagePath": "staticwebassets/uploads/a26186f1df2b4a36acb7c39141dc2e8f.png"
+    },
+    {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/d2fece2abe5a4deebfdb919f20b5a75f.png",
+      "PackagePath": "staticwebassets/uploads/d2fece2abe5a4deebfdb919f20b5a75f.png"
+    },
+    {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/d4c26a884bf24223b61f560e3b172edb.png",
+      "PackagePath": "staticwebassets/uploads/d4c26a884bf24223b61f560e3b172edb.png"
+    },
+    {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/eec071a010734e6fb1325cb8f6cce6a7.pdf",
+      "PackagePath": "staticwebassets/uploads/eec071a010734e6fb1325cb8f6cce6a7.pdf"
+    },
+    {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/f6697bc032854469bab0019bb7e9155b.png",
+      "PackagePath": "staticwebassets/uploads/f6697bc032854469bab0019bb7e9155b.png"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.SchoolCRM.API.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.SchoolCRM.API.props",
+      "PackagePath": "build\\SchoolCRM.API.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.SchoolCRM.API.props",
+      "PackagePath": "buildMultiTargeting\\SchoolCRM.API.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.SchoolCRM.API.props",
+      "PackagePath": "buildTransitive\\SchoolCRM.API.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

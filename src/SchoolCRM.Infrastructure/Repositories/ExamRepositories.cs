@@ -16,8 +16,12 @@ public class ExamRepository : GenericRepository<Exam>, IExamRepository
             .Include(e => e.School)
             .Include(e => e.ClassRoom)
             .Include(e => e.AcademicYear)
+            .Include(e => e.Teacher)
+                .ThenInclude(t => t!.User)
             .Include(e => e.Schedules)
                 .ThenInclude(s => s.Subject)
+            .Include(e => e.Questions)
+                .ThenInclude(q => q.Subject)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
@@ -86,6 +90,18 @@ public class MarkRepository : GenericRepository<Mark>, IMarkRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<Mark>> GetByStudentAllAsync(Guid studentId)
+    {
+        return await _dbSet
+            .Include(m => m.ExamSchedule)
+                .ThenInclude(es => es!.Subject)
+            .Include(m => m.ExamSchedule)
+                .ThenInclude(es => es!.Exam)
+            .Where(m => m.StudentId == studentId)
+            .OrderBy(m => m.ExamSchedule.Exam!.StartDate)
+            .ToListAsync();
+    }
+
     public async Task<Mark?> GetByStudentAndScheduleAsync(Guid studentId, Guid examScheduleId)
     {
         return await _dbSet
@@ -124,6 +140,70 @@ public class ReportCardRepository : GenericRepository<ReportCard>, IReportCardRe
             .Include(rc => rc.Exam)
             .Where(rc => rc.ExamId == examId)
             .OrderBy(rc => rc.Rank)
+            .ToListAsync();
+    }
+}
+
+public class ExamQuestionRepository : GenericRepository<ExamQuestion>, IExamQuestionRepository
+{
+    public ExamQuestionRepository(ApplicationDbContext context) : base(context) { }
+
+    public async Task<IReadOnlyList<ExamQuestion>> GetByExamAsync(Guid examId)
+    {
+        return await _dbSet
+            .Include(q => q.Subject)
+            .Where(q => q.ExamId == examId)
+            .OrderBy(q => q.OrderIndex)
+            .ToListAsync();
+    }
+}
+
+public class ExamSubmissionRepository : GenericRepository<ExamSubmission>, IExamSubmissionRepository
+{
+    public ExamSubmissionRepository(ApplicationDbContext context) : base(context) { }
+
+    public async Task<IReadOnlyList<ExamSubmission>> GetByExamAsync(Guid examId)
+    {
+        return await _dbSet
+            .Include(s => s.Student)
+                .ThenInclude(st => st!.User)
+            .Include(s => s.Answers)
+            .Where(s => s.ExamId == examId)
+            .OrderByDescending(s => s.SubmittedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<ExamSubmission>> GetByStudentAsync(Guid studentId)
+    {
+        return await _dbSet
+            .Include(s => s.Exam)
+                .ThenInclude(e => e!.ExamType)
+            .Include(s => s.Answers)
+            .Where(s => s.StudentId == studentId)
+            .OrderByDescending(s => s.SubmittedAt)
+            .ToListAsync();
+    }
+
+    public async Task<ExamSubmission?> GetByExamAndStudentAsync(Guid examId, Guid studentId)
+    {
+        return await _dbSet
+            .Include(s => s.Student)
+                .ThenInclude(st => st!.User)
+            .Include(s => s.Answers)
+            .FirstOrDefaultAsync(s => s.ExamId == examId && s.StudentId == studentId);
+    }
+}
+
+public class ExamAnswerRepository : GenericRepository<ExamAnswer>, IExamAnswerRepository
+{
+    public ExamAnswerRepository(ApplicationDbContext context) : base(context) { }
+
+    public async Task<IReadOnlyList<ExamAnswer>> GetBySubmissionAsync(Guid examSubmissionId)
+    {
+        return await _dbSet
+            .Include(a => a.ExamQuestion)
+            .Where(a => a.ExamSubmissionId == examSubmissionId)
+            .OrderBy(a => a.ExamQuestion.OrderIndex)
             .ToListAsync();
     }
 }

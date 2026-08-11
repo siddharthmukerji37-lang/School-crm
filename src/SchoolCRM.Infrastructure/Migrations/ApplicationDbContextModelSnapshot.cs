@@ -858,6 +858,15 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<Guid?>("AcademicYearId")
                         .HasColumnType("char(36)");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("longtext");
+
                     b.Property<Guid?>("ClassRoomId")
                         .HasColumnType("char(36)");
 
@@ -890,6 +899,15 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<string>("QuestionPaperFileName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("QuestionPaperUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("longtext");
+
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("char(36)");
 
@@ -898,6 +916,9 @@ namespace SchoolCRM.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<Guid?>("TeacherId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -915,7 +936,145 @@ namespace SchoolCRM.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
+                    b.HasIndex("TeacherId");
+
                     b.ToTable("Exams", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamAnswer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("AnswerText")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ExamQuestionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ExamSubmissionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<decimal>("MarksObtained")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SelectedOption")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamQuestionId");
+
+                    b.HasIndex("ExamSubmissionId");
+
+                    b.ToTable("ExamAnswers", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CorrectAnswer")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ExamId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ImageFileName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<decimal>("Marks")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("OptionA")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OptionB")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OptionC")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OptionD")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("QuestionType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("SubjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("ExamQuestions", (string)null);
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamSchedule", b =>
@@ -979,6 +1138,79 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("ExamSchedules", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ExamId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("GradedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("GradedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("GradingApprovedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("GradingApprovedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("GradingRejectionReason")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("GradingStatus")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsGraded")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal>("TotalMarksObtained")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<decimal>("TotalMaxMarks")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("ExamId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("ExamSubmissions", (string)null);
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamType", b =>
@@ -1748,6 +1980,15 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("AssignedDate")
                         .HasColumnType("datetime(6)");
 
@@ -1784,6 +2025,9 @@ namespace SchoolCRM.Infrastructure.Migrations
 
                     b.Property<decimal?>("MaxMarks")
                         .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("char(36)");
@@ -4090,7 +4334,7 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("TeacherId")
+                    b.Property<Guid?>("TeacherId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -5836,6 +6080,11 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SchoolCRM.Domain.Entities.Teacher.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("AcademicYear");
 
                     b.Navigation("ClassRoom");
@@ -5843,6 +6092,45 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Navigation("ExamType");
 
                     b.Navigation("School");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamAnswer", b =>
+                {
+                    b.HasOne("SchoolCRM.Domain.Entities.Exam.ExamQuestion", "ExamQuestion")
+                        .WithMany("Answers")
+                        .HasForeignKey("ExamQuestionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("SchoolCRM.Domain.Entities.Exam.ExamSubmission", "ExamSubmission")
+                        .WithMany("Answers")
+                        .HasForeignKey("ExamSubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ExamQuestion");
+
+                    b.Navigation("ExamSubmission");
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamQuestion", b =>
+                {
+                    b.HasOne("SchoolCRM.Domain.Entities.Exam.Exam", "Exam")
+                        .WithMany("Questions")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolCRM.Domain.Entities.School.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamSchedule", b =>
@@ -5862,6 +6150,25 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Navigation("Exam");
 
                     b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamSubmission", b =>
+                {
+                    b.HasOne("SchoolCRM.Domain.Entities.Exam.Exam", "Exam")
+                        .WithMany("Submissions")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolCRM.Domain.Entities.Student.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.Mark", b =>
@@ -6446,8 +6753,7 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasOne("SchoolCRM.Domain.Entities.Teacher.Teacher", "Teacher")
                         .WithMany("Timetables")
                         .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("ClassRoom");
 
@@ -6720,12 +7026,26 @@ namespace SchoolCRM.Infrastructure.Migrations
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.Exam", b =>
                 {
+                    b.Navigation("Questions");
+
                     b.Navigation("Schedules");
+
+                    b.Navigation("Submissions");
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamQuestion", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamSchedule", b =>
                 {
                     b.Navigation("Marks");
+                });
+
+            modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamSubmission", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Exam.ExamType", b =>

@@ -44,6 +44,19 @@ public class HomeworkService : IHomeworkService
         return (schoolId ?? Guid.Empty, teacherId ?? Guid.Empty);
     }
 
+    private async Task<Guid> ResolveStudentIdAsync()
+    {
+        if (!string.IsNullOrEmpty(_currentUserService.UserId))
+        {
+            var student = await _unitOfWork.Students.GetStudentByUserIdAsync(Guid.Parse(_currentUserService.UserId));
+            if (student is not null)
+                return student.Id;
+        }
+
+        return (await _unitOfWork.Students.FindAsync(s => !s.IsDeleted))
+            .FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
     public async Task<ApiResponse<PagedResult<HomeworkDto>>> GetHomeworkAsync(
         PaginationQuery query, Guid? classRoomId, Guid? sectionId, Guid? subjectId,
         DateOnly? fromDate, DateOnly? toDate)
@@ -63,7 +76,8 @@ public class HomeworkService : IHomeworkService
                                .Include(h => h.Section)
                                .Include(h => h.Subject)
                                .Include(h => h.Teacher)
-                               .ThenInclude(t => t.User));
+                               .ThenInclude(t => t.User)
+                               .Include(h => h.Submissions));
 
             var pagedItems = items
                 .Select(h => new HomeworkDto
@@ -84,7 +98,12 @@ public class HomeworkService : IHomeworkService
                     AssignedDate = DateOnly.FromDateTime(h.AssignedDate),
                     DueDate = DateOnly.FromDateTime(h.DueDate),
                     AttachmentUrl = h.AttachmentUrl,
-                    IsActive = !h.IsDeleted
+                    IsActive = !h.IsDeleted,
+                    ApprovalStatus = (h.ApprovalStatus == 0 ? ApprovalStatus.Pending : h.ApprovalStatus).ToString(),
+                    ApprovedBy = h.ApprovedBy,
+                    ApprovedAt = h.ApprovedAt,
+                    RejectionReason = h.RejectionReason,
+                    SubmissionCount = h.Submissions.Count(s => !s.IsDeleted)
                 }).ToList();
 
             return ApiResponse<PagedResult<HomeworkDto>>.SuccessResponse(new PagedResult<HomeworkDto>
@@ -115,7 +134,8 @@ public class HomeworkService : IHomeworkService
                                .Include(h => h.Section)
                                .Include(h => h.Subject)
                                .Include(h => h.Teacher)
-                               .ThenInclude(t => t.User));
+                               .ThenInclude(t => t.User)
+                               .Include(h => h.Submissions));
 
             var hw = items.FirstOrDefault();
             if (hw is null)
@@ -139,7 +159,12 @@ public class HomeworkService : IHomeworkService
                 AssignedDate = DateOnly.FromDateTime(hw.AssignedDate),
                 DueDate = DateOnly.FromDateTime(hw.DueDate),
                 AttachmentUrl = hw.AttachmentUrl,
-                IsActive = !hw.IsDeleted
+                IsActive = !hw.IsDeleted,
+                ApprovalStatus = (hw.ApprovalStatus == 0 ? ApprovalStatus.Pending : hw.ApprovalStatus).ToString(),
+                ApprovedBy = hw.ApprovedBy,
+                ApprovedAt = hw.ApprovedAt,
+                RejectionReason = hw.RejectionReason,
+                SubmissionCount = hw.Submissions.Count(s => !s.IsDeleted)
             });
         }
         catch (Exception ex)
@@ -276,8 +301,17 @@ public class HomeworkService : IHomeworkService
             var submissions = await _unitOfWork.Repository<Domain.Entities.Homework.HomeworkSubmission>().GetAllAsync();
             var filtered = submissions.Where(s => !s.IsDeleted).ToList();
 
-            if (studentId.HasValue)
-                filtered = filtered.Where(s => s.StudentId == studentId.Value).ToList();
+            var effectiveStudentId = studentId;
+            if (!effectiveStudentId.HasValue &&
+                (_currentUserService.Roles?.Contains("Student") == true))
+            {
+                var selfId = await ResolveStudentIdAsync();
+                if (selfId != Guid.Empty)
+                    effectiveStudentId = selfId;
+            }
+
+            if (effectiveStudentId.HasValue)
+                filtered = filtered.Where(s => s.StudentId == effectiveStudentId.Value).ToList();
 
             var totalCount = filtered.Count;
             var pagedItems = filtered
@@ -352,8 +386,14 @@ public class HomeworkService : IHomeworkService
     {
         try
         {
+            var studentId = dto.StudentId == Guid.Empty
+                ? await ResolveStudentIdAsync()
+                : dto.StudentId;
+            if (studentId == Guid.Empty)
+                return ApiResponse<AssignmentDto>.FailResponse("Unable to identify the current student.");
+
             var existing = (await _unitOfWork.Repository<Domain.Entities.Homework.HomeworkSubmission>()
-                .FindAsync(s => s.HomeworkId == dto.HomeworkId && s.StudentId == dto.StudentId && !s.IsDeleted))
+                .FindAsync(s => s.HomeworkId == dto.HomeworkId && s.StudentId == studentId && !s.IsDeleted))
                 .FirstOrDefault();
 
             if (existing is not null)
@@ -362,7 +402,7 @@ public class HomeworkService : IHomeworkService
             var submission = new Domain.Entities.Homework.HomeworkSubmission
             {
                 HomeworkId = dto.HomeworkId,
-                StudentId = dto.StudentId,
+                StudentId = studentId,
                 SubmittedText = dto.SubmissionText,
                 AttachmentUrl = dto.AttachmentUrl,
                 SubmittedAt = DateTime.UtcNow,
@@ -425,6 +465,64 @@ public class HomeworkService : IHomeworkService
         catch (Exception ex)
         {
             return ApiResponse<AssignmentDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<HomeworkDto>> ApproveHomeworkAsync(Guid id, bool approved, string? reason)
+    {
+        try
+        {
+            var hw = await _unitOfWork.Repository<Domain.Entities.Homework.Homework>().GetByIdAsync(id);
+            if (hw is null)
+                return ApiResponse<HomeworkDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            hw.ApprovalStatus = approved ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
+            hw.ApprovedBy = _currentUserService.FullName;
+            hw.ApprovedAt = DateTime.UtcNow;
+            hw.RejectionReason = approved ? null : reason;
+            hw.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Repository<Domain.Entities.Homework.Homework>().UpdateAsync(hw);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ApiResponse<HomeworkDto>.SuccessResponse(new HomeworkDto
+            {
+                Id = hw.Id,
+                Title = hw.Title,
+                ApprovalStatus = (hw.ApprovalStatus == 0 ? ApprovalStatus.Pending : hw.ApprovalStatus).ToString(),
+                ApprovedBy = hw.ApprovedBy,
+                ApprovedAt = hw.ApprovedAt,
+                RejectionReason = hw.RejectionReason
+            }, approved ? "Homework approved." : "Homework rejected.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<HomeworkDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse> RequestHomeworkApprovalAsync(Guid id)
+    {
+        try
+        {
+            var hw = await _unitOfWork.Repository<Domain.Entities.Homework.Homework>().GetByIdAsync(id);
+            if (hw is null)
+                return ApiResponse.FailResponse(ApplicationMessages.NotFound);
+
+            hw.ApprovalStatus = ApprovalStatus.Pending;
+            hw.ApprovedBy = null;
+            hw.ApprovedAt = null;
+            hw.RejectionReason = null;
+            hw.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Repository<Domain.Entities.Homework.Homework>().UpdateAsync(hw);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ApiResponse.SuccessResponse("Homework submitted for approval.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.FailResponse(ex.Message);
         }
     }
 }

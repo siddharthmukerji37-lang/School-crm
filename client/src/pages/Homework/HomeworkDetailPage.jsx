@@ -1,10 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Paper, Typography, Grid, Chip, Button, Divider, CircularProgress } from '@mui/material';
+import {
+  Box, Paper, Typography, Grid, Chip, Button, Divider, CircularProgress,
+  TextField, Stack, Card, CardContent, Alert, LinearProgress,
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import UploadIcon from '@mui/icons-material/Upload';
+import SendIcon from '@mui/icons-material/Send';
+import LinkIcon from '@mui/icons-material/Link';
 import { fetchHomeworkById, clearSelectedHomework } from '../../store/slices/homeworkSlice';
+import homeworkService from '../../services/homeworkService';
+import { uploadFile } from '../../utils/upload';
+import toast from 'react-hot-toast';
+
+const approvalColor = (s) => {
+  switch (s) { case 'Approved': return 'success'; case 'Rejected': return 'error'; default: return 'warning'; }
+};
 
 function DetailRow({ label, value }) {
   return (
@@ -23,7 +36,16 @@ export default function HomeworkDetailPage() {
   const dispatch = useDispatch();
   const { selectedHomework, loading } = useSelector((state) => state.homework);
   const { user } = useSelector((state) => state.auth);
-  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin' || r === 'Teacher');
+  const roles = user?.roles || [];
+  const isAdmin = roles.some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const isTeacher = roles.some((r) => r === 'Teacher' || r === 'ClassTeacher');
+  const isStudent = roles.some((r) => r === 'Student');
+
+  const [mySubmission, setMySubmission] = useState(null);
+  const [subText, setSubText] = useState('');
+  const [subAttachment, setSubAttachment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submittingForApproval, setSubmittingForApproval] = useState(false);
 
   useEffect(() => {
     dispatch(fetchHomeworkById(id));
@@ -31,6 +53,17 @@ export default function HomeworkDetailPage() {
       dispatch(clearSelectedHomework());
     };
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (!isStudent) return;
+    (async () => {
+      try {
+        const res = await homeworkService.getAssignments({ pageSize: 100 });
+        const mine = (res.data?.data?.items || []).find((a) => a.homeworkId === id);
+        setMySubmission(mine || null);
+      } catch { /* ignore */ }
+    })();
+  }, [id, isStudent]);
 
   if (loading || !selectedHomework) {
     return (
@@ -41,6 +74,51 @@ export default function HomeworkDetailPage() {
   }
 
   const hw = selectedHomework;
+
+  const handleAttachment = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const res = await uploadFile(file);
+      if (res.success) {
+        setSubAttachment(res.url);
+        toast.success('Attachment uploaded');
+      } else {
+        toast.error(res.message || 'Upload failed');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Upload failed');
+    }
+  };
+
+  const submitAssignment = async () => {
+    setSubmitting(true);
+    try {
+      const payload = { homeworkId: id, submissionText: subText || null, attachmentUrl: subAttachment || null };
+      const res = await homeworkService.submit(id, payload);
+      toast.success(res.data.message || 'Submitted');
+      const list = await homeworkService.getAssignments({ pageSize: 100 });
+      const mine = (list.data?.data?.items || []).find((a) => a.homeworkId === id);
+      setMySubmission(mine || { submitted: true });
+    } catch (e) {
+      toast.error(e.message || 'Failed to submit');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const requestApproval = async () => {
+    setSubmittingForApproval(true);
+    try {
+      await homeworkService.submitForApproval(id);
+      toast.success('Submitted for approval');
+      dispatch(fetchHomeworkById(id));
+    } catch (e) {
+      toast.error(e.message || 'Failed');
+    } finally {
+      setSubmittingForApproval(false);
+    }
+  };
 
   return (
     <Box>
@@ -62,7 +140,18 @@ export default function HomeworkDetailPage() {
             Edit
           </Button>
         )}
+        {isTeacher && hw.approvalStatus !== 'Approved' && (
+          <Button variant="contained" onClick={requestApproval} disabled={submittingForApproval}>
+            {submittingForApproval ? 'Submitting...' : 'Submit for Approval'}
+          </Button>
+        )}
       </Box>
+
+      {hw.rejectionReason && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Rejected: {hw.rejectionReason}
+        </Alert>
+      )}
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
@@ -73,6 +162,7 @@ export default function HomeworkDetailPage() {
             <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
               <Chip label={hw.subjectName || 'No Subject'} color="primary" size="small" />
               <Chip label={hw.className || 'No Class'} color="secondary" size="small" variant="outlined" />
+              <Chip label={`Approval: ${hw.approvalStatus || 'Pending'}`} color={approvalColor(hw.approvalStatus)} size="small" variant="outlined" />
               <Chip
                 label={hw.isActive ? 'Active' : 'Inactive'}
                 color={hw.isActive ? 'success' : 'default'}
@@ -84,7 +174,7 @@ export default function HomeworkDetailPage() {
         </Box>
       </Paper>
 
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ color: 'primary.main' }}>
           Assignment Information
         </Typography>
@@ -100,9 +190,72 @@ export default function HomeworkDetailPage() {
             <DetailRow label="Assigned By" value={hw.teacherName} />
             <DetailRow label="Assigned Date" value={hw.assignedDate} />
             <DetailRow label="Due Date" value={hw.dueDate} />
+            <DetailRow label="Submissions" value={hw.submissionCount ?? 0} />
           </Grid>
         </Grid>
+        {hw.attachmentUrl && (
+          <Box sx={{ mt: 2 }}>
+            <Button size="small" variant="outlined" startIcon={<LinkIcon />} href={hw.attachmentUrl} target="_blank" rel="noreferrer">
+              View Homework Attachment
+            </Button>
+          </Box>
+        )}
       </Paper>
+
+      {isStudent && (
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ color: 'primary.main' }}>
+            My Submission
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          {mySubmission ? (
+            <Card variant="outlined" sx={{ bgcolor: 'grey.50' }}>
+              <CardContent>
+                <Typography variant="body2" color="text.secondary">
+                  Submitted {mySubmission.submittedDate ? new Date(mySubmission.submittedDate).toLocaleString() : 'yes'}
+                </Typography>
+                {mySubmission.submissionText && (
+                  <Typography variant="body2" sx={{ mt: 1 }}>{mySubmission.submissionText}</Typography>
+                )}
+                {mySubmission.attachmentUrl && (
+                  <Button size="small" sx={{ mt: 1 }} href={mySubmission.attachmentUrl} target="_blank" rel="noreferrer">
+                    View attachment
+                  </Button>
+                )}
+                {mySubmission.status && (
+                  <Chip label={`Status: ${mySubmission.status}`} color={mySubmission.marks != null ? 'success' : 'info'} size="small" sx={{ mt: 1 }} variant="outlined" />
+                )}
+                {mySubmission.marks != null && (
+                  <Typography variant="body2" sx={{ mt: 1 }} fontWeight={600}>
+                    Marks: {mySubmission.marks} {mySubmission.remarks ? ` • ${mySubmission.remarks}` : ''}
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Stack spacing={2}>
+              <TextField
+                label="Your answer" multiline rows={4} size="small"
+                value={subText}
+                onChange={(e) => setSubText(e.target.value)}
+              />
+              <Box>
+                <Button variant="outlined" component="label" startIcon={<UploadIcon />} sx={{ mr: 1 }}>
+                  Upload Attachment
+                  <input type="file" hidden onChange={handleAttachment} />
+                </Button>
+                {subAttachment && <Typography variant="body2" color="success.main" component="span">Attached</Typography>}
+              </Box>
+              <Stack direction="row" justifyContent="flex-end">
+                <Button variant="contained" startIcon={<SendIcon />} onClick={submitAssignment} disabled={submitting}>
+                  {submitting ? 'Submitting...' : 'Submit Homework'}
+                </Button>
+              </Stack>
+            </Stack>
+          )}
+          {submitting && <LinearProgress sx={{ mt: 2 }} />}
+        </Paper>
+      )}
     </Box>
   );
 }

@@ -97,6 +97,15 @@ public class StudentsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id:guid}/documents")]
+    [ProducesResponseType(typeof(ApiResponse<List<StudentDocumentDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<StudentDocumentDto>>>> GetStudentDocumentsAsync(
+        [FromRoute] Guid id)
+    {
+        var result = await _studentService.GetStudentDocumentsAsync(id);
+        return Ok(result);
+    }
+
     [HttpPost("{id:guid}/promote")]
     [ProducesResponseType(typeof(ApiResponse<StudentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

@@ -158,6 +158,15 @@ public class ExamsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("student/{studentId:guid}/results")]
+    [ProducesResponseType(typeof(ApiResponse<List<ResultDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<ResultDto>>>> GetStudentResultsAsync(
+        [FromRoute] Guid studentId)
+    {
+        var result = await _examService.GetStudentResultsAsync(studentId);
+        return Ok(result);
+    }
+
     [HttpPost("{id:guid}/publish")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -169,5 +178,156 @@ public class ExamsController : ControllerBase
             return NotFound(ApiResponse.FailResponse("Exam not found", 404));
 
         return Ok(ApiResponse.SuccessResponse("Results published successfully"));
+    }
+
+    [HttpGet("{id:guid}/questions")]
+    [ProducesResponseType(typeof(ApiResponse<List<ExamQuestionDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<ExamQuestionDto>>>> GetExamQuestionsAsync(
+        [FromRoute] Guid id)
+    {
+        var result = await _examService.GetExamQuestionsAsync(id);
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/questions")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> AddExamQuestionsAsync(
+        [FromRoute] Guid id,
+        [FromBody] List<CreateExamQuestionDto> dtos)
+    {
+        var result = await _examService.AddExamQuestionsAsync(id, dtos);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id:guid}/questions/{questionId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<ExamQuestionDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<ExamQuestionDto>>> UpdateExamQuestionAsync(
+        [FromRoute] Guid id,
+        [FromRoute] Guid questionId,
+        [FromBody] CreateExamQuestionDto dto)
+    {
+        var result = await _examService.UpdateExamQuestionAsync(id, questionId, dto);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id:guid}/questions/{questionId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse>> DeleteExamQuestionAsync(
+        [FromRoute] Guid id,
+        [FromRoute] Guid questionId)
+    {
+        var result = await _examService.DeleteExamQuestionAsync(id, questionId);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/question-paper")]
+    [ProducesResponseType(typeof(ApiResponse<ExamDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<ExamDto>>> UploadQuestionPaperAsync(
+        [FromRoute] Guid id,
+        [FromBody] UploadQuestionPaperDto dto)
+    {
+        var result = await _examService.UploadQuestionPaperAsync(id, dto.FileUrl, dto.FileName);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/approve")]
+    [ProducesResponseType(typeof(ApiResponse<ExamDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<ExamDto>>> ApproveExamAsync(
+        [FromRoute] Guid id,
+        [FromBody] ApproveExamDto dto)
+    {
+        var result = await _examService.ApproveExamAsync(id, dto.Approved, dto.Reason);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{id:guid}/submissions")]
+    [ProducesResponseType(typeof(ApiResponse<List<ExamSubmissionDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<ExamSubmissionDto>>>> GetExamSubmissionsAsync(
+        [FromRoute] Guid id)
+    {
+        var result = await _examService.GetSubmissionsByExamAsync(id);
+        return Ok(result);
+    }
+
+    [HttpGet("submissions/mine")]
+    [ProducesResponseType(typeof(ApiResponse<List<ExamSubmissionDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<ExamSubmissionDto>>>> GetMySubmissionsAsync()
+    {
+        var result = await _examService.GetMySubmissionsAsync();
+        return Ok(result);
+    }
+
+    [HttpGet("{id:guid}/submissions/student/{studentId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<ExamSubmissionDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<ExamSubmissionDto>>> GetStudentSubmissionAsync(
+        [FromRoute] Guid id,
+        [FromRoute] Guid studentId)
+    {
+        var result = await _examService.GetSubmissionAsync(id, studentId);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/submit")]
+    [ProducesResponseType(typeof(ApiResponse<ExamSubmissionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<ExamSubmissionDto>>> SubmitExamAsync(
+        [FromRoute] Guid id,
+        [FromBody] SubmitExamDto dto)
+    {
+        dto.ExamId = id;
+        var result = await _examService.SubmitExamAsync(dto);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("submissions/{submissionId:guid}/grade")]
+    [ProducesResponseType(typeof(ApiResponse<ExamSubmissionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<ExamSubmissionDto>>> GradeSubmissionAsync(
+        [FromRoute] Guid submissionId,
+        [FromBody] GradeSubmissionDto dto)
+    {
+        var result = await _examService.GradeSubmissionAsync(submissionId, dto);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("submissions/{submissionId:guid}/grade-approval")]
+    [ProducesResponseType(typeof(ApiResponse<ExamSubmissionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<ExamSubmissionDto>>> ApproveSubmissionGradingAsync(
+        [FromRoute] Guid submissionId,
+        [FromBody] GradeApprovalDto dto)
+    {
+        var result = await _examService.ApproveSubmissionGradingAsync(submissionId, dto.Approved, dto.Reason);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
     }
 }

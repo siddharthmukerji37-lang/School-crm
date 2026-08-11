@@ -35,4 +35,11 @@ public class CurrentUserService : ICurrentUserService
             return string.IsNullOrEmpty(schoolIdClaim) ? null : Guid.Parse(schoolIdClaim);
         }
     }
+
+    public IReadOnlyList<string> Roles =>
+        _httpContextAccessor.HttpContext?.User?
+            .FindAll(ClaimTypes.Role)
+            .Select(c => c.Value)
+            .Distinct()
+            .ToList() ?? new List<string>();
 }

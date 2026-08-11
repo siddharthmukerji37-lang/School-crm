@@ -5,6 +5,7 @@ using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Entities.Exam;
 using SchoolCRM.Domain.Enums;
+using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
 
@@ -13,10 +14,15 @@ namespace SchoolCRM.Infrastructure.Services;
 public class ExamService : IExamService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public ExamService(IUnitOfWork unitOfWork)
+    private static readonly string[] AdminRoles =
+        { nameof(RoleType.SuperAdmin), nameof(RoleType.SchoolAdmin), nameof(RoleType.Principal), nameof(RoleType.VicePrincipal) };
+
+    public ExamService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<PagedResult<ExamDto>>> GetExamsAsync(PaginationQuery query, Guid? classRoomId)
@@ -25,7 +31,13 @@ public class ExamService : IExamService
         {
             Expression<Func<Exam, bool>>? filter = e => !e.IsDeleted;
             if (classRoomId.HasValue)
-                filter = e => !e.IsDeleted && e.SchoolId == classRoomId.Value;
+                filter = e => !e.IsDeleted && e.ClassRoomId == classRoomId.Value;
+
+            if (IsTeacherOnly() && _currentUserService.UserId is not null)
+            {
+                var teacherId = await ResolveTeacherIdAsync();
+                filter = e => !e.IsDeleted && e.TeacherId == teacherId;
+            }
 
             var (items, totalCount) = await _unitOfWork.Exams.GetPagedAsync(
                 query.PageNumber, query.PageSize, filter,
@@ -75,6 +87,11 @@ public class ExamService : IExamService
             if (classRoom is null)
                 return ApiResponse<ExamDto>.FailResponse("Selected class not found.");
 
+            if (dto.ExamType.Equals("Final", StringComparison.OrdinalIgnoreCase) && !IsAdmin())
+                return ApiResponse<ExamDto>.FailResponse("Only administrators can create Final exams.");
+
+            var teacherId = await ResolveTeacherIdAsync();
+
             Guid? examTypeId = null;
             if (!string.IsNullOrWhiteSpace(dto.ExamType))
             {
@@ -114,7 +131,9 @@ public class ExamService : IExamService
                 SchoolId = classRoom.SchoolId,
                 ClassRoomId = dto.ClassRoomId,
                 ExamTypeId = examTypeId,
+                TeacherId = teacherId,
                 AcademicYearId = dto.AcademicYearId,
+                ApprovalStatus = ApprovalStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -407,6 +426,33 @@ public class ExamService : IExamService
         }
     }
 
+    public async Task<ApiResponse<List<ResultDto>>> GetStudentResultsAsync(Guid studentId)
+    {
+        try
+        {
+            var allMarks = await _unitOfWork.Marks.GetByStudentAllAsync(studentId);
+            var examIds = allMarks
+                .Where(m => m.ExamSchedule?.ExamId != Guid.Empty)
+                .Select(m => m.ExamSchedule!.ExamId)
+                .Distinct()
+                .ToList();
+
+            var results = new List<ResultDto>();
+            foreach (var examId in examIds)
+            {
+                var resultResponse = await GetStudentResultAsync(studentId, examId);
+                if (resultResponse.Data is not null)
+                    results.Add(resultResponse.Data);
+            }
+
+            return ApiResponse<List<ResultDto>>.SuccessResponse(results);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<ResultDto>>.FailResponse(ex.Message);
+        }
+    }
+
     public async Task<ApiResponse<PagedResult<ResultDto>>> GetResultsAsync(
         PaginationQuery query, Guid examId, Guid? classRoomId, Guid? sectionId)
     {
@@ -490,6 +536,561 @@ public class ExamService : IExamService
         }
     }
 
+    private bool IsAdmin() => _currentUserService.Roles.Any(r => AdminRoles.Contains(r));
+
+    private bool IsTeacherOnly() =>
+        !IsAdmin() && _currentUserService.Roles.Any(r => r == nameof(RoleType.Teacher) || r == nameof(RoleType.ClassTeacher));
+
+    private async Task<Guid> ResolveTeacherIdAsync()
+    {
+        if (!string.IsNullOrEmpty(_currentUserService.UserId))
+        {
+            var teachers = await _unitOfWork.Teachers.FindAsync(t =>
+                t.UserId == Guid.Parse(_currentUserService.UserId) && !t.IsDeleted);
+            var teacherId = teachers.FirstOrDefault()?.Id;
+            if (teacherId.HasValue)
+                return teacherId.Value;
+        }
+
+        return (await _unitOfWork.Teachers.FindAsync(t => !t.IsDeleted))
+            .FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    private async Task<Guid> ResolveStudentIdAsync()
+    {
+        if (!string.IsNullOrEmpty(_currentUserService.UserId))
+        {
+            var student = await _unitOfWork.Students.GetStudentByUserIdAsync(Guid.Parse(_currentUserService.UserId));
+            if (student is not null)
+                return student.Id;
+        }
+
+        return (await _unitOfWork.Students.FindAsync(s => !s.IsDeleted))
+            .FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    private static async Task<bool> IsFinalExamAsync(IUnitOfWork unitOfWork, Guid examId)
+    {
+        var exam = await unitOfWork.Exams.GetByIdAsync(examId);
+        return exam?.ExamType?.Name?.Equals("Final", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private async Task<Exam?> GetExamOrNullAsync(Guid examId) =>
+        await _unitOfWork.Exams.GetExamWithDetailsAsync(examId);
+
+    private static ExamQuestionDto MapQuestionToDto(ExamQuestion q) => new()
+    {
+        Id = q.Id,
+        QuestionText = q.QuestionText,
+        QuestionType = q.QuestionType.ToString(),
+        OptionA = q.OptionA,
+        OptionB = q.OptionB,
+        OptionC = q.OptionC,
+        OptionD = q.OptionD,
+        CorrectAnswer = q.CorrectAnswer,
+        Marks = q.Marks,
+        ImageUrl = q.ImageUrl,
+        ImageFileName = q.ImageFileName,
+        OrderIndex = q.OrderIndex,
+        SubjectId = q.SubjectId,
+        SubjectName = q.Subject?.Name ?? string.Empty
+    };
+
+    private static ExamAnswerDto MapAnswerToDto(ExamAnswer a, ExamQuestion q, bool maskMarks = false)
+    {
+        var dto = new ExamAnswerDto
+        {
+            Id = a.Id,
+            ExamQuestionId = a.ExamQuestionId,
+            QuestionText = q.QuestionText,
+            QuestionType = q.QuestionType.ToString(),
+            SelectedOption = a.SelectedOption,
+            AnswerText = a.AnswerText,
+            ImageUrl = a.ImageUrl,
+            CorrectAnswer = q.CorrectAnswer,
+            OptionA = q.OptionA,
+            OptionB = q.OptionB,
+            OptionC = q.OptionC,
+            OptionD = q.OptionD,
+            Marks = q.Marks,
+            IsCorrect = a.IsCorrect,
+            MarksObtained = a.MarksObtained,
+            Remarks = a.Remarks,
+            OrderIndex = q.OrderIndex
+        };
+
+        if (maskMarks)
+        {
+            dto.CorrectAnswer = null;
+            dto.IsCorrect = null;
+            dto.MarksObtained = null;
+            dto.Remarks = null;
+        }
+
+        return dto;
+    }
+
+    private static async Task<ExamSubmissionDto> MapSubmissionToDtoAsync(
+        IUnitOfWork unitOfWork, ExamSubmission s, bool maskMarks = false)
+    {
+        var answers = await unitOfWork.ExamAnswers.GetBySubmissionAsync(s.Id);
+        var gradingStatus = s.GradingStatus == 0 ? GradingStatus.Pending : s.GradingStatus;
+        var mask = maskMarks && gradingStatus != GradingStatus.Approved;
+        var dto = new ExamSubmissionDto
+        {
+            Id = s.Id,
+            ExamId = s.ExamId,
+            ExamName = s.Exam?.Name ?? string.Empty,
+            StudentId = s.StudentId,
+            StudentName = s.Student?.User is not null
+                ? $"{s.Student.User.FirstName} {s.Student.User.LastName}"
+                : string.Empty,
+            AdmissionNumber = s.Student?.AdmissionNumber ?? string.Empty,
+            SubmittedAt = s.SubmittedAt,
+            TotalMarksObtained = s.TotalMarksObtained,
+            TotalMaxMarks = s.TotalMaxMarks,
+            IsGraded = s.IsGraded,
+            GradedBy = s.GradedBy,
+            GradedAt = s.GradedAt,
+            GradingStatus = gradingStatus.ToString(),
+            GradingApprovedBy = s.GradingApprovedBy,
+            GradingApprovedAt = s.GradingApprovedAt,
+            GradingRejectionReason = s.GradingRejectionReason,
+            Answers = answers.Select(a => MapAnswerToDto(a, a.ExamQuestion, mask)).ToList()
+        };
+
+        if (mask)
+            dto.TotalMarksObtained = null;
+
+        return dto;
+    }
+
+    public async Task<ApiResponse<List<ExamQuestionDto>>> GetExamQuestionsAsync(Guid examId)
+    {
+        try
+        {
+            var questions = await _unitOfWork.ExamQuestions.GetByExamAsync(examId);
+            var dtos = questions.Select(MapQuestionToDto).ToList();
+            return ApiResponse<List<ExamQuestionDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<ExamQuestionDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse> AddExamQuestionsAsync(Guid examId, List<CreateExamQuestionDto> dtos)
+    {
+        try
+        {
+            var exam = await GetExamOrNullAsync(examId);
+            if (exam is null)
+                return ApiResponse.FailResponse(ApplicationMessages.NotFound);
+
+            var isFinal = exam.ExamType?.Name?.Equals("Final", StringComparison.OrdinalIgnoreCase) == true;
+            if (isFinal && !IsAdmin())
+                return ApiResponse.FailResponse("Only administrators can add questions to Final exams.");
+
+            if (!isFinal && IsTeacherOnly() && exam.TeacherId != await ResolveTeacherIdAsync())
+                return ApiResponse.FailResponse("You can only manage questions for your own exams.");
+
+            var existingMaxOrder = exam.Questions?.Any() == true
+                ? exam.Questions.Max(q => q.OrderIndex)
+                : 0;
+
+            foreach (var dto in dtos)
+            {
+                var isMcq = dto.QuestionType.Equals(nameof(QuestionType.MCQ), StringComparison.OrdinalIgnoreCase);
+                if (isMcq)
+                {
+                    if (string.IsNullOrWhiteSpace(dto.OptionA) || string.IsNullOrWhiteSpace(dto.OptionB)
+                        || string.IsNullOrWhiteSpace(dto.CorrectAnswer))
+                        return ApiResponse.FailResponse("MCQ questions require at least options A, B and a correct answer.");
+                }
+                else if (!isMcq && string.IsNullOrWhiteSpace(dto.QuestionText) && string.IsNullOrWhiteSpace(dto.ImageUrl))
+                {
+                    return ApiResponse.FailResponse("Descriptive questions require either question text or an image.");
+                }
+
+                var question = new ExamQuestion
+                {
+                    ExamId = examId,
+                    QuestionText = dto.QuestionText,
+                    QuestionType = isMcq ? QuestionType.MCQ : QuestionType.Descriptive,
+                    OptionA = dto.OptionA,
+                    OptionB = dto.OptionB,
+                    OptionC = dto.OptionC,
+                    OptionD = dto.OptionD,
+                    CorrectAnswer = isMcq ? dto.CorrectAnswer?.ToUpperInvariant() : null,
+                    Marks = dto.Marks,
+                    ImageUrl = dto.ImageUrl,
+                    ImageFileName = dto.ImageFileName,
+                    OrderIndex = dto.OrderIndex == 0 ? ++existingMaxOrder : dto.OrderIndex,
+                    SubjectId = dto.SubjectId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.ExamQuestions.AddAsync(question);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return ApiResponse.SuccessResponse(ApplicationMessages.CreateSuccess);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<ExamQuestionDto>> UpdateExamQuestionAsync(Guid examId, Guid questionId, CreateExamQuestionDto dto)
+    {
+        try
+        {
+            var exam = await GetExamOrNullAsync(examId);
+            if (exam is null)
+                return ApiResponse<ExamQuestionDto>.FailResponse(ApplicationMessages.NotFound);
+
+            var isFinal = exam.ExamType?.Name?.Equals("Final", StringComparison.OrdinalIgnoreCase) == true;
+            if (isFinal && !IsAdmin())
+                return ApiResponse<ExamQuestionDto>.FailResponse("Only administrators can manage Final exam questions.");
+
+            var question = (await _unitOfWork.ExamQuestions.GetByExamAsync(examId))
+                .FirstOrDefault(q => q.Id == questionId);
+            if (question is null)
+                return ApiResponse<ExamQuestionDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            var isMcq = dto.QuestionType.Equals(nameof(QuestionType.MCQ), StringComparison.OrdinalIgnoreCase);
+            question.QuestionText = dto.QuestionText;
+            question.QuestionType = isMcq ? QuestionType.MCQ : QuestionType.Descriptive;
+            question.OptionA = dto.OptionA;
+            question.OptionB = dto.OptionB;
+            question.OptionC = dto.OptionC;
+            question.OptionD = dto.OptionD;
+            question.CorrectAnswer = isMcq ? dto.CorrectAnswer?.ToUpperInvariant() : null;
+            question.Marks = dto.Marks;
+            question.ImageUrl = dto.ImageUrl;
+            question.ImageFileName = dto.ImageFileName;
+            question.SubjectId = dto.SubjectId;
+            question.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.ExamQuestions.UpdateAsync(question);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ApiResponse<ExamQuestionDto>.SuccessResponse(MapQuestionToDto(question), ApplicationMessages.UpdateSuccess);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExamQuestionDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse> DeleteExamQuestionAsync(Guid examId, Guid questionId)
+    {
+        try
+        {
+            var exam = await GetExamOrNullAsync(examId);
+            if (exam is null)
+                return ApiResponse.FailResponse(ApplicationMessages.NotFound);
+
+            var isFinal = exam.ExamType?.Name?.Equals("Final", StringComparison.OrdinalIgnoreCase) == true;
+            if (isFinal && !IsAdmin())
+                return ApiResponse.FailResponse("Only administrators can manage Final exam questions.");
+
+            var question = (await _unitOfWork.ExamQuestions.GetByExamAsync(examId))
+                .FirstOrDefault(q => q.Id == questionId);
+            if (question is null)
+                return ApiResponse.FailResponse(ApplicationMessages.NotFound);
+
+            await _unitOfWork.ExamQuestions.DeleteAsync(question);
+            await _unitOfWork.SaveChangesAsync();
+            return ApiResponse.SuccessResponse(ApplicationMessages.DeleteSuccess);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<ExamDto>> ApproveExamAsync(Guid id, bool approved, string? reason)
+    {
+        try
+        {
+            if (!IsAdmin())
+                return ApiResponse<ExamDto>.FailResponse("Only administrators can approve exams.");
+
+            var exam = await GetExamOrNullAsync(id);
+            if (exam is null)
+                return ApiResponse<ExamDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            exam.ApprovalStatus = approved ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
+            exam.ApprovedBy = _currentUserService.FullName;
+            exam.ApprovedAt = DateTime.UtcNow;
+            exam.RejectionReason = approved ? null : reason;
+            exam.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Exams.UpdateAsync(exam);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ApiResponse<ExamDto>.SuccessResponse(MapToDto(exam), approved ? "Exam approved." : "Exam rejected.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExamDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<ExamDto>> UploadQuestionPaperAsync(Guid examId, string? fileUrl, string? fileName)
+    {
+        try
+        {
+            var exam = await GetExamOrNullAsync(examId);
+            if (exam is null)
+                return ApiResponse<ExamDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            exam.QuestionPaperUrl = fileUrl;
+            exam.QuestionPaperFileName = fileName;
+            exam.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Exams.UpdateAsync(exam);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ApiResponse<ExamDto>.SuccessResponse(MapToDto(exam), ApplicationMessages.UpdateSuccess);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExamDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<ExamSubmissionDto>> GetSubmissionAsync(Guid examId, Guid studentId)
+    {
+        try
+        {
+            var submission = await _unitOfWork.ExamSubmissions.GetByExamAndStudentAsync(examId, studentId);
+            if (submission is null)
+                return ApiResponse<ExamSubmissionDto>.NotFoundResponse("No submission found for this student.");
+
+            var dto = await MapSubmissionToDtoAsync(_unitOfWork, submission, maskMarks: true);
+            return ApiResponse<ExamSubmissionDto>.SuccessResponse(dto);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExamSubmissionDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<ExamSubmissionDto>> SubmitExamAsync(SubmitExamDto dto)
+    {
+        try
+        {
+            var exam = await GetExamOrNullAsync(dto.ExamId);
+            if (exam is null)
+                return ApiResponse<ExamSubmissionDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            if (exam.ApprovalStatus != ApprovalStatus.Approved)
+                return ApiResponse<ExamSubmissionDto>.FailResponse("This exam is not approved yet and cannot be attempted.");
+
+            if (DateTime.UtcNow < exam.StartDate.ToUniversalTime())
+                return ApiResponse<ExamSubmissionDto>.FailResponse("This exam has not started yet.");
+
+            var studentId = await ResolveStudentIdAsync();
+            if (studentId == Guid.Empty)
+                return ApiResponse<ExamSubmissionDto>.FailResponse("Unable to identify the current student.");
+
+            var existing = await _unitOfWork.ExamSubmissions.GetByExamAndStudentAsync(dto.ExamId, studentId);
+            if (existing is not null)
+                return ApiResponse<ExamSubmissionDto>.FailResponse("You have already submitted this exam.");
+
+            var questions = (await _unitOfWork.ExamQuestions.GetByExamAsync(dto.ExamId))
+                .OrderBy(q => q.OrderIndex).ToList();
+            if (!questions.Any())
+                return ApiResponse<ExamSubmissionDto>.FailResponse("This exam has no questions yet.");
+
+            var submission = new ExamSubmission
+            {
+                ExamId = dto.ExamId,
+                StudentId = studentId,
+                SubmittedAt = DateTime.UtcNow,
+                TotalMarksObtained = 0,
+                TotalMaxMarks = questions.Sum(q => q.Marks),
+                IsGraded = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.ExamSubmissions.AddAsync(submission);
+            await _unitOfWork.SaveChangesAsync();
+
+            foreach (var question in questions)
+            {
+                var answer = dto.Answers.FirstOrDefault(a => a.ExamQuestionId == question.Id);
+                var isMcq = question.QuestionType == QuestionType.MCQ;
+                var selected = answer?.SelectedOption?.ToUpperInvariant();
+                var isCorrect = isMcq && !string.IsNullOrWhiteSpace(selected)
+                    && selected == question.CorrectAnswer?.ToUpperInvariant();
+
+                var examAnswer = new ExamAnswer
+                {
+                    ExamSubmissionId = submission.Id,
+                    ExamQuestionId = question.Id,
+                    SelectedOption = isMcq ? selected : null,
+                    AnswerText = isMcq ? null : answer?.AnswerText,
+                    ImageUrl = isMcq ? null : answer?.ImageUrl,
+                    IsCorrect = isCorrect,
+                    MarksObtained = isCorrect ? question.Marks : 0,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.ExamAnswers.AddAsync(examAnswer);
+            }
+
+            var autoGradedMarks = 0m;
+            foreach (var question in questions)
+            {
+                var answer = dto.Answers.FirstOrDefault(a => a.ExamQuestionId == question.Id);
+                if (question.QuestionType == QuestionType.MCQ
+                    && !string.IsNullOrWhiteSpace(answer?.SelectedOption)
+                    && answer.SelectedOption.ToUpperInvariant() == question.CorrectAnswer?.ToUpperInvariant())
+                {
+                    autoGradedMarks += question.Marks;
+                }
+            }
+            submission.TotalMarksObtained = autoGradedMarks;
+            submission.IsGraded = questions.All(q => q.QuestionType == QuestionType.MCQ);
+            submission.GradedBy = null;
+            submission.GradedAt = null;
+            submission.GradingStatus = GradingStatus.Pending;
+            submission.GradingApprovedBy = null;
+            submission.GradingApprovedAt = null;
+            submission.GradingRejectionReason = null;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            var result = await MapSubmissionToDtoAsync(_unitOfWork, submission);
+            return ApiResponse<ExamSubmissionDto>.SuccessResponse(result, "Exam submitted successfully.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExamSubmissionDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<List<ExamSubmissionDto>>> GetSubmissionsByExamAsync(Guid examId)
+    {
+        try
+        {
+            var submissions = await _unitOfWork.ExamSubmissions.GetByExamAsync(examId);
+            var dtos = new List<ExamSubmissionDto>();
+            foreach (var s in submissions)
+                dtos.Add(await MapSubmissionToDtoAsync(_unitOfWork, s));
+
+            return ApiResponse<List<ExamSubmissionDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<ExamSubmissionDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<List<ExamSubmissionDto>>> GetMySubmissionsAsync()
+    {
+        try
+        {
+            var studentId = await ResolveStudentIdAsync();
+            if (studentId == Guid.Empty)
+                return ApiResponse<List<ExamSubmissionDto>>.FailResponse("Unable to identify the current student.");
+
+            var submissions = await _unitOfWork.ExamSubmissions.GetByStudentAsync(studentId);
+            var dtos = new List<ExamSubmissionDto>();
+            foreach (var s in submissions)
+                dtos.Add(await MapSubmissionToDtoAsync(_unitOfWork, s, maskMarks: true));
+
+            return ApiResponse<List<ExamSubmissionDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<ExamSubmissionDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<ExamSubmissionDto>> GradeSubmissionAsync(Guid submissionId, GradeSubmissionDto dto)
+    {
+        try
+        {
+            var target = await _unitOfWork.ExamSubmissions.GetByIdAsync(submissionId);
+            if (target is null)
+                return ApiResponse<ExamSubmissionDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            var answers = await _unitOfWork.ExamAnswers.GetBySubmissionAsync(target.Id);
+            var gradeMap = dto.Answers.ToDictionary(a => a.AnswerId);
+
+            foreach (var answer in answers)
+            {
+                if (answer.ExamQuestion.QuestionType == QuestionType.MCQ)
+                    continue;
+
+                if (gradeMap.TryGetValue(answer.Id, out var grade))
+                {
+                    var max = answer.ExamQuestion.Marks;
+                    answer.MarksObtained = Math.Min(grade.MarksObtained, max);
+                    answer.Remarks = grade.Remarks;
+                    answer.UpdatedAt = DateTime.UtcNow;
+                    await _unitOfWork.ExamAnswers.UpdateAsync(answer);
+                }
+            }
+
+            var gradedAnswers = await _unitOfWork.ExamAnswers.GetBySubmissionAsync(target.Id);
+            target.TotalMarksObtained = gradedAnswers.Sum(a => a.MarksObtained);
+            target.IsGraded = true;
+            target.GradedBy = _currentUserService.FullName;
+            target.GradedAt = DateTime.UtcNow;
+            target.GradingStatus = GradingStatus.Pending;
+            target.GradingApprovedBy = null;
+            target.GradingApprovedAt = null;
+            target.GradingRejectionReason = null;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.ExamSubmissions.UpdateAsync(target);
+            await _unitOfWork.SaveChangesAsync();
+
+            var result = await MapSubmissionToDtoAsync(_unitOfWork, target);
+            return ApiResponse<ExamSubmissionDto>.SuccessResponse(result, "Submission graded successfully.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExamSubmissionDto>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<ExamSubmissionDto>> ApproveSubmissionGradingAsync(
+        Guid submissionId, bool approved, string? reason)
+    {
+        try
+        {
+            if (!IsAdmin())
+                return ApiResponse<ExamSubmissionDto>.FailResponse("Only administrators can approve exam results.");
+
+            var target = await _unitOfWork.ExamSubmissions.GetByIdAsync(submissionId);
+            if (target is null)
+                return ApiResponse<ExamSubmissionDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            target.GradingStatus = approved ? GradingStatus.Approved : GradingStatus.Rejected;
+            target.GradingApprovedBy = _currentUserService.FullName;
+            target.GradingApprovedAt = DateTime.UtcNow;
+            target.GradingRejectionReason = approved ? null : reason;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.ExamSubmissions.UpdateAsync(target);
+            await _unitOfWork.SaveChangesAsync();
+
+            var result = await MapSubmissionToDtoAsync(_unitOfWork, target);
+            var message = approved
+                ? "Grading approved and marks published to student."
+                : "Grading rejected.";
+            return ApiResponse<ExamSubmissionDto>.SuccessResponse(result, message);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<ExamSubmissionDto>.FailResponse(ex.Message);
+        }
+    }
+
     private static ExamDto MapToDto(Domain.Entities.Exam.Exam exam)
     {
         return new ExamDto
@@ -507,7 +1108,18 @@ public class ExamService : IExamService
             MaxMarks = null,
             PassingMarks = null,
             IsPublished = exam.Status == ExamStatus.Completed,
-            IsActive = exam.Status != ExamStatus.Cancelled
+            IsActive = exam.Status != ExamStatus.Cancelled,
+            TeacherName = exam.Teacher?.User is not null
+                ? $"{exam.Teacher.User.FirstName} {exam.Teacher.User.LastName}"
+                : string.Empty,
+            QuestionPaperUrl = exam.QuestionPaperUrl,
+            QuestionPaperFileName = exam.QuestionPaperFileName,
+            ApprovalStatus = (exam.ApprovalStatus == 0 ? ApprovalStatus.Pending : exam.ApprovalStatus).ToString(),
+            ApprovedBy = exam.ApprovedBy,
+            ApprovedAt = exam.ApprovedAt,
+            RejectionReason = exam.RejectionReason,
+            QuestionCount = exam.Questions?.Count ?? 0,
+            TotalMarks = exam.Questions?.Sum(q => q.Marks) ?? 0
         };
     }
 }

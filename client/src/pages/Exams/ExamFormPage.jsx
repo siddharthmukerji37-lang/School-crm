@@ -13,7 +13,7 @@ import { createExam, updateExam, fetchExamById, clearSelectedExam } from '../../
 import axiosInstance from '../../services/axiosInstance';
 import toast from 'react-hot-toast';
 
-const EXAM_TYPE_OPTIONS = ['Midterm', 'Final', 'Quiz', 'Assignment', 'Practical'];
+const ALL_EXAM_TYPES = ['Midterm', 'Final', 'Quiz', 'Assignment', 'Practical'];
 
 const examSchema = Yup.object({
   name: Yup.string().trim().required('Exam name is required'),
@@ -31,6 +31,9 @@ export default function ExamFormPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { selectedExam, loading } = useSelector((state) => state.exams);
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const examTypeOptions = isAdmin ? ALL_EXAM_TYPES : ALL_EXAM_TYPES.filter((t) => t !== 'Final');
   const isEditMode = Boolean(id);
 
   const [classes, setClasses] = useState([]);
@@ -86,7 +89,12 @@ export default function ExamFormPage() {
       const successAction = isEditMode ? updateExam : createExam;
       if (successAction.fulfilled.match(action)) {
         toast.success(isEditMode ? 'Exam updated' : 'Exam created');
-        navigate('/exams');
+        const examId = isEditMode ? id : action.payload?.data?.id;
+        if (!isAdmin) {
+          navigate(examId ? `/exams/${examId}/questions` : '/exams');
+        } else {
+          navigate('/exams');
+        }
       } else {
         toast.error(action.payload || 'Failed');
       }
@@ -119,7 +127,7 @@ export default function ExamFormPage() {
                   <TextField fullWidth select name="examType" label="Exam Type" value={values.examType}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.examType && Boolean(errors.examType)} helperText={touched.examType && errors.examType}>
-                    {EXAM_TYPE_OPTIONS.map((o) => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                    {examTypeOptions.map((o) => <MenuItem key={o} value={o}>{o}</MenuItem>)}
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>

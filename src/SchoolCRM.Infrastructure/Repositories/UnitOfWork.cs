@@ -42,6 +42,9 @@ public class UnitOfWork : IUnitOfWork
     public IExamScheduleRepository ExamSchedules => ResolveRepository<IExamScheduleRepository>();
     public IMarkRepository Marks => ResolveRepository<IMarkRepository>();
     public IReportCardRepository ReportCards => ResolveRepository<IReportCardRepository>();
+    public IExamQuestionRepository ExamQuestions => ResolveRepository<IExamQuestionRepository>();
+    public IExamSubmissionRepository ExamSubmissions => ResolveRepository<IExamSubmissionRepository>();
+    public IExamAnswerRepository ExamAnswers => ResolveRepository<IExamAnswerRepository>();
     public IFeeStructureRepository FeeStructures => ResolveRepository<IFeeStructureRepository>();
     public IFeeInstallmentRepository FeeInstallments => ResolveRepository<IFeeInstallmentRepository>();
     public IFeeReceiptRepository FeeReceipts => ResolveRepository<IFeeReceiptRepository>();

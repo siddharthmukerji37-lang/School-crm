@@ -24,6 +24,10 @@ public interface IHomeworkService
 
     Task<ApiResponse<AssignmentDto>> GradeAssignmentAsync(Guid assignmentId, GradeAssignmentDto dto);
 
+    Task<ApiResponse<HomeworkDto>> ApproveHomeworkAsync(Guid id, bool approved, string? reason);
+
+    Task<ApiResponse> RequestHomeworkApprovalAsync(Guid id);
+
     public sealed class HomeworkDto
     {
         public Guid Id { get; set; }
@@ -41,6 +45,11 @@ public interface IHomeworkService
         public DateOnly DueDate { get; set; }
         public string? AttachmentUrl { get; set; }
         public bool IsActive { get; set; }
+        public string ApprovalStatus { get; set; } = nameof(SchoolCRM.Domain.Enums.ApprovalStatus.Pending);
+        public string? ApprovedBy { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+        public string? RejectionReason { get; set; }
+        public int SubmissionCount { get; set; }
     }
 
     public sealed class CreateHomeworkDto
@@ -84,5 +93,11 @@ public interface IHomeworkService
     {
         public decimal Marks { get; set; }
         public string? Remarks { get; set; }
+    }
+
+    public sealed class ApproveHomeworkDto
+    {
+        public bool Approved { get; set; }
+        public string? Reason { get; set; }
     }
 }

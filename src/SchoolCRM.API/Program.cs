@@ -200,6 +200,9 @@ builder.Services.AddScoped<IExamRepository, ExamRepository>();
 builder.Services.AddScoped<IExamScheduleRepository, ExamScheduleRepository>();
 builder.Services.AddScoped<IMarkRepository, MarkRepository>();
 builder.Services.AddScoped<IReportCardRepository, ReportCardRepository>();
+builder.Services.AddScoped<IExamQuestionRepository, ExamQuestionRepository>();
+builder.Services.AddScoped<IExamSubmissionRepository, ExamSubmissionRepository>();
+builder.Services.AddScoped<IExamAnswerRepository, ExamAnswerRepository>();
 builder.Services.AddScoped<IFeeStructureRepository, FeeStructureRepository>();
 builder.Services.AddScoped<IFeeInstallmentRepository, FeeInstallmentRepository>();
 builder.Services.AddScoped<IFeeReceiptRepository, FeeReceiptRepository>();
@@ -272,6 +275,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new SchoolCRM.API.Converters.TimeOnlyJsonConverter());
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -335,6 +339,7 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();

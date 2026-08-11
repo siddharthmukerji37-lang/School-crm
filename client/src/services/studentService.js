@@ -27,6 +27,9 @@ const studentService = {
 
   promote: (id, data) =>
     axiosInstance.post(`/students/${id}/promote`, data),
+
+  getDocuments: (id) =>
+    axiosInstance.get(`/students/${id}/documents`),
 };
 
 export default studentService;

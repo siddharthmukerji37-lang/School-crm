@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SchoolCRM.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e92bd3a9a5550baf2c35685594953cce9cde1cf4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c59cbdb3057754fd4752a7599ba7dba9c8a7d7f7")]
 [assembly: System.Reflection.AssemblyProductAttribute("SchoolCRM.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SchoolCRM.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

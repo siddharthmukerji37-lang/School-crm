@@ -1,0 +1,13 @@
+/var/www/html/school-crm/src/SchoolCRM.Shared/bin/Release/net8.0/SchoolCRM.Shared.deps.json
+/var/www/html/school-crm/src/SchoolCRM.Shared/bin/Release/net8.0/SchoolCRM.Shared.dll
+/var/www/html/school-crm/src/SchoolCRM.Shared/bin/Release/net8.0/SchoolCRM.Shared.pdb
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.csproj.AssemblyReference.cache
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.GeneratedMSBuildEditorConfig.editorconfig
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.AssemblyInfoInputs.cache
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.AssemblyInfo.cs
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.csproj.CoreCompileInputs.cache
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.sourcelink.json
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.dll
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/refint/SchoolCRM.Shared.dll
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/SchoolCRM.Shared.pdb
+/var/www/html/school-crm/src/SchoolCRM.Shared/obj/Release/net8.0/ref/SchoolCRM.Shared.dll

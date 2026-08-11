@@ -201,3 +201,15 @@ public sealed class TransferStudentDto
 
     public string? Remarks { get; set; }
 }
+
+public sealed class StudentDocumentDto
+{
+    public Guid Id { get; set; }
+    public Guid StudentId { get; set; }
+    public string DocumentName { get; set; } = string.Empty;
+    public string DocumentType { get; set; } = string.Empty;
+    public string FileUrl { get; set; } = string.Empty;
+    public string? FileName { get; set; }
+    public long? FileSize { get; set; }
+    public DateTime? UploadedAt { get; set; }
+}

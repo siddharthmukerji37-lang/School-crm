@@ -79,6 +79,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ExamType> ExamTypes => Set<ExamType>();
     public DbSet<Exam> Exams => Set<Exam>();
     public DbSet<ExamSchedule> ExamSchedules => Set<ExamSchedule>();
+    public DbSet<ExamQuestion> ExamQuestions => Set<ExamQuestion>();
+    public DbSet<ExamSubmission> ExamSubmissions => Set<ExamSubmission>();
+    public DbSet<ExamAnswer> ExamAnswers => Set<ExamAnswer>();
     public DbSet<Mark> Marks => Set<Mark>();
     public DbSet<GradeSystem> GradeSystems => Set<GradeSystem>();
     public DbSet<ReportCard> ReportCards => Set<ReportCard>();
@@ -199,4 +202,5 @@ public interface ICurrentUserService
     string? Email { get; }
     string? FullName { get; }
     Guid? SchoolId { get; }
+    IReadOnlyList<string> Roles { get; }
 }

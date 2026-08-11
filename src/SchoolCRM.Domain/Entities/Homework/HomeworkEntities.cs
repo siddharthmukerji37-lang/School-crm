@@ -17,6 +17,10 @@ public class Homework : BaseEntity
     public Guid SubjectId { get; set; }
     public Guid TeacherId { get; set; }
     public Guid SchoolId { get; set; }
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+    public string? ApprovedBy { get; set; }
+    public DateTime? ApprovedAt { get; set; }
+    public string? RejectionReason { get; set; }
 
     public School.ClassRoom ClassRoom { get; set; } = null!;
     public School.Section? Section { get; set; }
