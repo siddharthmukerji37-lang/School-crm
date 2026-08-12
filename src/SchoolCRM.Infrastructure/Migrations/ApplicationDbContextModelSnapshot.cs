@@ -911,6 +911,9 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("SectionId")
+                        .HasColumnType("char(36)");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)");
 
@@ -935,6 +938,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasIndex("ExamTypeId");
 
                     b.HasIndex("SchoolId");
+
+                    b.HasIndex("SectionId");
 
                     b.HasIndex("TeacherId");
 
@@ -3215,7 +3220,10 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Property<string>("ReturnedTo")
                         .HasColumnType("longtext");
 
-                    b.Property<Guid>("StudentId")
+                    b.Property<Guid?>("StudentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("TeacherId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -3229,6 +3237,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasIndex("BookId");
 
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("TeacherId");
 
                     b.ToTable("BookIssues", (string)null);
                 });
@@ -6080,6 +6090,10 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SchoolCRM.Domain.Entities.School.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId");
+
                     b.HasOne("SchoolCRM.Domain.Entities.Teacher.Teacher", "Teacher")
                         .WithMany()
                         .HasForeignKey("TeacherId")
@@ -6092,6 +6106,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Navigation("ExamType");
 
                     b.Navigation("School");
+
+                    b.Navigation("Section");
 
                     b.Navigation("Teacher");
                 });
@@ -6554,12 +6570,17 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasOne("SchoolCRM.Domain.Entities.Student.Student", "Student")
                         .WithMany("BookIssues")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SchoolCRM.Domain.Entities.Teacher.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId");
 
                     b.Navigation("Book");
 
                     b.Navigation("Student");
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("SchoolCRM.Domain.Entities.Notification.ChatMessage", b =>

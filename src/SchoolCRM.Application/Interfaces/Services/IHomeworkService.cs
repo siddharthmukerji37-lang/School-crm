@@ -24,6 +24,8 @@ public interface IHomeworkService
 
     Task<ApiResponse<AssignmentDto>> GradeAssignmentAsync(Guid assignmentId, GradeAssignmentDto dto);
 
+    Task<ApiResponse<AssignmentDto>> RejectAssignmentAsync(Guid assignmentId, string? remarks);
+
     Task<ApiResponse<HomeworkDto>> ApproveHomeworkAsync(Guid id, bool approved, string? reason);
 
     Task<ApiResponse> RequestHomeworkApprovalAsync(Guid id);
@@ -50,6 +52,8 @@ public interface IHomeworkService
         public DateTime? ApprovedAt { get; set; }
         public string? RejectionReason { get; set; }
         public int SubmissionCount { get; set; }
+        public string Status { get; set; } = nameof(SchoolCRM.Domain.Enums.HomeworkStatus.Assigned);
+        public List<AssignmentDto> Submissions { get; set; } = new();
     }
 
     public sealed class CreateHomeworkDto

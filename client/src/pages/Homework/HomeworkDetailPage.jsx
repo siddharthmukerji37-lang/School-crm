@@ -3,13 +3,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Paper, Typography, Grid, Chip, Button, Divider, CircularProgress,
-  TextField, Stack, Card, CardContent, Alert, LinearProgress,
+  TextField, Stack, Card, CardContent, Alert, LinearProgress, Dialog, DialogTitle,
+  DialogContent, DialogActions,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import UploadIcon from '@mui/icons-material/Upload';
 import SendIcon from '@mui/icons-material/Send';
 import LinkIcon from '@mui/icons-material/Link';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { fetchHomeworkById, clearSelectedHomework } from '../../store/slices/homeworkSlice';
 import homeworkService from '../../services/homeworkService';
 import { uploadFile } from '../../utils/upload';
@@ -46,6 +49,42 @@ export default function HomeworkDetailPage() {
   const [subAttachment, setSubAttachment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submittingForApproval, setSubmittingForApproval] = useState(false);
+
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewMode, setReviewMode] = useState('correct');
+  const [reviewMarks, setReviewMarks] = useState('');
+  const [reviewRemarks, setReviewRemarks] = useState('');
+  const [reviewing, setReviewing] = useState(false);
+
+  const openReviewDialog = (submission, mode) => {
+    setReviewTarget(submission);
+    setReviewMode(mode);
+    setReviewMarks(submission.marks != null ? String(submission.marks) : '');
+    setReviewRemarks('');
+  };
+
+  const submitReview = async () => {
+    if (!reviewTarget) return;
+    setReviewing(true);
+    try {
+      if (reviewMode === 'correct') {
+        await homeworkService.review(reviewTarget.id, {
+          marks: Number(reviewMarks),
+          remarks: reviewRemarks,
+        });
+        toast.success('Marked as correct');
+      } else {
+        await homeworkService.reject(reviewTarget.id, { remarks: reviewRemarks });
+        toast.success('Returned to student for resubmission');
+      }
+      setReviewTarget(null);
+      dispatch(fetchHomeworkById(id));
+    } catch (e) {
+      toast.error(e.message || 'Review failed');
+    } finally {
+      setReviewing(false);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchHomeworkById(id));
@@ -202,13 +241,84 @@ export default function HomeworkDetailPage() {
         )}
       </Paper>
 
+      {(isTeacher || isAdmin) && hw.submissions?.length > 0 && (
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ color: 'primary.main' }}>
+            Student Submissions ({hw.submissions.length})
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Stack spacing={2}>
+            {hw.submissions.map((s) => (
+              <Card key={s.id} variant="outlined" sx={{ bgcolor: 'grey.50' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box>
+                      <Typography variant="body2" fontWeight={600}>{s.studentName || 'Student'}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Submitted {s.submittedDate ? new Date(s.submittedDate).toLocaleString() : 'yes'}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={s.status}
+                      color={s.marks != null ? 'success' : 'info'}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                  {s.submissionText && (
+                    <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>{s.submissionText}</Typography>
+                  )}
+                  {s.attachmentUrl && (
+                    <Button size="small" sx={{ mt: 1 }} href={s.attachmentUrl} target="_blank" rel="noreferrer" startIcon={<LinkIcon />}>
+                      View uploaded answer
+                    </Button>
+                  )}
+                  {s.marks != null && (
+                    <Typography variant="body2" sx={{ mt: 1 }} fontWeight={600}>
+                      Marks: {s.marks} {s.remarks ? ` • ${s.remarks}` : ''}
+                    </Typography>
+                  )}
+                  {(isTeacher || isAdmin) && s.status === 'Submitted' && (
+                    <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        startIcon={<CheckCircleIcon />}
+                        onClick={() => openReviewDialog(s, 'correct')}
+                      >
+                        Correct
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        startIcon={<CancelIcon />}
+                        onClick={() => openReviewDialog(s, 'not-correct')}
+                      >
+                        Not Correct
+                      </Button>
+                    </Stack>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        </Paper>
+      )}
+
       {isStudent && (
         <Paper sx={{ p: 3 }}>
           <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ color: 'primary.main' }}>
             My Submission
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          {mySubmission ? (
+          {mySubmission?.status === 'Rejected' && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              Your homework was returned: {mySubmission.remarks || 'Please fix it and resubmit.'}
+            </Alert>
+          )}
+          {mySubmission && mySubmission.status !== 'Rejected' ? (
             <Card variant="outlined" sx={{ bgcolor: 'grey.50' }}>
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
@@ -256,6 +366,45 @@ export default function HomeworkDetailPage() {
           {submitting && <LinearProgress sx={{ mt: 2 }} />}
         </Paper>
       )}
+
+      <Dialog open={Boolean(reviewTarget)} onClose={() => !reviewing && setReviewTarget(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {reviewMode === 'correct' ? 'Mark as Correct' : 'Mark as Not Correct'}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {reviewMode === 'correct' && (
+              <TextField
+                label="Marks" type="number" fullWidth size="small"
+                value={reviewMarks}
+                onChange={(e) => setReviewMarks(e.target.value)}
+              />
+            )}
+            <TextField
+              label={reviewMode === 'correct' ? 'Remarks (optional)' : 'Reason for return (required)'}
+              fullWidth multiline rows={3} size="small"
+              value={reviewRemarks}
+              onChange={(e) => setReviewRemarks(e.target.value)}
+            />
+            {reviewMode === 'not-correct' && (
+              <Typography variant="caption" color="text.secondary">
+                The student will be notified to resubmit the homework.
+              </Typography>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReviewTarget(null)} disabled={reviewing}>Cancel</Button>
+          <Button
+            variant="contained"
+            color={reviewMode === 'correct' ? 'success' : 'error'}
+            onClick={submitReview}
+            disabled={reviewing || (reviewMode === 'not-correct' && !reviewRemarks.trim())}
+          >
+            {reviewing ? 'Saving...' : reviewMode === 'correct' ? 'Save & Notify' : 'Return for Resubmit'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -73,22 +73,35 @@ public class BookIssueRepository : GenericRepository<BookIssue>, IBookIssueRepos
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<BookIssue>> GetByTeacherAsync(Guid teacherId)
+    {
+        return await _dbSet
+            .Include(bi => bi.Book)
+                .ThenInclude(b => b!.Category)
+            .Where(bi => bi.TeacherId == teacherId)
+            .OrderByDescending(bi => bi.IssueDate)
+            .ToListAsync();
+    }
+
     public async Task<IReadOnlyList<BookIssue>> GetOverdueBooksAsync()
     {
         return await _dbSet
             .Include(bi => bi.Book)
             .Include(bi => bi.Student)
                 .ThenInclude(s => s!.User)
+            .Include(bi => bi.Teacher)
+                .ThenInclude(t => t!.User)
             .Where(bi => !bi.IsReturned && bi.DueDate < DateTime.UtcNow)
             .OrderBy(bi => bi.DueDate)
             .ToListAsync();
     }
 
-    public async Task<bool> HasActiveIssueAsync(Guid bookId, Guid studentId)
+    public async Task<bool> HasActiveIssueAsync(Guid bookId, Guid? studentId, Guid? teacherId)
     {
         return await _dbSet.AnyAsync(bi =>
             bi.BookId == bookId
-            && bi.StudentId == studentId
+            && ((studentId.HasValue && bi.StudentId == studentId)
+                || (teacherId.HasValue && bi.TeacherId == teacherId))
             && !bi.IsReturned);
     }
 
@@ -100,6 +113,8 @@ public class BookIssueRepository : GenericRepository<BookIssue>, IBookIssueRepos
             .Include(bi => bi.Book)
             .Include(bi => bi.Student)
                 .ThenInclude(s => s!.User)
+            .Include(bi => bi.Teacher)
+                .ThenInclude(t => t!.User)
             .AsQueryable();
 
         if (filter is not null)

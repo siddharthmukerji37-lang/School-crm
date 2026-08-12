@@ -93,8 +93,9 @@ export default function StudentExamTakePage() {
   }
 
   if (submission) {
+    const gradingApproved = submission.gradingStatus === 'Approved';
     const percentage = submission.totalMaxMarks > 0
-      ? Math.round((submission.totalMarksObtained / submission.totalMaxMarks) * 100)
+      ? Math.round(((submission.totalMarksObtained || 0) / submission.totalMaxMarks) * 100)
       : 0;
     return (
       <Box>
@@ -114,17 +115,38 @@ export default function StudentExamTakePage() {
                   label={submission.isGraded ? 'Graded' : 'Pending review'}
                   color={submission.isGraded ? 'success' : 'warning'} size="small"
                 />
+                <Chip
+                  label={`Approval: ${submission.gradingStatus || 'Pending'}`}
+                  color={gradingApproved ? 'success' : submission.gradingStatus === 'Rejected' ? 'error' : 'warning'}
+                  size="small" variant="outlined"
+                />
                 {submission.isGraded && submission.gradedBy && (
                   <Chip label={`Graded by ${submission.gradedBy}`} size="small" variant="outlined" />
                 )}
               </Stack>
+              {submission.gradingRejectionReason && (
+                <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                  Rejection reason: {submission.gradingRejectionReason}
+                </Typography>
+              )}
             </Box>
-            <Box sx={{ textAlign: 'center', minWidth: 160 }}>
-              <Typography variant="h3" fontWeight={700}>
-                {submission.totalMarksObtained} / {submission.totalMaxMarks}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">{percentage}%</Typography>
-            </Box>
+            {gradingApproved ? (
+              <Box sx={{ textAlign: 'center', minWidth: 160 }}>
+                <Typography variant="h3" fontWeight={700}>
+                  {submission.totalMarksObtained} / {submission.totalMaxMarks}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">{percentage}%</Typography>
+              </Box>
+            ) : (
+              <Box sx={{ textAlign: 'center', minWidth: 160 }}>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                  Marks not published yet
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Your result is pending admin approval.
+                </Typography>
+              </Box>
+            )}
           </Stack>
         </Paper>
         {submission.answers.map((a, idx) => (
@@ -133,12 +155,14 @@ export default function StudentExamTakePage() {
               <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
                 <Typography variant="body1" fontWeight={600}>{idx + 1}. {a.questionText || '(Image based question)'}</Typography>
                 <Chip label={`${a.marks} marks`} size="small" variant="outlined" />
-                <Chip label={`Obtained: ${a.marksObtained}`} size="small" color={a.marksObtained > 0 ? 'success' : 'default'} />
+                {gradingApproved && (
+                  <Chip label={`Obtained: ${a.marksObtained}`} size="small" color={(a.marksObtained || 0) > 0 ? 'success' : 'default'} />
+                )}
               </Stack>
               {a.questionType === 'MCQ' ? (
                 <Typography variant="body2" color="text.secondary">
                   Your answer: {a.selectedOption || 'Not answered'}
-                  {a.correctAnswer ? ` • Correct: ${a.correctAnswer}` : ''}
+                  {gradingApproved && a.correctAnswer ? ` • Correct: ${a.correctAnswer}` : ''}
                 </Typography>
               ) : (
                 <Box>
@@ -150,7 +174,7 @@ export default function StudentExamTakePage() {
                       <Button size="small" sx={{ mt: 1 }}>View answer image</Button>
                     </a>
                   )}
-                  {a.remarks && (
+                  {gradingApproved && a.remarks && (
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                       Teacher remarks: {a.remarks}
                     </Typography>

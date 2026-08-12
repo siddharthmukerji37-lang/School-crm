@@ -52,6 +52,12 @@ const TimetablePage = lazy(() => import('../pages/Timetable/TimetablePage'));
 
 const ADMIN_ROLES = ['SuperAdmin', 'Admin'];
 const STAFF_ROLES = ['SuperAdmin', 'Admin', 'Teacher', 'ClassTeacher'];
+const FEE_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
+const LIBRARY_ROLES = ['SuperAdmin', 'Admin', 'Librarian'];
+const GENERAL_ROLES = [
+  'SuperAdmin', 'Admin', 'SchoolAdmin', 'Principal', 'VicePrincipal',
+  'Teacher', 'ClassTeacher', 'Receptionist', 'Student', 'Parent',
+];
 
 export default function AppRouter() {
   return (
@@ -73,7 +79,9 @@ export default function AppRouter() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
 
-        <Route path="students" element={<StudentListPage />} />
+        <Route path="students" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><StudentListPage /></ProtectedRoute>
+        } />
         <Route path="students/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><StudentFormPage /></ProtectedRoute>
         } />
@@ -82,7 +90,9 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><StudentFormPage /></ProtectedRoute>
         } />
 
-        <Route path="teachers" element={<TeacherListPage />} />
+        <Route path="teachers" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><TeacherListPage /></ProtectedRoute>
+        } />
         <Route path="teachers/:id" element={<TeacherDetailPage />} />
         <Route path="teachers/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><TeacherFormPage /></ProtectedRoute>
@@ -91,7 +101,9 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><TeacherFormPage /></ProtectedRoute>
         } />
 
-        <Route path="parents" element={<ParentListPage />} />
+        <Route path="parents" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><ParentListPage /></ProtectedRoute>
+        } />
         <Route path="parents/:id" element={<ParentDetailPage />} />
         <Route path="parents/create" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><ParentFormPage /></ProtectedRoute>
@@ -113,12 +125,16 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><EmployeeFormPage /></ProtectedRoute>
         } />
 
-        <Route path="attendance" element={<AttendanceListPage />} />
+        <Route path="attendance" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><AttendanceListPage /></ProtectedRoute>
+        } />
         <Route path="attendance/mark" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><AttendanceMarkPage /></ProtectedRoute>
         } />
 
-        <Route path="exams" element={<ExamListPage />} />
+        <Route path="exams" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><ExamListPage /></ProtectedRoute>
+        } />
         <Route path="exams/create" element={
           <ProtectedRoute allowedRoles={STAFF_ROLES}><ExamFormPage /></ProtectedRoute>
         } />
@@ -135,7 +151,9 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={['Student']}><StudentExamTakePage /></ProtectedRoute>
         } />
 
-        <Route path="homework" element={<HomeworkListPage />} />
+        <Route path="homework" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><HomeworkListPage /></ProtectedRoute>
+        } />
         <Route path="homework/:id" element={<HomeworkDetailPage />} />
         <Route path="homework/create" element={
           <ProtectedRoute allowedRoles={STAFF_ROLES}><HomeworkFormPage /></ProtectedRoute>
@@ -148,23 +166,25 @@ export default function AppRouter() {
         <Route path="library/issued" element={<IssuedBooksPage />} />
         <Route path="library/:id" element={<BookDetailPage />} />
         <Route path="library/create" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><BookFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={LIBRARY_ROLES}><BookFormPage /></ProtectedRoute>
         } />
         <Route path="library/:id/edit" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><BookFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={LIBRARY_ROLES}><BookFormPage /></ProtectedRoute>
         } />
 
-        <Route path="transport" element={<TransportPage />} />
+        <Route path="transport" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><TransportPage /></ProtectedRoute>
+        } />
         <Route path="hostel" element={
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><HostelPage /></ProtectedRoute>
         } />
 
         <Route path="fees" element={<FeeStructureListPage />} />
         <Route path="fees/collect" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><FeeCollectPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={FEE_ROLES}><FeeCollectPage /></ProtectedRoute>
         } />
         <Route path="fees/receipts" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><FeeReceiptListPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={FEE_ROLES}><FeeReceiptListPage /></ProtectedRoute>
         } />
 
         <Route path="inventory" element={
@@ -202,7 +222,9 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={['SuperAdmin', 'Admin']}><NoticeManagementPage /></ProtectedRoute>
         } />
 
-        <Route path="timetable" element={<TimetablePage />} />
+        <Route path="timetable" element={
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><TimetablePage /></ProtectedRoute>
+        } />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

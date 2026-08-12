@@ -105,7 +105,7 @@ public class StudentService : IStudentService
                 CreatedAt = DateTime.UtcNow
             };
 
-            var result = await _userManager.CreateAsync(user, "Student@123");
+            var result = await _userManager.CreateAsync(user, string.IsNullOrWhiteSpace(dto.Password) ? "Student@123" : dto.Password);
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();

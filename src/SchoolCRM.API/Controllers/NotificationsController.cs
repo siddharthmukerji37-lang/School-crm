@@ -91,6 +91,23 @@ public class NotificationsController : ControllerBase
         return Ok(ApiResponse<List<Announcement>>.SuccessResponse(items));
     }
 
+    [HttpPost("timetable-change")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> RequestTimetableChangeAsync(
+        [FromBody] TimetableChangeRequestDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Message))
+            return BadRequest(ApiResponse.FailResponse("Change description is required."));
+
+        var title = "Timetable change requested";
+        var message = $"A teacher has requested a timetable change.\n\n{dto.Message}";
+        await _notificationService.NotifyAdminsAsync(title, message,
+            SchoolCRM.Domain.Enums.NotificationType.Warning, link: "/timetable");
+
+        return Ok(ApiResponse.SuccessResponse("Change request sent to admin."));
+    }
+
     [HttpPost("announcements")]
     public async Task<ActionResult> CreateAnnouncementAsync([FromBody] AnnouncementRequestDto dto)
     {
@@ -123,4 +140,9 @@ public sealed class AnnouncementRequestDto
     public string? Priority { get; set; }
     public string? Type { get; set; }
     public DateTime? PublishDate { get; set; }
+}
+
+public sealed class TimetableChangeRequestDto
+{
+    public string Message { get; set; } = string.Empty;
 }

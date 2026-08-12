@@ -216,9 +216,15 @@ public class LibraryService : ILibraryService
     {
         try
         {
-            var hasActive = await _unitOfWork.BookIssues.HasActiveIssueAsync(dto.BookId, dto.StudentId);
+            if (!dto.StudentId.HasValue && !dto.TeacherId.HasValue)
+                return ApiResponse<BookIssueDto>.FailResponse("Select a student or teacher to issue the book.");
+
+            var hasActive = await _unitOfWork.BookIssues.HasActiveIssueAsync(
+                dto.BookId, dto.StudentId, dto.TeacherId);
             if (hasActive)
-                return ApiResponse<BookIssueDto>.FailResponse("Student already has an active issue for this book.");
+                return ApiResponse<BookIssueDto>.FailResponse(dto.StudentId.HasValue
+                    ? "Student already has an active issue for this book."
+                    : "Teacher already has an active issue for this book.");
 
             var book = await _unitOfWork.Books.GetByIdAsync(dto.BookId);
             if (book is null || book.AvailableCopies <= 0)
@@ -228,6 +234,7 @@ public class LibraryService : ILibraryService
             {
                 BookId = dto.BookId,
                 StudentId = dto.StudentId,
+                TeacherId = dto.TeacherId,
                 IssueDate = DateTime.UtcNow,
                 DueDate = DateTime.UtcNow.AddDays(14),
                 IsReturned = false,
@@ -248,6 +255,7 @@ public class LibraryService : ILibraryService
                 BookId = issue.BookId,
                 BookTitle = book.Title,
                 StudentId = issue.StudentId,
+                TeacherId = issue.TeacherId,
                 IssueDate = issue.IssueDate,
                 DueDate = issue.DueDate,
                 IsReturned = false
@@ -291,6 +299,7 @@ public class LibraryService : ILibraryService
                 BookId = issue.BookId,
                 BookTitle = book?.Title ?? string.Empty,
                 StudentId = issue.StudentId,
+                TeacherId = issue.TeacherId,
                 IssueDate = issue.IssueDate,
                 DueDate = issue.DueDate,
                 ReturnedDate = issue.ReturnDate,
@@ -305,13 +314,15 @@ public class LibraryService : ILibraryService
     }
 
     public async Task<ApiResponse<PagedResult<BookIssueDto>>> GetIssuedBooksAsync(
-        PaginationQuery query, Guid? studentId, bool? overdue)
+        PaginationQuery query, Guid? studentId, Guid? teacherId, bool? overdue)
     {
         try
         {
             Expression<Func<Domain.Entities.Library.BookIssue, bool>>? filter = i => !i.IsDeleted;
             if (studentId.HasValue)
                 filter = i => !i.IsDeleted && i.StudentId == studentId.Value;
+            else if (teacherId.HasValue)
+                filter = i => !i.IsDeleted && i.TeacherId == teacherId.Value;
 
             var (items, totalCount) = await _unitOfWork.BookIssues.GetIssuedPagedAsync(
                 query.PageNumber, query.PageSize, filter);
@@ -324,6 +335,10 @@ public class LibraryService : ILibraryService
                 StudentId = i.StudentId,
                 StudentName = i.Student?.User is not null
                     ? $"{i.Student.User.FirstName} {i.Student.User.LastName}"
+                    : string.Empty,
+                TeacherId = i.TeacherId,
+                TeacherName = i.Teacher?.User is not null
+                    ? $"{i.Teacher.User.FirstName} {i.Teacher.User.LastName}"
                     : string.Empty,
                 IssueDate = i.IssueDate,
                 DueDate = i.DueDate,

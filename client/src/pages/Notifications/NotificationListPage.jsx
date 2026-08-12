@@ -136,13 +136,13 @@ export default function NotificationListPage() {
                   >
                     <Avatar
                       sx={{
-                        bgcolor: notificationColorMap[notification.type] || 'grey.500',
+                        bgcolor: notificationColorMap[notification.type?.toLowerCase()] || 'grey.500',
                         color: '#fff',
                         width: 44,
                         height: 44,
                       }}
                     >
-                      {notificationIconMap[notification.type] || <NotificationsIcon />}
+                      {notificationIconMap[notification.type?.toLowerCase()] || <NotificationsIcon />}
                     </Avatar>
                   </Badge>
                 </ListItemAvatar>

@@ -1,24 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box, Paper, Typography, Chip, Button, Stack, TextField, Divider,
-  CircularProgress, Card, CardContent, Grid,
+  CircularProgress, Card, CardContent, Grid, Dialog, DialogTitle,
+  DialogContent, DialogActions,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import CancelIcon from '@mui/icons-material/Cancel';
 import toast from 'react-hot-toast';
 import examService from '../../services/examService';
 import DataTable from '../../components/common/DataTable';
 
+const gradingColor = (s) => {
+  switch (s) { case 'Approved': return 'success'; case 'Rejected': return 'error'; default: return 'warning'; }
+};
+
 export default function ExamSubmissionsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const roles = user?.roles || [];
+  const isAdmin = roles.some((r) => r === 'SuperAdmin' || r === 'Admin');
+
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exam, setExam] = useState(null);
   const [selected, setSelected] = useState(null);
   const [grades, setGrades] = useState({});
   const [saving, setSaving] = useState(false);
+  const [approvalTarget, setApprovalTarget] = useState(null);
+  const [approvalApproved, setApprovalApproved] = useState(true);
+  const [approvalReason, setApprovalReason] = useState('');
+  const [approving, setApproving] = useState(false);
 
   const load = async () => {
     try {
@@ -62,13 +78,37 @@ export default function ExamSubmissionsPage() {
     setSaving(true);
     try {
       await examService.gradeSubmission(selected.id, { answers: payload });
-      toast.success('Submission graded successfully');
+      toast.success('Submission graded successfully. Admin approval required to publish marks.');
       setSelected(null);
       load();
     } catch (e) {
       toast.error(e.message || 'Failed to grade submission');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openApproval = (sub, approved) => {
+    setApprovalTarget(sub);
+    setApprovalApproved(approved);
+    setApprovalReason('');
+  };
+
+  const confirmApproval = async () => {
+    if (!approvalTarget) return;
+    setApproving(true);
+    try {
+      const res = await examService.approveGrading(approvalTarget.id, {
+        approved: approvalApproved,
+        reason: approvalApproved ? null : approvalReason,
+      });
+      toast.success(res.data.message || (approvalApproved ? 'Marks published' : 'Grading rejected'));
+      setApprovalTarget(null);
+      load();
+    } catch (e) {
+      toast.error(e.message || 'Failed to update approval');
+    } finally {
+      setApproving(false);
     }
   };
 
@@ -81,9 +121,15 @@ export default function ExamSubmissionsPage() {
       render: (v, row) => <Typography variant="body2">{v} / {row.totalMaxMarks}</Typography>,
     },
     {
-      id: 'status', header: 'Status', accessor: 'isGraded', minWidth: 110,
-      render: (v) => (
-        <Chip label={v ? 'Graded' : 'Pending Review'} color={v ? 'success' : 'warning'} size="small" variant="outlined" />
+      id: 'status', header: 'Grading', accessor: 'isGraded', minWidth: 130,
+      render: (v, row) => (
+        <Stack direction="column" spacing={0.5}>
+          <Chip label={v ? 'Graded' : 'Pending Review'} color={v ? 'success' : 'warning'} size="small" variant="outlined" />
+          <Chip label={row.gradingStatus || 'Pending'} color={gradingColor(row.gradingStatus)} size="small" />
+          {row.gradingRejectionReason && (
+            <Typography variant="caption" color="error">{row.gradingRejectionReason}</Typography>
+          )}
+        </Stack>
       ),
     },
   ];
@@ -103,10 +149,15 @@ export default function ExamSubmissionsPage() {
               {selected.studentName} • {selected.admissionNumber} • submitted {new Date(selected.submittedAt).toLocaleString()}
             </Typography>
           </Box>
+          <Chip label={`Grading: ${selected.gradingStatus || 'Pending'}`} color={gradingColor(selected.gradingStatus)} />
           <Button variant="contained" startIcon={<SaveIcon />} disabled={saving} onClick={handleGrade}>
             {saving ? 'Saving...' : 'Save Grades'}
           </Button>
         </Box>
+
+        {selected.gradingStatus === 'Approved' && (
+          <AlertInfo text="Marks are published to the student. Regrading will require a new admin approval." />
+        )}
 
         {selected.answers.map((a, idx) => (
           <Card key={a.id} sx={{ mb: 2 }}>
@@ -136,6 +187,9 @@ export default function ExamSubmissionsPage() {
                         {opt}. {val} {a.selectedOption === opt ? ' (selected)' : ''}{a.correctAnswer === opt ? ' ✓' : ''}
                       </Typography>
                     ) : null
+                  )}
+                  {a.remarks && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Remarks: {a.remarks}</Typography>
                   )}
                 </Box>
               ) : (
@@ -186,7 +240,7 @@ export default function ExamSubmissionsPage() {
       <Paper>
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="body2" color="text.secondary">
-            Click a submission to review and grade descriptive answers.
+            Teachers grade descriptive answers. Admin must approve the grading before marks are shown to students.
           </Typography>
         </Box>
         <DataTable
@@ -200,6 +254,67 @@ export default function ExamSubmissionsPage() {
           enableSearch={false}
         />
       </Paper>
+
+      {isAdmin && (
+        <Stack direction="row" spacing={1} sx={{ mt: 2 }} flexWrap="wrap" useFlexGap>
+          {submissions.map((sub) => (
+            sub.gradingStatus !== 'Approved' ? (
+              <Stack key={sub.id} direction="row" spacing={1} sx={{ alignItems: 'center', bgcolor: 'grey.50', p: 1, borderRadius: 1 }}>
+                <Typography variant="caption">{sub.studentName}</Typography>
+                <Button size="small" variant="contained" color="success" startIcon={<TaskAltIcon />}
+                  onClick={() => openApproval(sub, true)}>
+                  Approve Marks
+                </Button>
+                <Button size="small" variant="outlined" color="error" startIcon={<CancelIcon />}
+                  onClick={() => openApproval(sub, false)}>
+                  Reject
+                </Button>
+              </Stack>
+            ) : null
+          ))}
+        </Stack>
+      )}
+
+      <Dialog open={!!approvalTarget} onClose={() => setApprovalTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          {approvalApproved ? 'Approve Grading' : 'Reject Grading'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {approvalTarget?.studentName} — {approvalTarget?.totalMarksObtained} / {approvalTarget?.totalMaxMarks}
+          </Typography>
+          {approvalApproved ? (
+            <Typography variant="body2" color="text.secondary">
+              Marks will be published and shown to the student and in reports.
+            </Typography>
+          ) : (
+            <TextField
+              fullWidth label="Reason for rejection" multiline rows={2} size="small"
+              value={approvalReason}
+              onChange={(e) => setApprovalReason(e.target.value)}
+            />
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setApprovalTarget(null)} variant="outlined">Cancel</Button>
+          <Button
+            onClick={confirmApproval}
+            color={approvalApproved ? 'success' : 'error'}
+            variant="contained"
+            disabled={approving || (!approvalApproved && !approvalReason.trim())}
+          >
+            {approving ? 'Saving...' : approvalApproved ? 'Approve' : 'Reject'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}
+
+function AlertInfo({ text }) {
+  return (
+    <Box sx={{ bgcolor: 'success.light', color: 'success.contrastText', borderRadius: 1, p: 1.5, mb: 2 }}>
+      <Typography variant="body2">{text}</Typography>
     </Box>
   );
 }

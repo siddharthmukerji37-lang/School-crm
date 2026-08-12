@@ -14,8 +14,9 @@ public interface IBookRepository : IGenericRepository<Book>
 public interface IBookIssueRepository : IGenericRepository<BookIssue>
 {
     Task<IReadOnlyList<BookIssue>> GetByStudentAsync(Guid studentId);
+    Task<IReadOnlyList<BookIssue>> GetByTeacherAsync(Guid teacherId);
     Task<IReadOnlyList<BookIssue>> GetOverdueBooksAsync();
-    Task<bool> HasActiveIssueAsync(Guid bookId, Guid studentId);
+    Task<bool> HasActiveIssueAsync(Guid bookId, Guid? studentId, Guid? teacherId);
     Task<(IReadOnlyList<BookIssue> Items, int TotalCount)> GetIssuedPagedAsync(
         int pageNumber, int pageSize,
         System.Linq.Expressions.Expression<Func<BookIssue, bool>>? filter = null);

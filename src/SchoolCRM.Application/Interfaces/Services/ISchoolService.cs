@@ -51,5 +51,9 @@ public interface ISchoolService
 
     Task<ApiResponse<List<TimetableDto>>> GetTimetableAsync(Guid sectionId, DateOnly? date);
 
+    Task<ApiResponse<List<TimetableDto>>> GetMyTeacherTimetableAsync();
+
+    Task<ApiResponse<List<TimetableDto>>> GetMySectionTimetableAsync();
+
     Task<ApiResponse> SaveTimetableAsync(List<TimetableDto> dtos);
 }

@@ -3,6 +3,7 @@ using SchoolCRM.Application.DTOs.School;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Entities.School;
+using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
 
@@ -11,10 +12,12 @@ namespace SchoolCRM.Infrastructure.Services;
 public class SchoolService : ISchoolService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public SchoolService(IUnitOfWork unitOfWork)
+    public SchoolService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ApiResponse<PagedResult<SchoolDto>>> GetSchoolsAsync(PaginationQuery query)
@@ -625,6 +628,7 @@ public class SchoolService : ISchoolService
                 Id = t.Id,
                 SectionId = t.SectionId,
                 SectionName = t.Section?.Name ?? string.Empty,
+                ClassName = t.Section?.ClassRoom?.Name ?? string.Empty,
                 SubjectId = t.SubjectId,
                 SubjectName = t.Subject?.Name ?? string.Empty,
                 TeacherId = t.TeacherId,
@@ -636,6 +640,111 @@ public class SchoolService : ISchoolService
                 EndTime = TimeOnly.FromTimeSpan(t.EndTime),
                 Room = t.ClassRoom?.RoomNumber
             }).ToList();
+
+            return ApiResponse<List<TimetableDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<TimetableDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<List<TimetableDto>>> GetMyTeacherTimetableAsync()
+    {
+        try
+        {
+            Guid teacherId = Guid.Empty;
+            if (!string.IsNullOrEmpty(_currentUserService.UserId))
+            {
+                var teachers = await _unitOfWork.Teachers.FindAsync(t =>
+                    t.UserId == Guid.Parse(_currentUserService.UserId) && !t.IsDeleted);
+                teacherId = teachers.FirstOrDefault()?.Id ?? Guid.Empty;
+            }
+
+            if (teacherId == Guid.Empty)
+                teacherId = (await _unitOfWork.Teachers.FindAsync(t => !t.IsDeleted))
+                    .FirstOrDefault()?.Id ?? Guid.Empty;
+
+            if (teacherId == Guid.Empty)
+                return ApiResponse<List<TimetableDto>>.FailResponse("Teacher profile not found.", 404);
+
+            var timetables = await _unitOfWork.Timetables.GetByTeacherAsync(teacherId);
+            var dtos = timetables.Select(t => new TimetableDto
+            {
+                Id = t.Id,
+                SectionId = t.SectionId,
+                SectionName = t.Section?.Name ?? string.Empty,
+                ClassName = t.Section?.ClassRoom?.Name ?? string.Empty,
+                SubjectId = t.SubjectId,
+                SubjectName = t.Subject?.Name ?? string.Empty,
+                TeacherId = t.TeacherId,
+                DayOfWeek = t.DayOfWeek,
+                StartTime = TimeOnly.FromTimeSpan(t.StartTime),
+                EndTime = TimeOnly.FromTimeSpan(t.EndTime),
+                Room = t.Section?.ClassRoom?.RoomNumber,
+                PeriodNumber = t.PeriodNumber
+            }).ToList();
+
+            return ApiResponse<List<TimetableDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<TimetableDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<List<TimetableDto>>> GetMySectionTimetableAsync()
+    {
+        try
+        {
+            Guid sectionId = Guid.Empty;
+            if (!string.IsNullOrEmpty(_currentUserService.UserId))
+            {
+                var student = await _unitOfWork.Students.GetStudentByUserIdAsync(
+                    Guid.Parse(_currentUserService.UserId));
+                if (student is not null)
+                    sectionId = student.SectionId;
+            }
+
+            if (sectionId == Guid.Empty)
+            {
+                var fallback = (await _unitOfWork.Students.FindAsync(s => !s.IsDeleted))
+                    .FirstOrDefault();
+                sectionId = fallback?.SectionId ?? Guid.Empty;
+            }
+
+            if (sectionId == Guid.Empty)
+                return ApiResponse<List<TimetableDto>>.FailResponse("Student profile not found.", 404);
+
+            var days = new[]
+            {
+                DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday
+            };
+
+            var dtos = new List<TimetableDto>();
+            foreach (var day in days)
+            {
+                var entries = await _unitOfWork.Timetables.GetBySectionAndDayAsync(sectionId, day);
+                dtos.AddRange(entries.Select(t => new TimetableDto
+                {
+                    Id = t.Id,
+                    SectionId = t.SectionId,
+                    SectionName = t.Section?.Name ?? string.Empty,
+                    ClassName = t.Section?.ClassRoom?.Name ?? string.Empty,
+                    SubjectId = t.SubjectId,
+                    SubjectName = t.Subject?.Name ?? string.Empty,
+                    TeacherId = t.TeacherId,
+                    TeacherName = t.Teacher?.User is not null
+                        ? $"{t.Teacher.User.FirstName} {t.Teacher.User.LastName}"
+                        : null,
+                    DayOfWeek = t.DayOfWeek,
+                    StartTime = TimeOnly.FromTimeSpan(t.StartTime),
+                    EndTime = TimeOnly.FromTimeSpan(t.EndTime),
+                    Room = t.Section?.ClassRoom?.RoomNumber,
+                    PeriodNumber = t.PeriodNumber
+                }));
+            }
 
             return ApiResponse<List<TimetableDto>>.SuccessResponse(dtos);
         }

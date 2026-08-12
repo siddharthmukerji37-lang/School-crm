@@ -27,12 +27,15 @@ import {
   InputLabel,
   Select,
   Avatar,
+  Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import axiosInstance from '../../services/axiosInstance';
 import PageHeader from '../../components/common/PageHeader';
 import toast from 'react-hot-toast';
@@ -54,7 +57,10 @@ function formatTime(value) {
 
 export default function TimetablePage() {
   const { user } = useSelector((state) => state.auth);
-  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const roles = user?.roles || [];
+  const isAdmin = roles.some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const isTeacher = roles.some((r) => r === 'Teacher' || r === 'ClassTeacher');
+  const isStudent = roles.some((r) => r === 'Student');
 
   const [schoolId, setSchoolId] = useState('');
   const [classes, setClasses] = useState([]);
@@ -70,11 +76,58 @@ export default function TimetablePage() {
   const [loadingTimetable, setLoadingTimetable] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [myTimetable, setMyTimetable] = useState([]);
+  const [loadingMy, setLoadingMy] = useState(false);
+
+  const [mySectionTimetable, setMySectionTimetable] = useState([]);
+  const [loadingMySection, setLoadingMySection] = useState(false);
+
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [requestEntry, setRequestEntry] = useState(null);
+  const [requestMessage, setRequestMessage] = useState('');
+  const [sendingRequest, setSendingRequest] = useState(false);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({});
 
   const dayEntries = entriesByDay[DAYS[activeDay].label] || [];
+
+  useEffect(() => {
+    if (isTeacher && !isAdmin) {
+      const loadMy = async () => {
+        setLoadingMy(true);
+        try {
+          const res = await axiosInstance.get('/schools/timetable/my');
+          setMyTimetable(res.data.data || []);
+        } catch {
+          setMyTimetable([]);
+          toast.error('Failed to load your timetable');
+        } finally {
+          setLoadingMy(false);
+        }
+      };
+      loadMy();
+    }
+  }, [isTeacher, isAdmin]);
+
+  useEffect(() => {
+    if (isStudent && !isAdmin && !isTeacher) {
+      const loadMySection = async () => {
+        setLoadingMySection(true);
+        try {
+          const res = await axiosInstance.get('/schools/timetable/my-section');
+          setMySectionTimetable(res.data.data || []);
+        } catch {
+          setMySectionTimetable([]);
+          toast.error('Failed to load your class timetable');
+        } finally {
+          setLoadingMySection(false);
+        }
+      };
+      loadMySection();
+    }
+  }, [isStudent, isAdmin, isTeacher]);
 
   useEffect(() => {
     const init = async () => {
@@ -265,11 +318,361 @@ export default function TimetablePage() {
     }
   };
 
+  const openRequestChange = (entry) => {
+    setRequestEntry(entry);
+    setRequestMessage('');
+    setRequestOpen(true);
+  };
+
+  const sendChangeRequest = async () => {
+    if (!requestMessage.trim()) {
+      toast.error('Please describe the change you need');
+      return;
+    }
+    setSendingRequest(true);
+    try {
+      const detail = requestEntry
+        ? `${requestEntry.className || ''} • Section ${requestEntry.sectionName || ''} • ${requestEntry.subjectName || ''} • ${requestEntry.dayLabel} ${formatTime(requestEntry.startTime)}-${formatTime(requestEntry.endTime)}`
+        : 'Timetable';
+      await axiosInstance.post('/notifications/timetable-change', {
+        message: `${detail}\nReason: ${requestMessage.trim()}`,
+      });
+      toast.success('Change request sent to admin');
+      setRequestOpen(false);
+    } catch {
+      toast.error('Failed to send request');
+    } finally {
+      setSendingRequest(false);
+    }
+  };
+
+  const dayOfWeekLabel = (d) => {
+    const day = DAYS.find((x) => x.dayOfWeek === d);
+    return day ? day.label : '';
+  };
+
+  const renderTodayPanel = (entries, showTeacher = false) => {
+    const todayDayOfWeek = new Date().getDay();
+    const todays = entries
+      .filter((e) => e.dayOfWeek === todayDayOfWeek)
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+
+    return (
+      <Paper sx={{ p: 2.5, borderRadius: 2, mb: 3 }}>
+        <Typography
+          variant="subtitle1"
+          fontWeight={600}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}
+        >
+          <WbSunnyIcon color="warning" fontSize="small" />
+          Today's Classes
+        </Typography>
+        {todayDayOfWeek === 0 || todays.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            No classes scheduled for today.
+          </Typography>
+        ) : (
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} flexWrap="wrap" useFlexGap>
+            {todays.map((e) => (
+              <Chip
+                key={e.id}
+                icon={<AccessTimeIcon fontSize="small" />}
+                label={
+                  showTeacher
+                    ? `${e.subjectName || 'Subject'} • ${e.teacherName || 'Not assigned'} • ${formatTime(e.startTime)}–${formatTime(e.endTime)}`
+                    : `${e.subjectName || 'Subject'} • ${e.className || ''} Sec ${e.sectionName || ''} • ${formatTime(e.startTime)}–${formatTime(e.endTime)}`
+                }
+                variant="outlined"
+                sx={{ borderRadius: 2 }}
+              />
+            ))}
+          </Stack>
+        )}
+      </Paper>
+    );
+  };
+
+  const renderTeacherView = () => {
+    const dayRows = DAYS.map((day) => ({
+      ...day,
+      entries: myTimetable
+        .filter((e) => e.dayOfWeek === day.dayOfWeek)
+        .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || '')),
+    }));
+
+    const periods = [];
+    dayRows.forEach(({ entries }) => {
+      entries.forEach((e) => {
+        const key = `${formatTime(e.startTime)}-${formatTime(e.endTime)}`;
+        if (!periods.some((p) => p.key === key)) {
+          periods.push({ key, startTime: e.startTime, endTime: e.endTime, dayLabel: e.dayLabel });
+        }
+      });
+    });
+    periods.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+
+    return (
+      <Box>
+        {renderTodayPanel(myTimetable, false)}
+        <Alert severity="info" sx={{ mb: 3 }}>
+          This is your weekly routine. If you need any change, use <strong>Request Change</strong> on a period —
+          the admin will review and update it.
+        </Alert>
+        {loadingMy ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>
+        ) : periods.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography color="text.secondary">
+              No periods are assigned to you yet. Contact the admin if you believe this is a mistake.
+            </Typography>
+          </Paper>
+        ) : (
+          <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+            <TableContainer>
+              <Table sx={{ minWidth: 700 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Period</TableCell>
+                    {DAYS.map((day) => (
+                      <TableCell key={day.dayOfWeek} sx={{ fontWeight: 600 }}>{day.label}</TableCell>
+                    ))}
+                    <TableCell sx={{ fontWeight: 600 }}>Change</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {periods.map((period, idx) => {
+                    const cellEntry = (day) => {
+                      const row = dayRows.find((d) => d.dayOfWeek === day.dayOfWeek);
+                      return (row?.entries || []).find(
+                        (e) => formatTime(e.startTime) === formatTime(period.startTime) &&
+                              formatTime(e.endTime) === formatTime(period.endTime)
+                      );
+                    };
+                    const rowEntries = DAYS.map((d) => cellEntry(d.dayOfWeek)).filter(Boolean);
+                    const firstEntry = rowEntries[0];
+                    return (
+                      <TableRow key={period.key} hover>
+                        <TableCell>
+                          <Stack spacing={0.5}>
+                            <Typography variant="body2" fontWeight={600}>P{idx + 1}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatTime(period.startTime)} – {formatTime(period.endTime)}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        {DAYS.map((day) => {
+                          const entry = cellEntry(day.dayOfWeek);
+                          return (
+                            <TableCell key={day.dayOfWeek}>
+                              {entry ? (
+                                <Stack spacing={0.5}>
+                                  <Chip
+                                    label={entry.subjectName || 'Subject'}
+                                    size="small" color="primary" variant="outlined"
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    {entry.className} • {entry.sectionName}
+                                  </Typography>
+                                </Stack>
+                              ) : (
+                                <Typography variant="caption" color="text.disabled">—</Typography>
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="warning"
+                            startIcon={<ReportProblemIcon fontSize="small" />}
+                            onClick={() =>
+                              openRequestChange({
+                                className: firstEntry?.className || '',
+                                sectionName: firstEntry?.sectionName || '',
+                                subjectName: firstEntry?.subjectName || '',
+                                dayLabel: dayOfWeekLabel(firstEntry?.dayOfWeek),
+                                startTime: period.startTime,
+                                endTime: period.endTime,
+                              })
+                            }
+                          >
+                            Request Change
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        )}
+      </Box>
+    );
+  };
+
+  const renderStudentView = () => {
+    const dayRows = DAYS.map((day) => ({
+      ...day,
+      entries: mySectionTimetable
+        .filter((e) => e.dayOfWeek === day.dayOfWeek)
+        .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || '')),
+    }));
+
+    const periods = [];
+    dayRows.forEach(({ entries }) => {
+      entries.forEach((e) => {
+        const key = `${formatTime(e.startTime)}-${formatTime(e.endTime)}`;
+        if (!periods.some((p) => p.key === key)) {
+          periods.push({ key, startTime: e.startTime, endTime: e.endTime });
+        }
+      });
+    });
+    periods.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+
+    return (
+      <Box>
+        {renderTodayPanel(mySectionTimetable, true)}
+        {loadingMySection ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>
+        ) : periods.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography color="text.secondary">
+              No timetable has been set for your class yet.
+            </Typography>
+          </Paper>
+        ) : (
+          <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+            <TableContainer>
+              <Table sx={{ minWidth: 700 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Period</TableCell>
+                    {DAYS.map((day) => (
+                      <TableCell key={day.dayOfWeek} sx={{ fontWeight: 600 }}>{day.label}</TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {periods.map((period, idx) => {
+                    const cellEntry = (day) => {
+                      const row = dayRows.find((d) => d.dayOfWeek === day.dayOfWeek);
+                      return (row?.entries || []).find(
+                        (e) => formatTime(e.startTime) === formatTime(period.startTime) &&
+                              formatTime(e.endTime) === formatTime(period.endTime)
+                      );
+                    };
+                    return (
+                      <TableRow key={period.key} hover>
+                        <TableCell>
+                          <Stack spacing={0.5}>
+                            <Typography variant="body2" fontWeight={600}>P{idx + 1}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatTime(period.startTime)} – {formatTime(period.endTime)}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        {DAYS.map((day) => {
+                          const entry = cellEntry(day.dayOfWeek);
+                          return (
+                            <TableCell key={day.dayOfWeek}>
+                              {entry ? (
+                                <Stack spacing={0.5}>
+                                  <Chip
+                                    label={entry.subjectName || 'Subject'}
+                                    size="small" color="primary" variant="outlined"
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    {entry.teacherName || 'Not assigned'}
+                                  </Typography>
+                                </Stack>
+                              ) : (
+                                <Typography variant="caption" color="text.disabled">—</Typography>
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        )}
+      </Box>
+    );
+  };
+
+  if (isTeacher && !isAdmin) {
+    return (
+      <Box>
+        <PageHeader
+          title="My Routine"
+          subtitle="Your weekly classes across all sections. Request changes and the admin will update the timetable."
+        />
+        {renderTeacherView()}
+        <Dialog open={requestOpen} onClose={() => setRequestOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle>Request Timetable Change</DialogTitle>
+          <DialogContent>
+            {requestEntry?.subjectName && (
+              <Typography
+                variant="body2"
+                sx={{ mb: 2, p: 1.5, bgcolor: 'grey.100', borderRadius: 1 }}
+              >
+                {requestEntry.dayLabel} • {requestEntry.className} • Section {requestEntry.sectionName}
+                <br />
+                {requestEntry.subjectName} • {formatTime(requestEntry.startTime)}–
+                {formatTime(requestEntry.endTime)}
+              </Typography>
+            )}
+            <TextField
+              label="What change do you need?"
+              multiline
+              rows={4}
+              fullWidth
+              value={requestMessage}
+              onChange={(e) => setRequestMessage(e.target.value)}
+              placeholder="e.g. Please move this period to Tuesday morning, or swap it with another class..."
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setRequestOpen(false)}>Cancel</Button>
+            <Button
+              variant="contained"
+              color="warning"
+              startIcon={<ReportProblemIcon />}
+              onClick={sendChangeRequest}
+              disabled={sendingRequest}
+            >
+              {sendingRequest ? 'Sending...' : 'Send to Admin'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    );
+  }
+
+  if (isStudent && !isAdmin && !isTeacher) {
+    return (
+      <Box>
+        <PageHeader
+          title="Class Timetable"
+          subtitle="Your class schedule across the week."
+        />
+        {renderStudentView()}
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <PageHeader
-        title="Timetable"
-        subtitle="Plan which teacher takes which subject for each class section and time slot."
+        title={isTeacher && !isAdmin ? 'My Routine' : 'Timetable'}
+        subtitle={isTeacher && !isAdmin
+          ? 'Your weekly classes across all sections.'
+          : 'Plan which teacher takes which subject for each class section and time slot.'}
         actions={
           isAdmin && sectionId ? (
             <Button

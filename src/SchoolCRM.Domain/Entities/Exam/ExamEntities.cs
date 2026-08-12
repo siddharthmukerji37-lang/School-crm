@@ -24,6 +24,7 @@ public class Exam : BaseEntity
     public Guid? ExamTypeId { get; set; }
     public Guid SchoolId { get; set; }
     public Guid? ClassRoomId { get; set; }
+    public Guid? SectionId { get; set; }
     public Guid? AcademicYearId { get; set; }
     public Guid? TeacherId { get; set; }
     public string? QuestionPaperUrl { get; set; }
@@ -36,6 +37,7 @@ public class Exam : BaseEntity
     public ExamType? ExamType { get; set; }
     public School.School School { get; set; } = null!;
     public School.ClassRoom? ClassRoom { get; set; }
+    public School.Section? Section { get; set; }
     public School.AcademicYear? AcademicYear { get; set; }
     public Teacher.Teacher? Teacher { get; set; }
     public ICollection<ExamSchedule> Schedules { get; set; } = new List<ExamSchedule>();

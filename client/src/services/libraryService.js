@@ -22,6 +22,8 @@ const libraryService = {
     if (params.pageSize) queryParams.append('pageSize', params.pageSize);
     if (params.search) queryParams.append('searchTerm', params.search);
     if (params.overdue) queryParams.append('overdue', params.overdue);
+    if (params.studentId) queryParams.append('studentId', params.studentId);
+    if (params.teacherId) queryParams.append('teacherId', params.teacherId);
     return axiosInstance.get(`/library/issued?${queryParams.toString()}`);
   },
 };

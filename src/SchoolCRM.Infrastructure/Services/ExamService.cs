@@ -15,34 +15,55 @@ public class ExamService : IExamService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
+    private readonly INotificationService _notificationService;
+    private readonly IEmailService _emailService;
 
     private static readonly string[] AdminRoles =
         { nameof(RoleType.SuperAdmin), nameof(RoleType.SchoolAdmin), nameof(RoleType.Principal), nameof(RoleType.VicePrincipal) };
 
-    public ExamService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+    public ExamService(
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService,
+        INotificationService notificationService,
+        IEmailService emailService)
     {
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
+        _notificationService = notificationService;
+        _emailService = emailService;
     }
 
-    public async Task<ApiResponse<PagedResult<ExamDto>>> GetExamsAsync(PaginationQuery query, Guid? classRoomId)
+    public async Task<ApiResponse<PagedResult<ExamDto>>> GetExamsAsync(PaginationQuery query, Guid? classRoomId, Guid? sectionId)
     {
         try
         {
             Expression<Func<Exam, bool>>? filter = e => !e.IsDeleted;
-            if (classRoomId.HasValue)
+            if (classRoomId.HasValue && sectionId.HasValue)
+                filter = e => !e.IsDeleted && e.ClassRoomId == classRoomId.Value && e.SectionId == sectionId.Value;
+            else if (classRoomId.HasValue)
                 filter = e => !e.IsDeleted && e.ClassRoomId == classRoomId.Value;
+            else if (sectionId.HasValue)
+                filter = e => !e.IsDeleted && e.SectionId == sectionId.Value;
 
             if (IsTeacherOnly() && _currentUserService.UserId is not null)
             {
                 var teacherId = await ResolveTeacherIdAsync();
                 filter = e => !e.IsDeleted && e.TeacherId == teacherId;
             }
+            else if (!IsAdmin() && !IsTeacherOnly() && _currentUserService.Roles.Any(r => r == nameof(RoleType.Student)))
+            {
+                var (studentClassRoomId, studentSectionId) = await ResolveStudentScopeAsync();
+                if (studentClassRoomId == Guid.Empty)
+                    filter = e => false;
+                else
+                    filter = e => !e.IsDeleted && e.ClassRoomId == studentClassRoomId &&
+                                  (!e.SectionId.HasValue || e.SectionId == studentSectionId);
+            }
 
             var (items, totalCount) = await _unitOfWork.Exams.GetPagedAsync(
                 query.PageNumber, query.PageSize, filter,
                 q => q.OrderByDescending(e => e.StartDate),
-                q => q.Include(e => e.ExamType).Include(e => e.ClassRoom));
+                q => q.Include(e => e.ExamType).Include(e => e.ClassRoom).Include(e => e.Section));
 
             var dtos = items.Select(MapToDto).ToList();
 
@@ -70,6 +91,21 @@ public class ExamService : IExamService
             var exam = await _unitOfWork.Exams.GetExamWithDetailsAsync(id);
             if (exam is null)
                 return ApiResponse<ExamDto>.NotFoundResponse(ApplicationMessages.NotFound);
+
+            if (!IsAdmin() && !IsTeacherOnly() && _currentUserService.Roles.Any(r => r == nameof(RoleType.Student)))
+            {
+                var (studentClassRoomId, studentSectionId) = await ResolveStudentScopeAsync();
+                var visibleToStudent =
+                    studentClassRoomId != Guid.Empty &&
+                    exam.ClassRoomId == studentClassRoomId &&
+                    (!exam.SectionId.HasValue || exam.SectionId == studentSectionId);
+                if (!visibleToStudent)
+                    return ApiResponse<ExamDto>.NotFoundResponse(ApplicationMessages.NotFound);
+            }
+            else if (IsTeacherOnly() && exam.TeacherId != await ResolveTeacherIdAsync())
+            {
+                return ApiResponse<ExamDto>.NotFoundResponse(ApplicationMessages.NotFound);
+            }
 
             return ApiResponse<ExamDto>.SuccessResponse(MapToDto(exam));
         }
@@ -130,6 +166,7 @@ public class ExamService : IExamService
                 Status = ExamStatus.Scheduled,
                 SchoolId = classRoom.SchoolId,
                 ClassRoomId = dto.ClassRoomId,
+                SectionId = dto.SectionId,
                 ExamTypeId = examTypeId,
                 TeacherId = teacherId,
                 AcademicYearId = dto.AcademicYearId,
@@ -139,6 +176,8 @@ public class ExamService : IExamService
 
             await _unitOfWork.Exams.AddAsync(exam);
             await _unitOfWork.SaveChangesAsync();
+
+            await NotifyAndEmailStudentsOnExamCreatedAsync(exam);
 
             var created = await _unitOfWork.Exams.GetByIdAsync(exam.Id);
             return ApiResponse<ExamDto>.SuccessResponse(MapToDto(created!), ApplicationMessages.CreateSuccess);
@@ -193,6 +232,7 @@ public class ExamService : IExamService
             exam.StartDate = dto.StartDate;
             exam.EndDate = dto.EndDate;
             exam.ClassRoomId = dto.ClassRoomId;
+            exam.SectionId = dto.SectionId;
             exam.ExamTypeId = examTypeId;
             exam.AcademicYearId = dto.AcademicYearId;
             exam.UpdatedAt = DateTime.UtcNow;
@@ -567,6 +607,23 @@ public class ExamService : IExamService
 
         return (await _unitOfWork.Students.FindAsync(s => !s.IsDeleted))
             .FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    private async Task<(Guid ClassRoomId, Guid SectionId)> ResolveStudentScopeAsync()
+    {
+        var studentId = await ResolveStudentIdAsync();
+        if (studentId == Guid.Empty)
+            return (Guid.Empty, Guid.Empty);
+
+        var student = await _unitOfWork.Students.GetByIdAsync(studentId);
+        if (student is null)
+            return (Guid.Empty, Guid.Empty);
+
+        var section = await _unitOfWork.Sections.GetByIdAsync(student.SectionId);
+        if (section is null)
+            return (Guid.Empty, Guid.Empty);
+
+        return (section.ClassRoomId, student.SectionId);
     }
 
     private static async Task<bool> IsFinalExamAsync(IUnitOfWork unitOfWork, Guid examId)
@@ -1101,6 +1158,8 @@ public class ExamService : IExamService
             ExamType = exam.ExamType?.Name ?? string.Empty,
             ClassRoomId = exam.ClassRoomId ?? Guid.Empty,
             ClassName = exam.ClassRoom?.Name ?? string.Empty,
+            SectionId = exam.SectionId,
+            SectionName = exam.Section?.Name ?? string.Empty,
             AcademicYearId = exam.AcademicYearId,
             AcademicYearName = exam.AcademicYear?.Name ?? string.Empty,
             StartDate = exam.StartDate,
@@ -1121,5 +1180,51 @@ public class ExamService : IExamService
             QuestionCount = exam.Questions?.Count ?? 0,
             TotalMarks = exam.Questions?.Sum(q => q.Marks) ?? 0
         };
+    }
+
+    private async Task NotifyAndEmailStudentsOnExamCreatedAsync(Domain.Entities.Exam.Exam exam)
+    {
+        try
+        {
+            if (!exam.ClassRoomId.HasValue)
+                return;
+
+            var title = "New exam scheduled";
+            var message = $"New exam '{exam.Name}' has been scheduled from {exam.StartDate:dd MMM yyyy} to {exam.EndDate:dd MMM yyyy}.";
+            var link = $"/exams/{exam.Id}";
+
+            await _notificationService.NotifyStudentsOfClassAsync(
+                exam.ClassRoomId.Value, title, message, NotificationType.Info, sectionId: exam.SectionId, link: link);
+
+            var sections = (await _unitOfWork.Sections.FindAsync(s =>
+                s.ClassRoomId == exam.ClassRoomId.Value && !s.IsDeleted)).ToList();
+
+            if (exam.SectionId.HasValue)
+                sections = sections.Where(s => s.Id == exam.SectionId.Value).ToList();
+
+            var emails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var section in sections)
+            {
+                var students = await _unitOfWork.Students.GetBySectionAsync(section.Id);
+                foreach (var student in students.Where(s => !s.IsDeleted && !string.IsNullOrWhiteSpace(s.ParentEmail)))
+                    emails.Add(student.ParentEmail!);
+            }
+
+            var subject = $"New exam scheduled: {exam.Name}";
+            var body = $@"
+                <h3>New exam scheduled</h3>
+                <p><strong>{exam.Name}</strong></p>
+                <p>{exam.Description}</p>
+                <p><strong>Start:</strong> {exam.StartDate:dd MMM yyyy}</p>
+                <p><strong>End:</strong> {exam.EndDate:dd MMM yyyy}</p>
+                <p>Please help your child prepare for the exam.</p>";
+
+            foreach (var email in emails)
+                await _emailService.SendEmailAsync(email, subject, body);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to notify on exam created: {ex.Message}");
+        }
     }
 }

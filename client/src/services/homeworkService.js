@@ -23,6 +23,7 @@ const homeworkService = {
   delete: (id) => axiosInstance.delete(`/homework/${id}`),
   submit: (id, data) => axiosInstance.post(`/homework/${id}/submit`, data),
   review: (id, data) => axiosInstance.post(`/homework/${id}/review`, data),
+  reject: (id, data) => axiosInstance.post(`/homework/${id}/reject`, data),
   approve: (id, data) => axiosInstance.post(`/homework/${id}/approve`, data),
   submitForApproval: (id) =>
     axiosInstance.post(`/homework/${id}/submit-for-approval`),

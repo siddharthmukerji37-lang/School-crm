@@ -11,6 +11,8 @@ public sealed class ExamDto
     public string ExamType { get; set; } = string.Empty;
     public Guid ClassRoomId { get; set; }
     public string ClassName { get; set; } = string.Empty;
+    public Guid? SectionId { get; set; }
+    public string SectionName { get; set; } = string.Empty;
     public Guid? AcademicYearId { get; set; }
     public string AcademicYearName { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
@@ -45,6 +47,8 @@ public sealed class CreateExamDto
 
     [Required(ErrorMessage = "Class is required")]
     public Guid ClassRoomId { get; set; }
+
+    public Guid? SectionId { get; set; }
 
     public Guid? AcademicYearId { get; set; }
 

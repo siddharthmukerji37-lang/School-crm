@@ -15,6 +15,7 @@ public class ExamRepository : GenericRepository<Exam>, IExamRepository
             .Include(e => e.ExamType)
             .Include(e => e.School)
             .Include(e => e.ClassRoom)
+            .Include(e => e.Section)
             .Include(e => e.AcademicYear)
             .Include(e => e.Teacher)
                 .ThenInclude(t => t!.User)

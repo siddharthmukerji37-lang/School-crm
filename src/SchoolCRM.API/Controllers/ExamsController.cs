@@ -26,7 +26,8 @@ public class ExamsController : ControllerBase
         [FromQuery] string? searchTerm = null,
         [FromQuery] string? sortColumn = null,
         [FromQuery] string? sortOrder = null,
-        [FromQuery] Guid? classRoomId = null)
+        [FromQuery] Guid? classRoomId = null,
+        [FromQuery] Guid? sectionId = null)
     {
         var query = new PaginationQuery(pageNumber, pageSize, searchTerm)
         {
@@ -34,7 +35,7 @@ public class ExamsController : ControllerBase
             SortOrder = sortOrder
         };
 
-        var result = await _examService.GetExamsAsync(query, classRoomId);
+        var result = await _examService.GetExamsAsync(query, classRoomId, sectionId);
         return Ok(result);
     }
 

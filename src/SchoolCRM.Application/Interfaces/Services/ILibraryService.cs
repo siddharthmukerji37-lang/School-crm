@@ -19,7 +19,7 @@ public interface ILibraryService
     Task<ApiResponse<BookIssueDto>> ReturnBookAsync(Guid issueId, DateTime returnedDate);
 
     Task<ApiResponse<PagedResult<BookIssueDto>>> GetIssuedBooksAsync(
-        PaginationQuery query, Guid? studentId, bool? overdue);
+        PaginationQuery query, Guid? studentId, Guid? teacherId, bool? overdue);
 
     Task<ApiResponse<List<BookIssueDto>>> GetStudentIssuesAsync(Guid studentId);
 
@@ -56,8 +56,10 @@ public interface ILibraryService
         public Guid Id { get; set; }
         public Guid BookId { get; set; }
         public string BookTitle { get; set; } = string.Empty;
-        public Guid StudentId { get; set; }
+        public Guid? StudentId { get; set; }
         public string StudentName { get; set; } = string.Empty;
+        public Guid? TeacherId { get; set; }
+        public string TeacherName { get; set; } = string.Empty;
         public DateTime IssueDate { get; set; }
         public DateTime DueDate { get; set; }
         public DateTime? ReturnedDate { get; set; }

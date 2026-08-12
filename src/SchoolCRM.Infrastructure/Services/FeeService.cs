@@ -12,10 +12,17 @@ namespace SchoolCRM.Infrastructure.Services;
 public class FeeService : IFeeService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationService _notificationService;
+    private readonly IEmailService _emailService;
 
-    public FeeService(IUnitOfWork unitOfWork)
+    public FeeService(
+        IUnitOfWork unitOfWork,
+        INotificationService notificationService,
+        IEmailService emailService)
     {
         _unitOfWork = unitOfWork;
+        _notificationService = notificationService;
+        _emailService = emailService;
     }
 
     public async Task<ApiResponse<PagedResult<FeeStructureDto>>> GetFeeStructuresAsync(
@@ -93,6 +100,8 @@ public class FeeService : IFeeService
 
             await _unitOfWork.FeeStructures.AddAsync(structure);
             await _unitOfWork.SaveChangesAsync();
+
+            await NotifyAndEmailStudentsOnFeeCreatedAsync(structure);
 
             return ApiResponse<FeeStructureDto>.SuccessResponse(MapFeeStructureToDto(structure), ApplicationMessages.CreateSuccess);
         }
@@ -481,5 +490,43 @@ public class FeeService : IFeeService
             PaymentDate = receipt.PaidAt,
             Remarks = receipt.PaymentNotes
         };
+    }
+
+    private async Task NotifyAndEmailStudentsOnFeeCreatedAsync(Domain.Entities.Fee.FeeStructure structure)
+    {
+        try
+        {
+            var title = "New fee posted";
+            var message = $"A new fee '{structure.Name}' of {structure.Amount:C} has been posted for your class.";
+            var link = "/fees";
+
+            await _notificationService.NotifyStudentsOfClassAsync(
+                structure.ClassRoomId, title, message, NotificationType.Info, link: link);
+
+            var sections = (await _unitOfWork.Sections.FindAsync(s =>
+                s.ClassRoomId == structure.ClassRoomId && !s.IsDeleted)).ToList();
+
+            var emails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var section in sections)
+            {
+                var students = await _unitOfWork.Students.GetBySectionAsync(section.Id);
+                foreach (var student in students.Where(s => !s.IsDeleted && !string.IsNullOrWhiteSpace(s.ParentEmail)))
+                    emails.Add(student.ParentEmail!);
+            }
+
+            var subject = $"New fee: {structure.Name}";
+            var body = $@"
+                <h3>New fee posted</h3>
+                <p><strong>{structure.Name}</strong> ({structure.Amount:C})</p>
+                <p>{structure.Description}</p>
+                <p>Please complete the payment before the due date.</p>";
+
+            foreach (var email in emails)
+                await _emailService.SendEmailAsync(email, subject, body);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to notify on fee created: {ex.Message}");
+        }
     }
 }

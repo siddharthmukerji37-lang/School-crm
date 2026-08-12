@@ -19,6 +19,7 @@ const examSchema = Yup.object({
   name: Yup.string().trim().required('Exam name is required'),
   examType: Yup.string().required('Exam type is required'),
   classRoomId: Yup.string().required('Class is required'),
+  sectionId: Yup.string(),
   startDate: Yup.date().nullable().required('Start date is required'),
   endDate: Yup.date().nullable().required('End date is required'),
   maxMarks: Yup.number().transform((v, o) => o === '' ? undefined : v).required('Max marks required').min(1),
@@ -37,10 +38,19 @@ export default function ExamFormPage() {
   const isEditMode = Boolean(id);
 
   const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
   const [initialValues, setInitialValues] = useState({
-    name: '', examType: '', classRoomId: '', startDate: '', endDate: '',
+    name: '', examType: '', classRoomId: '', sectionId: '', startDate: '', endDate: '',
     maxMarks: '', passingMarks: '', description: '',
   });
+
+  const fetchSections = async (classRoomId) => {
+    if (!classRoomId) { setSections([]); return; }
+    try {
+      const res = await axiosInstance.get(`/schools/classes/${classRoomId}/sections`);
+      setSections(res.data.data || []);
+    } catch { setSections([]); }
+  };
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -63,10 +73,12 @@ export default function ExamFormPage() {
 
   useEffect(() => {
     if (isEditMode && selectedExam) {
+      if (selectedExam.classRoomId) fetchSections(selectedExam.classRoomId);
       setInitialValues({
         name: selectedExam.name || '',
         examType: selectedExam.examType || '',
         classRoomId: selectedExam.classRoomId || '',
+        sectionId: selectedExam.sectionId || '',
         startDate: selectedExam.startDate ? new Date(selectedExam.startDate).toISOString().split('T')[0] : '',
         endDate: selectedExam.endDate ? new Date(selectedExam.endDate).toISOString().split('T')[0] : '',
         maxMarks: selectedExam.maxMarks ?? '',
@@ -80,6 +92,7 @@ export default function ExamFormPage() {
     try {
       const payload = {
         ...values,
+        sectionId: values.sectionId || null,
         maxMarks: Number(values.maxMarks),
         passingMarks: Number(values.passingMarks),
       };
@@ -112,7 +125,7 @@ export default function ExamFormPage() {
         <Typography variant="h4" fontWeight={700}>{isEditMode ? 'Edit Exam' : 'Add New Exam'}</Typography>
       </Box>
       <Formik initialValues={initialValues} validationSchema={examSchema} onSubmit={handleSubmit} enableReinitialize>
-        {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
+        {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
           <Form>
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" fontWeight={600} gutterBottom>Exam Details</Typography>
@@ -132,9 +145,19 @@ export default function ExamFormPage() {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField fullWidth select name="classRoomId" label="Class" value={values.classRoomId}
-                    onChange={handleChange} onBlur={handleBlur}
+                    onChange={(e) => { handleChange(e); setFieldValue('sectionId', ''); fetchSections(e.target.value); }}
+                    onBlur={handleBlur}
                     error={touched.classRoomId && Boolean(errors.classRoomId)} helperText={touched.classRoomId && errors.classRoomId}>
                     {classes.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField fullWidth select name="sectionId" label="Section" value={values.sectionId}
+                    onChange={handleChange} onBlur={handleBlur} disabled={!values.classRoomId}
+                    helperText={values.sectionId ? '' : 'Leave blank to include all sections'}
+                    error={touched.sectionId && Boolean(errors.sectionId)}>
+                    <MenuItem value=""><em>All Sections</em></MenuItem>
+                    {sections.map((s) => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>

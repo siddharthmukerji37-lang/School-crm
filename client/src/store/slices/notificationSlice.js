@@ -31,6 +31,20 @@ export const markAsRead = createAsyncThunk(
   }
 );
 
+export const fetchUnreadCount = createAsyncThunk(
+  'notifications/fetchUnreadCount',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get('/notifications/unread-count');
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch unread count'
+      );
+    }
+  }
+);
+
 export const markAllAsRead = createAsyncThunk(
   'notifications/markAllAsRead',
   async (_, { rejectWithValue }) => {
@@ -79,12 +93,24 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(fetchUnreadCount.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(fetchUnreadCount.fulfilled, (state, action) => {
+        state.unreadCount = action.payload;
+      })
+      .addCase(fetchUnreadCount.rejected, (state, action) => {
+        state.error = action.payload;
+      })
       .addCase(markAsRead.fulfilled, (state, action) => {
         const index = state.notifications.findIndex(
-          (n) => n.id === action.payload.id
+          (n) => n.id === action.meta.arg
         );
         if (index !== -1) {
-          state.notifications[index] = action.payload;
+          state.notifications[index] = {
+            ...state.notifications[index],
+            isRead: true,
+          };
         }
         state.unreadCount = Math.max(0, state.unreadCount - 1);
       })

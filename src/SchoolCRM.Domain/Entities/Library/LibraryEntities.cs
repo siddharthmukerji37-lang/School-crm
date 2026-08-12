@@ -47,8 +47,10 @@ public class BookIssue : BaseEntity
     public string? ReturnedTo { get; set; }
     public string? Remarks { get; set; }
     public Guid BookId { get; set; }
-    public Guid StudentId { get; set; }
+    public Guid? StudentId { get; set; }
+    public Guid? TeacherId { get; set; }
 
     public Book Book { get; set; } = null!;
-    public Student.Student Student { get; set; } = null!;
+    public Student.Student? Student { get; set; }
+    public Teacher.Teacher? Teacher { get; set; }
 }

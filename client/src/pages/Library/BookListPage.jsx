@@ -14,7 +14,7 @@ export default function BookListPage() {
   const dispatch = useDispatch();
   const { books, loading } = useSelector((state) => state.library);
   const { user } = useSelector((state) => state.auth);
-  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin');
+  const isAdmin = (user?.roles || []).some((r) => r === 'SuperAdmin' || r === 'Admin' || r === 'Librarian');
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);

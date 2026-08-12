@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import * as signalR from '@microsoft/signalr';
 import {
   AppBar,
   Toolbar,
@@ -49,6 +50,12 @@ import ChildCareIcon from '@mui/icons-material/ChildCare';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { toggleSidebar } from '../store/slices/uiSlice';
 import { logout } from '../store/slices/authSlice';
+import {
+  fetchNotifications,
+  fetchUnreadCount,
+  markAsRead,
+  markAllAsRead,
+} from '../store/slices/notificationSlice';
 
 const DRAWER_WIDTH = 260;
 const COLLAPSED_WIDTH = 64;
@@ -115,6 +122,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Students', icon: <SchoolIcon />, path: '/students' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
+    { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Transport', icon: <DirectionsBusIcon />, path: '/transport' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
@@ -127,6 +135,18 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
+    { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
+  ],
+  Librarian: [
+    { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
+    { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
+  ],
+  Accountant: [
+    { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
   ],
@@ -185,11 +205,70 @@ export default function AdminLayout() {
     user: state.auth.user,
     unreadCount: state.notifications.unreadCount,
   }));
+  const notifications = useSelector((state) => state.notifications.notifications) || [];
 
   const userRole = user?.roles?.[0] || user?.role || 'Admin';
   const navItems = NAV_ITEMS_BY_ROLE[userRole] || NAV_ITEMS_BY_ROLE.Admin;
 
   const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchUnreadCount());
+    const timer = setInterval(() => {
+      dispatch(fetchUnreadCount());
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [dispatch]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !user) return;
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl('/hubs/notifications', {
+        accessTokenFactory: () => token,
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on('ReceiveNotification', () => {
+      dispatch(fetchUnreadCount());
+      dispatch(fetchNotifications({ pageSize: 8 }));
+    });
+
+    connection.start().catch(() => {});
+
+    return () => {
+      connection.stop().catch(() => {});
+    };
+  }, [dispatch, user]);
+
+  const handleNotificationOpen = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
+    dispatch(fetchNotifications({ pageSize: 8 }));
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationAnchorEl(null);
+  };
+
+  const handleNotificationClick = async (notification) => {
+    if (!notification.isRead) {
+      await dispatch(markAsRead(notification.id));
+    }
+    handleNotificationClose();
+    if (notification.link) {
+      navigate(notification.link);
+    } else {
+      navigate('/notifications');
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    await dispatch(markAllAsRead());
+    dispatch(fetchUnreadCount());
+  };
 
   const handleDrawerToggle = () => {
     dispatch(toggleSidebar());
@@ -360,13 +439,73 @@ export default function AdminLayout() {
               <Tooltip title="Notifications">
                 <IconButton
                   color="inherit"
-                  onClick={() => handleNavigation('/notifications')}
+                  onClick={handleNotificationOpen}
                 >
                   <Badge badgeContent={unreadCount} color="error">
                     <NotificationsIcon />
                   </Badge>
                 </IconButton>
               </Tooltip>
+
+              <Menu
+                anchorEl={notificationAnchorEl}
+                open={Boolean(notificationAnchorEl)}
+                onClose={handleNotificationClose}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                slotProps={{
+                  paper: { sx: { width: 360, maxHeight: 420, borderRadius: 2 } },
+                }}
+              >
+                <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>Notifications</Typography>
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    sx={{ color: 'primary.main', cursor: 'pointer', fontWeight: 600 }}
+                    onClick={handleMarkAllRead}
+                  >
+                    Mark all read
+                  </Typography>
+                </Box>
+                <Divider />
+                {notifications.length === 0 ? (
+                  <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">No notifications yet</Typography>
+                  </Box>
+                ) : (
+                  notifications.slice(0, 6).map((notification) => (
+                    <MenuItem
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification)}
+                      sx={{ whiteSpace: 'normal', alignItems: 'flex-start' }}
+                    >
+                      <Box sx={{ width: '100%' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+                          <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }}>
+                            {notification.title}
+                          </Typography>
+                          {!notification.isRead && (
+                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'error.main', mt: 0.8, flexShrink: 0 }} />
+                          )}
+                        </Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+                          {notification.message}
+                        </Typography>
+                        <Typography variant="caption" color="text.disabled">
+                          {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : ''}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))
+                )}
+                <Divider />
+                <MenuItem onClick={() => { handleNotificationClose(); navigate('/notifications'); }}>
+                  <Typography variant="body2" fontWeight={600} sx={{ color: 'primary.main', width: '100%', textAlign: 'center' }}>
+                    View all notifications
+                  </Typography>
+                </MenuItem>
+              </Menu>
 
               <Tooltip title="Account">
                 <IconButton onClick={handleProfileMenuOpen} sx={{ ml: 1 }}>

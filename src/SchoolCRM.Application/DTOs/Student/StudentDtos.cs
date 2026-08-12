@@ -49,6 +49,10 @@ public sealed class CreateStudentDto
     [EmailAddress(ErrorMessage = "Invalid email address")]
     public string Email { get; set; } = string.Empty;
 
+    [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+    [MaxLength(100)]
+    public string? Password { get; set; }
+
     [Phone(ErrorMessage = "Invalid phone number")]
     public string? Phone { get; set; }
 

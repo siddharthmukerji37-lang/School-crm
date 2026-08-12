@@ -19,7 +19,7 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { createStudent, updateStudent, fetchStudentById, clearSelectedStudent } from '../../store/slices/studentSlice';
-import { studentSchema } from '../../validationSchemas/studentSchemas';
+import { studentSchema, studentEditSchema } from '../../validationSchemas/studentSchemas';
 import toast from 'react-hot-toast';
 import axiosInstance from '../../services/axiosInstance';
 
@@ -51,6 +51,7 @@ export default function StudentFormPage() {
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
     dateOfBirth: '',
     gender: '',
     classRoomId: '',
@@ -146,6 +147,7 @@ export default function StudentFormPage() {
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
+        password: isEditMode ? undefined : values.password,
         phone: values.phone,
         gender: values.gender,
         dateOfBirth: values.dateOfBirth,
@@ -210,7 +212,7 @@ export default function StudentFormPage() {
 
       <Formik
         initialValues={initialValues}
-        validationSchema={studentSchema}
+        validationSchema={isEditMode ? studentEditSchema : studentSchema}
         onSubmit={handleSubmit}
         enableReinitialize
       >
@@ -267,6 +269,21 @@ export default function StudentFormPage() {
                     helperText={touched.email && errors.email}
                   />
                 </Grid>
+                {!isEditMode && (
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      fullWidth
+                      name="password"
+                      label="Password"
+                      type="password"
+                      value={values.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.password && Boolean(errors.password)}
+                      helperText={(touched.password && errors.password) || 'Student login password'}
+                    />
+                  </Grid>
+                )}
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth

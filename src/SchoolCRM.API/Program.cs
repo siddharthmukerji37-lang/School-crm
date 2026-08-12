@@ -21,11 +21,10 @@ using SchoolCRM.Domain.Entities.Library;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Domain.Enums;
 using SchoolCRM.API.Middleware;
-using SchoolCRM.API.SignalR;
+using SchoolCRM.Infrastructure.SignalR;
 using Serilog;
 using FluentValidation;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using SchoolCRM.API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -231,6 +230,7 @@ builder.Services.AddScoped<IFeeService, FeeService>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 builder.Services.AddScoped<ITransportService, TransportService>();
 builder.Services.AddScoped<IHostelService, HostelService>();

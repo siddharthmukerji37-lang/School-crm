@@ -141,6 +141,7 @@ public class LibraryController : ControllerBase
         [FromQuery] string? sortColumn = null,
         [FromQuery] string? sortOrder = null,
         [FromQuery] Guid? studentId = null,
+        [FromQuery] Guid? teacherId = null,
         [FromQuery] bool? overdue = null)
     {
         var query = new PaginationQuery(pageNumber, pageSize, searchTerm)
@@ -149,7 +150,7 @@ public class LibraryController : ControllerBase
             SortOrder = sortOrder
         };
 
-        var result = await _libraryService.GetIssuedBooksAsync(query, studentId, overdue);
+        var result = await _libraryService.GetIssuedBooksAsync(query, studentId, teacherId, overdue);
         return Ok(result);
     }
 

@@ -14,7 +14,7 @@ import ConfirmDialog from '../../components/common/ConfirmDialog';
 import toast from 'react-hot-toast';
 
 const statusColor = (s) => {
-  switch (s) { case 'Completed': return 'success'; case 'Overdue': return 'error'; case 'Pending': return 'warning'; default: return 'default'; }
+  switch (s) { case 'Completed': return 'success'; case 'Overdue': return 'error'; case 'Pending': return 'warning'; case 'Assigned': return 'info'; default: return 'default'; }
 };
 
 const approvalColor = (s) => {

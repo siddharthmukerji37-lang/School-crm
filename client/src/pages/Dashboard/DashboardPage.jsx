@@ -81,6 +81,13 @@ export default function DashboardPage() {
   const { stats, attendanceChart, loading } = useSelector(
     (state) => state.dashboard
   );
+  const { user } = useSelector((state) => state.auth);
+  const roles = user?.roles || [];
+  const isAdmin = roles.some(
+    (r) => r === 'SuperAdmin' || r === 'Admin' || r === 'SchoolAdmin'
+  );
+  const canViewFees =
+    isAdmin || roles.some((r) => r === 'Accountant');
 
   useEffect(() => {
     dispatch(fetchDashboardStats());
@@ -188,6 +195,7 @@ export default function DashboardPage() {
       trend: 'neutral',
       trendValue: '',
       color: 'success',
+      feeOnly: true,
     },
     {
       icon: <PendingActionsIcon />,
@@ -196,6 +204,7 @@ export default function DashboardPage() {
       trend: 'neutral',
       trendValue: '',
       color: 'warning',
+      feeOnly: true,
     },
     {
       icon: <QuizIcon />,
@@ -205,7 +214,7 @@ export default function DashboardPage() {
       trendValue: '',
       color: 'error',
     },
-  ];
+  ].filter((card) => (card.feeOnly ? canViewFees : true));
 
   return (
     <Box>
@@ -227,7 +236,7 @@ export default function DashboardPage() {
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid size={{ xs: 12, md: canViewFees ? 8 : 12 }}>
           <Paper sx={{ p: 3, mb: { xs: 3, md: 0 } }}>
             <Typography variant="h6" fontWeight={600} gutterBottom>
               Attendance Trend
@@ -238,6 +247,7 @@ export default function DashboardPage() {
           </Paper>
         </Grid>
 
+        {canViewFees && (
         <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, mb: { xs: 3, md: 0 }, height: '100%' }}>
             <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -268,6 +278,7 @@ export default function DashboardPage() {
             </Box>
           </Paper>
         </Grid>
+        )}
 
         <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, height: '100%' }}>

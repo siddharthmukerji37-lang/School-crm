@@ -1,8 +1,16 @@
 {
   "Files": [
     {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/4813258d640148d7a42a42d5fd8f617d.png",
+      "PackagePath": "staticwebassets/uploads/4813258d640148d7a42a42d5fd8f617d.png"
+    },
+    {
       "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/75293a5a5e4b4769817d3c437936b2ed.png",
       "PackagePath": "staticwebassets/uploads/75293a5a5e4b4769817d3c437936b2ed.png"
+    },
+    {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/a14eb1df16bc427db64de3018d9de8bf.png",
+      "PackagePath": "staticwebassets/uploads/a14eb1df16bc427db64de3018d9de8bf.png"
     },
     {
       "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/a26186f1df2b4a36acb7c39141dc2e8f.png",

@@ -84,6 +84,7 @@ public sealed class TimetableDto
     public Guid Id { get; set; }
     public Guid SectionId { get; set; }
     public string SectionName { get; set; } = string.Empty;
+    public string ClassName { get; set; } = string.Empty;
     public Guid SubjectId { get; set; }
     public string SubjectName { get; set; } = string.Empty;
     public Guid? TeacherId { get; set; }
@@ -93,6 +94,7 @@ public sealed class TimetableDto
     public TimeOnly EndTime { get; set; }
     public string? Room { get; set; }
     public Guid? AcademicYearId { get; set; }
+    public int PeriodNumber { get; set; }
 }
 
 public sealed class DepartmentDto

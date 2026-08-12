@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SchoolCRM.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c59cbdb3057754fd4752a7599ba7dba9c8a7d7f7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6d4105bd52185269eab9e33fc2802ce833de206e")]
 [assembly: System.Reflection.AssemblyProductAttribute("SchoolCRM.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SchoolCRM.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

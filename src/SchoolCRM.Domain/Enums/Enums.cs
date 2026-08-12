@@ -201,7 +201,8 @@ public enum HomeworkStatus
     Assigned = 1,
     Submitted = 2,
     Reviewed = 3,
-    Rejected = 4
+    Rejected = 4,
+    Completed = 5
 }
 
 public enum LeaveStatus

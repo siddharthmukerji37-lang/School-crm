@@ -333,6 +333,28 @@ public class SchoolsController : ControllerBase
 
     #endregion
 
+    [HttpGet("timetable/my")]
+    [ProducesResponseType(typeof(ApiResponse<List<TimetableDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<TimetableDto>>>> GetMyTeacherTimetableAsync()
+    {
+        var result = await _schoolService.GetMyTeacherTimetableAsync();
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("timetable/my-section")]
+    [ProducesResponseType(typeof(ApiResponse<List<TimetableDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<TimetableDto>>>> GetMySectionTimetableAsync()
+    {
+        var result = await _schoolService.GetMySectionTimetableAsync();
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpGet("sections/{sectionId:guid}/timetable")]
     [ProducesResponseType(typeof(ApiResponse<List<TimetableDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<TimetableDto>>>> GetTimetableAsync(

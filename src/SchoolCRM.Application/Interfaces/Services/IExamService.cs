@@ -5,7 +5,7 @@ namespace SchoolCRM.Application.Interfaces.Services;
 
 public interface IExamService
 {
-    Task<ApiResponse<PagedResult<ExamDto>>> GetExamsAsync(PaginationQuery query, Guid? classRoomId);
+    Task<ApiResponse<PagedResult<ExamDto>>> GetExamsAsync(PaginationQuery query, Guid? classRoomId, Guid? sectionId);
 
     Task<ApiResponse<ExamDto>> GetExamByIdAsync(Guid id);
 
