@@ -23,6 +23,10 @@ public class FeeStructure : BaseEntity
     public Guid AcademicYearId { get; set; }
     public bool IsRequired { get; set; } = true;
     public string? Description { get; set; }
+    public int FineAfterDays { get; set; } = 30;
+    public decimal FineAmount { get; set; }
+    public DateTime? FineStartDate { get; set; }
+    public DateTime? FineEndDate { get; set; }
 
     public FeeHead? FeeHead { get; set; }
     public School.ClassRoom ClassRoom { get; set; } = null!;

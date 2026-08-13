@@ -79,6 +79,19 @@ public class MarkRepository : GenericRepository<Mark>, IMarkRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<Mark>> GetByExamAsync(Guid examId)
+    {
+        return await _dbSet
+            .Include(m => m.Student)
+                .ThenInclude(s => s!.Section)
+                    .ThenInclude(sec => sec!.ClassRoom)
+            .Include(m => m.ExamSchedule)
+                .ThenInclude(es => es!.Subject)
+            .Where(m => m.ExamSchedule.ExamId == examId && !m.IsDeleted)
+            .OrderBy(m => m.Student!.RollNumber)
+            .ToListAsync();
+    }
+
     public async Task<IReadOnlyList<Mark>> GetByStudentAsync(Guid studentId, Guid examId)
     {
         return await _dbSet

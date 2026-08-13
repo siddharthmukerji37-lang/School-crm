@@ -9,6 +9,7 @@ using SchoolCRM.Application.DTOs.Auth;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Entities.Identity;
+using SchoolCRM.Domain.Enums;
 using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Constants;
 using SchoolCRM.Shared.Models;
@@ -60,6 +61,8 @@ public class AuthService : IAuthService
         user.FailedLoginAttempts = 0;
         user.UpdatedAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
+
+        await MarkTeacherAttendanceOnLoginAsync(user);
 
         var token = await GenerateJwtToken(user);
         var refreshToken = GenerateRefreshToken();
@@ -330,6 +333,55 @@ public class AuthService : IAuthService
             ProfilePictureUrl = user.ProfilePictureUrl,
             Roles = roles.ToList()
         };
+    }
+
+    private async Task MarkTeacherAttendanceOnLoginAsync(ApplicationUser user)
+    {
+        try
+        {
+            var teacher = await _unitOfWork.Teachers.GetTeacherByUserIdAsync(user.Id);
+            if (teacher is null || teacher.IsDeleted)
+                return;
+
+            var schoolId = teacher.SchoolId;
+            if (schoolId is null || schoolId == Guid.Empty)
+            {
+                var schools = await _unitOfWork.Schools.GetAllAsync();
+                schoolId = schools.FirstOrDefault()?.Id;
+            }
+            if (schoolId is null || schoolId == Guid.Empty)
+                return;
+
+            var today = DateTime.Now.Date;
+            var existing = (await _unitOfWork.Attendances.FindAsync(a =>
+                a.Date.Date == today && a.TeacherId == teacher.Id && !a.IsDeleted)).FirstOrDefault();
+
+            if (existing is not null)
+            {
+                existing.Status = AttendanceStatus.Present;
+                existing.CheckInTime ??= DateTime.Now.TimeOfDay;
+                existing.UpdatedAt = DateTime.UtcNow;
+                await _unitOfWork.Attendances.UpdateAsync(existing);
+            }
+            else
+            {
+                await _unitOfWork.Attendances.AddAsync(new Domain.Entities.Attendance.Attendance
+                {
+                    Date = today,
+                    Status = AttendanceStatus.Present,
+                    CheckInTime = DateTime.Now.TimeOfDay,
+                    TeacherId = teacher.Id,
+                    SchoolId = schoolId.Value,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            // Auto-marking must never block a successful login.
+        }
     }
 
     private async Task<string> GenerateJwtToken(ApplicationUser user)

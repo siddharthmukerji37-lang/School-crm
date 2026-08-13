@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
 import {
   Box,
@@ -28,6 +28,7 @@ const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Cheque', 'Online'];
 const collectFeeSchema = Yup.object({
   studentId: Yup.string().required('Student is required'),
   feeStructureId: Yup.string().required('Fee structure is required'),
+  installmentId: Yup.string(),
   amount: Yup.number()
     .transform((value, originalValue) =>
       originalValue === '' ? undefined : value
@@ -40,11 +41,13 @@ const collectFeeSchema = Yup.object({
   transactionReference: Yup.string().trim(),
   remarks: Yup.string().trim(),
   paymentDate: Yup.date().required('Payment date is required'),
+  receivedBy: Yup.string().trim().required('Received by is required'),
 });
 
 export default function FeeCollectPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   const [students, setStudents] = useState([]);
   const [studentsLoading, setStudentsLoading] = useState(false);
@@ -52,6 +55,11 @@ export default function FeeCollectPage() {
   const [feesLoading, setFeesLoading] = useState(false);
   const [pendingFees, setPendingFees] = useState(null);
   const [pendingLoading, setPendingLoading] = useState(false);
+
+  const currentUserName = [user?.firstName, user?.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
 
   useEffect(() => {
     const loadStudents = async () => {
@@ -75,7 +83,7 @@ export default function FeeCollectPage() {
       setFeesLoading(true);
       try {
         const response = await axiosInstance.get('/fees', {
-          params: { pageSize: 1000, status: 'Active' },
+          params: { pageSize: 1000 },
         });
         setFeeStructures(response.data.data?.items || []);
       } catch (error) {
@@ -106,7 +114,9 @@ export default function FeeCollectPage() {
   };
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    const result = await dispatch(collectFee(values));
+    const payload = { ...values };
+    if (!payload.installmentId) delete payload.installmentId;
+    const result = await dispatch(collectFee(payload));
     if (collectFee.fulfilled.match(result)) {
       toast.success('Fee collected successfully');
       navigate('/fees');
@@ -135,11 +145,13 @@ export default function FeeCollectPage() {
         initialValues={{
           studentId: '',
           feeStructureId: '',
+          installmentId: '',
           amount: '',
           paymentMethod: 'Cash',
           transactionReference: '',
           remarks: '',
           paymentDate: new Date().toISOString().split('T')[0],
+          receivedBy: currentUserName,
         }}
         validationSchema={collectFeeSchema}
         onSubmit={handleSubmit}
@@ -152,7 +164,38 @@ export default function FeeCollectPage() {
           handleBlur,
           isSubmitting,
           setFieldValue,
-        }) => (
+        }) => {
+          const selectedStudent = students.find((s) => s.id === values.studentId);
+          const availableFeeStructures = selectedStudent
+            ? feeStructures.filter(
+                (fs) => fs.classRoomId === selectedStudent.classRoomId
+              )
+            : feeStructures;
+
+          const structureInstallments = (pendingFees?.installments || []).filter(
+            (i) =>
+              i.feeStructureId === values.feeStructureId &&
+              Number(i.pendingAmount || 0) > 0
+          );
+
+          const handleFeeStructureChange = (value) => {
+            setFieldValue('feeStructureId', value);
+            const installments = (pendingFees?.installments || []).filter(
+              (i) =>
+                i.feeStructureId === value &&
+                Number(i.pendingAmount || 0) > 0
+            );
+            const firstUnpaid = installments[0];
+            if (firstUnpaid) {
+              setFieldValue('installmentId', firstUnpaid.installmentId);
+              setFieldValue('amount', Number(firstUnpaid.pendingAmount || 0));
+            } else {
+              setFieldValue('installmentId', '');
+              setFieldValue('amount', '');
+            }
+          };
+
+          return (
           <Form>
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -169,6 +212,9 @@ export default function FeeCollectPage() {
                     loading={studentsLoading}
                     onChange={(_, newValue) => {
                       setFieldValue('studentId', newValue?.id || '');
+                      setFieldValue('feeStructureId', '');
+                      setFieldValue('installmentId', '');
+                      setFieldValue('amount', '');
                       handleStudentChange(newValue?.id);
                     }}
                     renderInput={(params) => (
@@ -200,15 +246,50 @@ export default function FeeCollectPage() {
                     name="feeStructureId"
                     label="Fee Structure"
                     value={values.feeStructureId}
-                    onChange={handleChange}
+                    onChange={(e) => handleFeeStructureChange(e.target.value)}
                     onBlur={handleBlur}
                     error={touched.feeStructureId && Boolean(errors.feeStructureId)}
-                    helperText={touched.feeStructureId && errors.feeStructureId}
+                    helperText={
+                      touched.feeStructureId && errors.feeStructureId
+                        ? errors.feeStructureId
+                        : selectedStudent && availableFeeStructures.length === 0
+                          ? `No fee structures for ${selectedStudent.className || 'this class'}.`
+                          : undefined
+                    }
                     disabled={feesLoading}
                   >
-                    {feeStructures.map((fs) => (
+                    {availableFeeStructures.map((fs) => (
                       <MenuItem key={fs.id} value={fs.id}>
                         {fs.name} - {fs.className} (${Number(fs.totalAmount || 0).toFixed(2)})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    select
+                    name="installmentId"
+                    label="Installment"
+                    value={values.installmentId}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    disabled={!values.feeStructureId || structureInstallments.length === 0}
+                    helperText={
+                      values.feeStructureId && structureInstallments.length === 0
+                        ? 'No outstanding installments for this fee structure.'
+                        : 'Leave blank to pay the oldest outstanding installment.'
+                    }
+                  >
+                    {structureInstallments.map((inst) => (
+                      <MenuItem
+                        key={inst.installmentId}
+                        value={inst.installmentId}
+                        onClick={() =>
+                          setFieldValue('amount', Number(inst.pendingAmount || 0))
+                        }
+                      >
+                        {inst.name} - Pending ${Number(inst.pendingAmount || 0).toFixed(2)}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -270,6 +351,18 @@ export default function FeeCollectPage() {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
+                    name="receivedBy"
+                    label="Received By"
+                    value={values.receivedBy}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.receivedBy && Boolean(errors.receivedBy)}
+                    helperText={touched.receivedBy && errors.receivedBy}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
                     name="remarks"
                     label="Remarks"
                     value={values.remarks}
@@ -289,38 +382,32 @@ export default function FeeCollectPage() {
               </Paper>
             )}
 
-            {!pendingLoading && pendingFees && (
+            {!pendingLoading && pendingFees?.installments?.length > 0 && (
               <Paper sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   Pending Fees Summary
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                {Array.isArray(pendingFees) && pendingFees.length > 0 ? (
-                  <Stack spacing={1}>
-                    {pendingFees.map((fee) => (
-                      <Stack
-                        key={fee.id}
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography variant="body1">
-                            {fee.feeStructureName || fee.name}
-                          </Typography>
-                          <Chip label={fee.status || 'Pending'} size="small" color="warning" variant="outlined" />
-                        </Stack>
-                        <Typography variant="body1" fontWeight={600}>
-                          ${Number(fee.amount || 0).toFixed(2)}
+                <Stack spacing={1}>
+                  {pendingFees.installments.map((fee) => (
+                    <Stack
+                      key={fee.installmentId}
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="body1">
+                          {fee.name}
                         </Typography>
+                        <Chip label={fee.status || 'Pending'} size="small" color="warning" variant="outlined" />
                       </Stack>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No pending fees for this student.
-                  </Typography>
-                )}
+                      <Typography variant="body1" fontWeight={600}>
+                        ${Number(fee.pendingAmount || 0).toFixed(2)}
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Stack>
               </Paper>
             )}
 
@@ -338,7 +425,8 @@ export default function FeeCollectPage() {
               </Button>
             </Stack>
           </Form>
-        )}
+          );
+        }}
       </Formik>
     </Box>
   );

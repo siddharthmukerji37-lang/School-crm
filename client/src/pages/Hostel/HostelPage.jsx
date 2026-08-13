@@ -13,6 +13,7 @@ import {
   fetchAllocations, allocateBed, checkout,
 } from '../../store/slices/hostelSlice';
 import { fetchStudents } from '../../store/slices/studentSlice';
+import { findCurrentStudent, filterStudentAllocations } from '../../utils/studentAllocationUtils';
 import hostelService from '../../services/hostelService';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
@@ -47,6 +48,10 @@ export default function HostelPage() {
   const dispatch = useDispatch();
   const { hostels, rooms, allocations } = useSelector((state) => state.hostel);
   const { students } = useSelector((state) => state.students);
+  const { user } = useSelector((state) => state.auth);
+  const userRole = user?.roles?.[0] || user?.role || 'Admin';
+  const isStudent = userRole === 'Student';
+  const currentStudent = findCurrentStudent(students, user);
 
   const [tab, setTab] = useState(0);
   const [page, setPage] = useState(0);
@@ -65,6 +70,12 @@ export default function HostelPage() {
 
   useEffect(() => {
     const params = { page: page + 1, pageSize: rowsPerPage };
+
+    if (isStudent) {
+      dispatch(fetchAllocations({ ...params, studentId: currentStudent?.id }));
+      return;
+    }
+
     if (tab === 0) dispatch(fetchHostels(params));
     else if (tab === 1) {
       dispatch(fetchAllRooms());
@@ -74,7 +85,7 @@ export default function HostelPage() {
       dispatch(fetchAllRooms());
       dispatch(fetchHostels({ page: 1, pageSize: 1000 }));
     }
-  }, [dispatch, tab, page, rowsPerPage]);
+  }, [dispatch, isStudent, currentStudent?.id, tab, page, rowsPerPage]);
 
   useEffect(() => {
     dispatch(fetchStudents({ page: 1, pageSize: 500 }));
@@ -209,28 +220,35 @@ export default function HostelPage() {
     }
   };
 
-  const currentData = tab === 0 ? hostels : tab === 1 ? rooms : allocations;
-  const currentColumns = tab === 0 ? hostelColumns : tab === 1 ? roomColumns : allocationColumns;
+  const studentScopedAllocations = isStudent
+    ? filterStudentAllocations(allocations?.items || [], currentStudent)
+    : allocations?.items || [];
+  const currentData = isStudent
+    ? { items: studentScopedAllocations, totalCount: studentScopedAllocations.length }
+    : tab === 0 ? hostels : tab === 1 ? rooms : allocations;
+  const currentColumns = isStudent ? allocationColumns : tab === 0 ? hostelColumns : tab === 1 ? roomColumns : allocationColumns;
   const hostelOptions = hostels?.items || hostels || [];
 
   return (
     <Box>
-      <PageHeader title="Hostel Management" subtitle="Manage hostels, rooms and allocations" />
-      <Tabs value={tab} onChange={(_, v) => { setTab(v); setPage(0); }} sx={{ mb: 2 }}>
-        <Tab label="Hostels" />
-        <Tab label="Rooms" />
-        <Tab label="Allocations" />
+      <PageHeader title="Hostel Management" subtitle={isStudent ? 'Your hostel allocation' : 'Manage hostels, rooms and allocations'} />
+      <Tabs value={isStudent ? 2 : tab} onChange={(_, v) => { setTab(v); setPage(0); }} sx={{ mb: 2 }}>
+        {!isStudent && <Tab label="Hostels" />}
+        {!isStudent && <Tab label="Rooms" />}
+        <Tab label={isStudent ? 'My Allocation' : 'Allocations'} />
       </Tabs>
 
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => (tab === 2 ? (() => { setAllocForm({ studentId: '', roomId: '', bedId: '' }); setBeds([]); setAllocOpen(true); })() : handleOpenDialog())}
-        >
-          {tab === 0 ? 'Add Hostel' : tab === 1 ? 'Add Room' : 'Allocate Bed'}
-        </Button>
-      </Box>
+      {!isStudent && (
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => (tab === 2 ? (() => { setAllocForm({ studentId: '', roomId: '', bedId: '' }); setBeds([]); setAllocOpen(true); })() : handleOpenDialog())}
+          >
+            {tab === 0 ? 'Add Hostel' : tab === 1 ? 'Add Room' : 'Allocate Bed'}
+          </Button>
+        </Box>
+      )}
 
       <DataTable
         columns={currentColumns}
@@ -242,10 +260,10 @@ export default function HostelPage() {
         onPageChange={(_, p) => setPage(p)}
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
         onView={(row) => setViewItem(row)}
-        onEdit={tab < 2 ? (row) => handleOpenDialog(row) : undefined}
-        onDelete={tab < 2 ? (row) => handleDelete(row, tab === 0 ? 'hostel' : 'room') : undefined}
-        onReturn={tab === 2 ? (row) => setCheckoutTarget(row) : undefined}
-        emptyMessage={`No ${tab === 0 ? 'hostels' : tab === 1 ? 'rooms' : 'allocations'} found`}
+        onEdit={!isStudent && tab < 2 ? (row) => handleOpenDialog(row) : undefined}
+        onDelete={!isStudent && tab < 2 ? (row) => handleDelete(row, tab === 0 ? 'hostel' : 'room') : undefined}
+        onReturn={!isStudent && tab === 2 ? (row) => setCheckoutTarget(row) : undefined}
+        emptyMessage={isStudent ? 'No hostel allocation found' : `No ${tab === 0 ? 'hostels' : tab === 1 ? 'rooms' : 'allocations'} found`}
       />
 
       <ConfirmDialog

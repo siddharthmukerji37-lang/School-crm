@@ -953,6 +953,10 @@ public class ExamService : IExamService
             if (studentId == Guid.Empty)
                 return ApiResponse<ExamSubmissionDto>.FailResponse("Unable to identify the current student.");
 
+            if (await _unitOfWork.FeeInstallments.HasOutstandingFeesAsync(studentId))
+                return ApiResponse<ExamSubmissionDto>.FailResponse(
+                    "You have pending fees. Please clear your fee dues before accessing exams.");
+
             var existing = await _unitOfWork.ExamSubmissions.GetByExamAndStudentAsync(dto.ExamId, studentId);
             if (existing is not null)
                 return ApiResponse<ExamSubmissionDto>.FailResponse("You have already submitted this exam.");

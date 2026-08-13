@@ -129,4 +129,96 @@ public class AttendanceController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(ApiResponse<MyAttendanceDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<MyAttendanceDto>>> GetMyAttendanceAsync()
+    {
+        var result = await _attendanceService.GetMyAttendanceAsync();
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("me/clock-in")]
+    [ProducesResponseType(typeof(ApiResponse<MyAttendanceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<MyAttendanceDto>>> ClockInAsync()
+    {
+        var result = await _attendanceService.ClockInAsync();
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("me/clock-out")]
+    [ProducesResponseType(typeof(ApiResponse<MyAttendanceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<MyAttendanceDto>>> ClockOutAsync()
+    {
+        var result = await _attendanceService.ClockOutAsync();
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("staff/teachers/mark")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> MarkTeacherAttendanceAsync(
+        [FromBody] MarkStaffAttendanceDto dto)
+    {
+        var result = await _attendanceService.MarkTeacherAttendanceAsync(dto);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("staff/employees/mark")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> MarkEmployeeAttendanceAsync(
+        [FromBody] MarkStaffAttendanceDto dto)
+    {
+        var result = await _attendanceService.MarkEmployeeAttendanceAsync(dto);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("staff")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<StaffAttendanceDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<PagedResult<StaffAttendanceDto>>>> GetStaffAttendanceAsync(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortColumn = null,
+        [FromQuery] string? sortOrder = null,
+        [FromQuery] DateTime? date = null,
+        [FromQuery] string? role = null,
+        [FromQuery] string? status = null)
+    {
+        var query = new PaginationQuery(pageNumber, pageSize, searchTerm)
+        {
+            SortColumn = sortColumn,
+            SortOrder = sortOrder
+        };
+
+        var result = await _attendanceService.GetStaffAttendanceAsync(query, date, role, status);
+        return Ok(result);
+    }
+
+    [HttpGet("staff/stats")]
+    [ProducesResponseType(typeof(ApiResponse<StaffAttendanceStatsDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<StaffAttendanceStatsDto>>> GetStaffAttendanceStatsAsync(
+        [FromQuery] DateTime date)
+    {
+        var result = await _attendanceService.GetStaffAttendanceStatsAsync(date);
+        return Ok(result);
+    }
 }

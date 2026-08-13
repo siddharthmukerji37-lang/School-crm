@@ -48,6 +48,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import ClassIcon from '@mui/icons-material/Class';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import ChatIcon from '@mui/icons-material/Chat';
 import { toggleSidebar } from '../store/slices/uiSlice';
 import { logout } from '../store/slices/authSlice';
 import {
@@ -68,6 +69,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Parents', icon: <FamilyRestroomIcon />, path: '/parents' },
     { label: 'Employees', icon: <BadgeIcon />, path: '/employees' },
     { label: 'Attendance', icon: <EventAvailableIcon />, path: '/attendance' },
+    { label: 'Staff Attendance', icon: <EventAvailableIcon />, path: '/attendance/staff' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
@@ -77,6 +79,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Inventory', icon: <InventoryIcon />, path: '/inventory' },
     { label: 'Accounts', icon: <AccountBalanceIcon />, path: '/accounts' },
+    { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
     { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
@@ -89,6 +92,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Parents', icon: <FamilyRestroomIcon />, path: '/parents' },
     { label: 'Employees', icon: <BadgeIcon />, path: '/employees' },
     { label: 'Attendance', icon: <EventAvailableIcon />, path: '/attendance' },
+    { label: 'Staff Attendance', icon: <EventAvailableIcon />, path: '/attendance/staff' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
@@ -98,6 +102,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Inventory', icon: <InventoryIcon />, path: '/inventory' },
     { label: 'Accounts', icon: <AccountBalanceIcon />, path: '/accounts' },
+    { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
     { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
@@ -108,12 +113,15 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { label: 'Students', icon: <SchoolIcon />, path: '/students' },
     { label: 'Teachers', icon: <PeopleIcon />, path: '/teachers' },
+    { label: 'My Attendance', icon: <EventAvailableIcon />, path: '/my-attendance' },
+    { label: 'Mark Attendance', icon: <EventAvailableIcon />, path: '/attendance/mark' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Parents', icon: <FamilyRestroomIcon />, path: '/parents' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
     { label: 'Transport', icon: <DirectionsBusIcon />, path: '/transport' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
   ],
@@ -124,7 +132,10 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Transport', icon: <DirectionsBusIcon />, path: '/transport' },
+    { label: 'Hostel', icon: <HotelIcon />, path: '/hostel' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'My Fees', icon: <PaymentsIcon />, path: '/fees/my-receipts' },
+    { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
   ],
@@ -135,18 +146,22 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
   ],
   Librarian: [
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
   ],
   Accountant: [
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
+    { label: 'Accounts', icon: <AccountBalanceIcon />, path: '/accounts' },
+    { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
   ],
@@ -205,6 +220,7 @@ export default function AdminLayout() {
     user: state.auth.user,
     unreadCount: state.notifications.unreadCount,
   }));
+  const chatUnread = useSelector((state) => state.chat.unreadTotal);
   const notifications = useSelector((state) => state.notifications.notifications) || [];
 
   const userRole = user?.roles?.[0] || user?.role || 'Admin';
@@ -258,7 +274,9 @@ export default function AdminLayout() {
       await dispatch(markAsRead(notification.id));
     }
     handleNotificationClose();
-    if (notification.link) {
+    if (userRole === 'Student' || userRole === 'Parent') {
+      navigate('/notifications');
+    } else if (notification.link) {
       navigate(notification.link);
     } else {
       navigate('/notifications');
@@ -436,6 +454,14 @@ export default function AdminLayout() {
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Tooltip title="Chat">
+                <IconButton color="inherit" onClick={() => navigate('/chat')}>
+                  <Badge badgeContent={chatUnread} color="error">
+                    <ChatIcon />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+
               <Tooltip title="Notifications">
                 <IconButton
                   color="inherit"

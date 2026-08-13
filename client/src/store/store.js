@@ -18,6 +18,7 @@ import notificationReducer from './slices/notificationSlice';
 import reportReducer from './slices/reportSlice';
 import uiReducer from './slices/uiSlice';
 import noticeReducer from './slices/noticeSlice';
+import chatReducer from './slices/chatSlice';
 
 export const store = configureStore({
   reducer: {
@@ -40,6 +41,7 @@ export const store = configureStore({
     reports: reportReducer,
     ui: uiReducer,
     notices: noticeReducer,
+    chat: chatReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

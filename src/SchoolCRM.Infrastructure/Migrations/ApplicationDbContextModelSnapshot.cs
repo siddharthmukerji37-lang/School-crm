@@ -1757,6 +1757,19 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("FineAfterDays")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("FineAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("FineEndDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FineStartDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
@@ -3339,13 +3352,19 @@ namespace SchoolCRM.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("MessageType")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("ParentMessageId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("ReceiverId")
+                    b.Property<Guid?>("ReceiverId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("SectionId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid>("SenderId")
@@ -3362,6 +3381,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasIndex("ParentMessageId");
 
                     b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SectionId");
 
                     b.HasIndex("SenderId");
 
@@ -6593,8 +6614,12 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.HasOne("SchoolCRM.Domain.Entities.Identity.ApplicationUser", "Receiver")
                         .WithMany()
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SchoolCRM.Domain.Entities.School.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolCRM.Domain.Entities.Identity.ApplicationUser", "Sender")
                         .WithMany()
@@ -6605,6 +6630,8 @@ namespace SchoolCRM.Infrastructure.Migrations
                     b.Navigation("ParentMessage");
 
                     b.Navigation("Receiver");
+
+                    b.Navigation("Section");
 
                     b.Navigation("Sender");
                 });

@@ -15,4 +15,19 @@ public interface IAttendanceService
 
     Task<ApiResponse<PagedResult<AttendanceDto>>> GetStudentAttendanceAsync(
         Guid studentId, PaginationQuery query);
+
+    Task<ApiResponse> MarkTeacherAttendanceAsync(MarkStaffAttendanceDto dto);
+
+    Task<ApiResponse> MarkEmployeeAttendanceAsync(MarkStaffAttendanceDto dto);
+
+    Task<ApiResponse<PagedResult<StaffAttendanceDto>>> GetStaffAttendanceAsync(
+        PaginationQuery query, DateTime? date, string? role, string? status);
+
+    Task<ApiResponse<StaffAttendanceStatsDto>> GetStaffAttendanceStatsAsync(DateTime date);
+
+    Task<ApiResponse<MyAttendanceDto>> GetMyAttendanceAsync();
+
+    Task<ApiResponse<MyAttendanceDto>> ClockInAsync();
+
+    Task<ApiResponse<MyAttendanceDto>> ClockOutAsync();
 }

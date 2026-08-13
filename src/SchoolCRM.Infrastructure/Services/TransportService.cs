@@ -433,16 +433,20 @@ public class TransportService : ITransportService
     }
 
     public async Task<ApiResponse<PagedResult<TransportAllocationDto>>> GetAllocationsAsync(
-        PaginationQuery query, Guid? routeId, Guid? vehicleId)
+        PaginationQuery query, Guid? routeId, Guid? vehicleId, Guid? studentId = null)
     {
         try
         {
             var allocations = await _unitOfWork.TransportRoutes.GetAllocationsWithDetailsAsync();
-            var filtered = allocations.Where(a => !a.IsDeleted).ToList();
+            var filtered = allocations
+                .Where(a => !a.IsDeleted)
+                .Where(a => !routeId.HasValue || a.RouteId == routeId.Value)
+                .Where(a => !vehicleId.HasValue || a.Route.Vehicles.Any(v => v.Id == vehicleId.Value))
+                .Where(a => !studentId.HasValue || a.StudentId == studentId.Value)
+                .ToList();
             var totalCount = filtered.Count;
 
             var pagedItems = filtered
-                .Where(a => !routeId.HasValue || a.RouteId == routeId.Value)
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .Select(a => new TransportAllocationDto

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -12,6 +12,12 @@ import {
   Avatar,
   Skeleton,
   Divider,
+  Chip,
+  LinearProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import PeopleIcon from '@mui/icons-material/People';
@@ -23,7 +29,7 @@ import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import QuizIcon from '@mui/icons-material/Quiz';
 import CakeIcon from '@mui/icons-material/Cake';
 import CampaignIcon from '@mui/icons-material/Campaign';
-import { Line, Doughnut } from 'react-chartjs-2';
+import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,6 +37,7 @@ import {
   PointElement,
   LineElement,
   ArcElement,
+  BarElement,
   Title,
   Tooltip as ChartTooltip,
   Legend,
@@ -49,6 +56,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   ArcElement,
+  BarElement,
   Title,
   ChartTooltip,
   Legend,
@@ -78,6 +86,7 @@ const CHART_OPTIONS = {
 
 export default function DashboardPage() {
   const dispatch = useDispatch();
+  const [selectedExamId, setSelectedExamId] = useState('');
   const { stats, attendanceChart, loading } = useSelector(
     (state) => state.dashboard
   );
@@ -147,6 +156,42 @@ export default function DashboardPage() {
     class: b.className || (b.type === 'Teacher' ? 'Teacher' : ''),
   }));
 
+  const pendingFeeStudents = statsData.pendingFeeStudents || [];
+
+  const staffAttendance = statsData.staffAttendance || {};
+  const teachersPresent = Number(staffAttendance.teachersPresent || 0);
+  const teachersMarked = Number(staffAttendance.teachersMarked || 0);
+  const totalTeachers = Number(staffAttendance.totalTeachers || 0);
+  const employeesPresent = Number(staffAttendance.employeesPresent || 0);
+  const employeesMarked = Number(staffAttendance.employeesMarked || 0);
+  const totalEmployees = Number(staffAttendance.totalEmployees || 0);
+
+  const examResults = statsData.examResults || [];
+  const examOptions = [
+    ...new Map(examResults.map((r) => [r.examId, { id: r.examId, name: r.examName }])).values(),
+  ];
+  const activeExamId = selectedExamId || examOptions[0]?.id || '';
+  const filteredExamResults = examResults.filter((r) => r.examId === activeExamId);
+  const examChartData = {
+    labels: filteredExamResults.map((r) =>
+      r.sectionName ? `${r.className} - ${r.sectionName}` : r.className
+    ),
+    datasets: [
+      {
+        label: 'Passed',
+        data: filteredExamResults.map((r) => Number(r.passedCount || 0)),
+        backgroundColor: '#2E7D32',
+        borderRadius: 4,
+      },
+      {
+        label: 'Failed',
+        data: filteredExamResults.map((r) => Number(r.failedCount || 0)),
+        backgroundColor: '#D32F2F',
+        borderRadius: 4,
+      },
+    ],
+  };
+
   const statCards = [
     {
       icon: <SchoolIcon />,
@@ -182,7 +227,7 @@ export default function DashboardPage() {
     },
     {
       icon: <EventAvailableIcon />,
-      title: "Today's Attendance",
+      title: "Student Attendance Today",
       value: `${Number(statsData.todayAttendance?.attendancePercentage ?? 0).toFixed(2)}%`,
       trend: 'neutral',
       trendValue: '',
@@ -375,6 +420,223 @@ export default function DashboardPage() {
           </Paper>
         </Grid>
       </Grid>
+
+      {isAdmin && (
+        <Grid container spacing={3} sx={{ mt: 0.5 }}>
+          <Grid size={{ xs: 12 }}>
+            <Paper sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <EventAvailableIcon color="primary" />
+                <Typography variant="h6" fontWeight={600}>
+                  Staff Attendance - Today
+                </Typography>
+                <Chip
+                  label="Admin"
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+              {loading ? (
+                <Skeleton variant="rounded" height={120} />
+              ) : (
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="body1" fontWeight={600} gutterBottom>
+                      Teachers
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                      <Typography variant="h4" fontWeight={700} color={teachersPresent >= teachersMarked && teachersMarked > 0 ? 'success.main' : 'inherit'}>
+                        {teachersPresent}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        present out of {teachersMarked || 0} marked / {totalTeachers} total
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={teachersMarked > 0 ? (teachersPresent / teachersMarked) * 100 : 0}
+                      sx={{ mt: 1, height: 8, borderRadius: 1 }}
+                    />
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {teachersMarked - teachersPresent} absent
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="body1" fontWeight={600} gutterBottom>
+                      Employees
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                      <Typography variant="h4" fontWeight={700} color={employeesPresent >= employeesMarked && employeesMarked > 0 ? 'success.main' : 'inherit'}>
+                        {employeesPresent}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        present out of {employeesMarked || 0} marked / {totalEmployees} total
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={employeesMarked > 0 ? (employeesPresent / employeesMarked) * 100 : 0}
+                      sx={{ mt: 1, height: 8, borderRadius: 1 }}
+                    />
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {employeesMarked - employeesPresent} absent
+                    </Typography>
+                  </Grid>
+                </Grid>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+      )}
+
+      {isAdmin && (
+        <Grid container spacing={3} sx={{ mt: 0.5 }}>
+          <Grid size={{ xs: 12 }}>
+            <Paper sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  mb: 2,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <QuizIcon color="primary" />
+                  <Typography variant="h6" fontWeight={600}>
+                    Exam Results (Pass / Fail)
+                  </Typography>
+                  {filteredExamResults.length > 0 && (
+                    <Chip
+                      label={`${filteredExamResults.reduce(
+                        (sum, r) => sum + Number(r.totalCount || 0),
+                        0
+                      )} students`}
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                    />
+                  )}
+                </Box>
+                {examOptions.length > 0 && (
+                  <FormControl size="small" sx={{ minWidth: 220 }}>
+                    <InputLabel id="exam-result-select-label">Exam</InputLabel>
+                    <Select
+                      labelId="exam-result-select-label"
+                      id="exam-result-select"
+                      value={activeExamId}
+                      label="Exam"
+                      onChange={(e) => setSelectedExamId(e.target.value)}
+                    >
+                      {examOptions.map((exam) => (
+                        <MenuItem key={exam.id} value={exam.id}>
+                          {exam.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+              {loading ? (
+                <Skeleton variant="rounded" height={300} />
+              ) : filteredExamResults.length > 0 ? (
+                <Box sx={{ height: 300 }}>
+                  <Bar data={examChartData} options={CHART_OPTIONS} />
+                </Box>
+              ) : (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ py: 4, textAlign: 'center' }}
+                >
+                  No exam results recorded yet. Enter marks for an exam to see pass/fail
+                  statistics.
+                </Typography>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+      )}
+
+      {canViewFees && (
+        <Grid container spacing={3} sx={{ mt: 0.5 }}>
+          <Grid size={{ xs: 12 }}>
+            <Paper sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <PaymentsIcon color="warning" />
+                <Typography variant="h6" fontWeight={600}>
+                  Students with Pending Fees
+                </Typography>
+                {pendingFeeStudents.length > 0 && (
+                  <Chip
+                    label={`${pendingFeeStudents.length} students`}
+                    size="small"
+                    color="warning"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
+              <Divider sx={{ mb: 1 }} />
+              {loading ? (
+                <Skeleton variant="rounded" height={120} />
+              ) : pendingFeeStudents.length > 0 ? (
+                <List disablePadding>
+                  {pendingFeeStudents.map((item, index) => (
+                    <React.Fragment key={item.studentId}>
+                      <ListItem disablePadding sx={{ py: 1.5 }}>
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{
+                              bgcolor: item.isOverdue ? 'error.light' : 'warning.light',
+                              color: 'white',
+                              width: 40,
+                              height: 40,
+                              fontWeight: 600,
+                              fontSize: '0.875rem',
+                            }}
+                          >
+                            {item.studentName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .slice(0, 2)
+                              .join('')}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body1" fontWeight={500}>
+                                {item.studentName}
+                              </Typography>
+                              {item.isOverdue && (
+                                <Chip label="Overdue" size="small" color="error" variant="outlined" />
+                              )}
+                            </Box>
+                          }
+                          secondary={`${item.className || '-'} · ${item.admissionNumber || ''}`}
+                        />
+                        <Typography variant="body1" fontWeight={700} color={item.isOverdue ? 'error.main' : 'warning.main'}>
+                          ${Number(item.pendingAmount || 0).toFixed(2)}
+                        </Typography>
+                      </ListItem>
+                      {index < pendingFeeStudents.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                  No students with pending fees
+                </Typography>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+      )}
     </Box>
   );
 }

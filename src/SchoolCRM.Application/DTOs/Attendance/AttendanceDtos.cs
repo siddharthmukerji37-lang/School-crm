@@ -86,3 +86,66 @@ public sealed class BulkMarkAttendanceDto
 
     public bool SkipWeekends { get; set; } = true;
 }
+
+public sealed class MarkStaffAttendanceDto
+{
+    [Required(ErrorMessage = "Date is required")]
+    public DateTime Date { get; set; }
+
+    [Required(ErrorMessage = "Attendance records are required")]
+    [MinLength(1, ErrorMessage = "At least one attendance record is required")]
+    public List<StaffAttendanceRecordDto> Records { get; set; } = new();
+}
+
+public sealed class StaffAttendanceRecordDto
+{
+    public Guid? TeacherId { get; set; }
+    public Guid? EmployeeId { get; set; }
+
+    [Required(ErrorMessage = "Status is required")]
+    [RegularExpression("^(Present|Absent|Late|Excused)$",
+        ErrorMessage = "Status must be Present, Absent, Late, or Excused")]
+    public string Status { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+}
+
+public sealed class StaffAttendanceDto
+{
+    public Guid Id { get; set; }
+    public Guid? TeacherId { get; set; }
+    public Guid? EmployeeId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public string EmployeeCode { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public TimeSpan? CheckInTime { get; set; }
+    public TimeSpan? CheckOutTime { get; set; }
+    public string? Remarks { get; set; }
+}
+
+public sealed class MyAttendanceDto
+{
+    public Guid? Id { get; set; }
+    public DateTime Date { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public TimeSpan? CheckInTime { get; set; }
+    public TimeSpan? CheckOutTime { get; set; }
+    public string? Remarks { get; set; }
+    public bool IsCheckedIn { get; set; }
+    public bool IsCheckedOut { get; set; }
+}
+
+public sealed class StaffAttendanceStatsDto
+{
+    public DateTime Date { get; set; }
+    public int TotalTeachers { get; set; }
+    public int TeachersPresent { get; set; }
+    public int TeachersAbsent { get; set; }
+    public int TotalEmployees { get; set; }
+    public int EmployeesPresent { get; set; }
+    public int EmployeesAbsent { get; set; }
+}

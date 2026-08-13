@@ -29,7 +29,7 @@ public interface ITransportService
     Task<ApiResponse> DeallocateTransportAsync(Guid allocationId);
 
     Task<ApiResponse<PagedResult<TransportAllocationDto>>> GetAllocationsAsync(
-        PaginationQuery query, Guid? routeId, Guid? vehicleId);
+        PaginationQuery query, Guid? routeId, Guid? vehicleId, Guid? studentId = null);
 
     public sealed class RouteDto
     {

@@ -27,6 +27,7 @@ const transportService = {
     const queryParams = new URLSearchParams();
     if (params.page) queryParams.append('pageNumber', params.page);
     if (params.pageSize) queryParams.append('pageSize', params.pageSize);
+    if (params.studentId) queryParams.append('studentId', params.studentId);
     return axiosInstance.get(`/transport/allocations?${queryParams.toString()}`);
   },
   allocate: (data) => axiosInstance.post('/transport/allocate', data),

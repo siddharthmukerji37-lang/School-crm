@@ -23,6 +23,7 @@ public class FeeStructureConfiguration : IEntityTypeConfiguration<FeeStructure>
         builder.HasKey(f => f.Id);
         builder.Property(f => f.Name).IsRequired().HasMaxLength(200);
         builder.Property(f => f.Amount).HasPrecision(18, 2);
+        builder.Property(f => f.FineAmount).HasPrecision(18, 2);
 
         builder.HasOne(f => f.FeeHead).WithMany().HasForeignKey(f => f.FeeHeadId).OnDelete(DeleteBehavior.SetNull);
         builder.HasOne(f => f.ClassRoom).WithMany().HasForeignKey(f => f.ClassRoomId).OnDelete(DeleteBehavior.Cascade);

@@ -189,7 +189,8 @@ public class TransportController : ControllerBase
         [FromQuery] string? sortColumn = null,
         [FromQuery] string? sortOrder = null,
         [FromQuery] Guid? routeId = null,
-        [FromQuery] Guid? vehicleId = null)
+        [FromQuery] Guid? vehicleId = null,
+        [FromQuery] Guid? studentId = null)
     {
         var query = new PaginationQuery(pageNumber, pageSize, searchTerm)
         {
@@ -197,7 +198,7 @@ public class TransportController : ControllerBase
             SortOrder = sortOrder
         };
 
-        var result = await _transportService.GetAllocationsAsync(query, routeId, vehicleId);
+        var result = await _transportService.GetAllocationsAsync(query, routeId, vehicleId, studentId);
         return Ok(result);
     }
 

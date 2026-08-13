@@ -33,10 +33,19 @@ public class DashboardService : IDashboardService
             var today = DateTime.UtcNow.Date;
             var monthlyStart = new DateTime(today.Year, today.Month, 1);
             var todayAttendance = await _unitOfWork.Attendances.GetByDateAsync(today, schoolId);
-            var presentCount = todayAttendance.Count(a => a.Status == AttendanceStatus.Present);
-            var absentCount = todayAttendance.Count(a => a.Status == AttendanceStatus.Absent);
-            var lateCount = todayAttendance.Count(a => a.Status == AttendanceStatus.Late);
-            var totalAttendance = todayAttendance.Count;
+            var studentAttendance = todayAttendance.Where(a => a.StudentId.HasValue).ToList();
+            var presentCount = studentAttendance.Count(a => a.Status == AttendanceStatus.Present);
+            var absentCount = studentAttendance.Count(a => a.Status == AttendanceStatus.Absent);
+            var lateCount = studentAttendance.Count(a => a.Status == AttendanceStatus.Late);
+            var totalAttendance = studentAttendance.Count;
+
+            var teacherAttendance = todayAttendance.Where(a => a.TeacherId.HasValue).ToList();
+            var employeeAttendance = todayAttendance.Where(a => a.EmployeeId.HasValue).ToList();
+
+            var totalActiveTeachers = await _unitOfWork.Teachers.CountAsync(t =>
+                !t.IsDeleted && t.SchoolId == schoolId && t.Status == TeacherStatus.Active);
+            var totalActiveEmployees = await _unitOfWork.Employees.CountAsync(e =>
+                !e.IsDeleted && e.SchoolId == schoolId && e.Status == EmployeeStatus.Active);
 
             var receipts = (await _unitOfWork.FeeReceipts.GetAllAsync())
                 .Where(r => !r.IsDeleted).ToList();
@@ -54,6 +63,9 @@ public class DashboardService : IDashboardService
             var overdueFees = installments
                 .Where(i => i.PaidAmount < i.Amount && i.DueDate.Date < today)
                 .Sum(i => Math.Max(0, i.Amount - i.PaidAmount - i.Discount - i.Scholarship));
+
+            var pendingFeeStudents = await BuildPendingFeeStudentsAsync(installments, today);
+            var examResults = await BuildExamResultsAsync(schoolId);
 
             var todayBirthdays = await GetTodayBirthdaysAsync(schoolId, today);
 
@@ -108,6 +120,17 @@ public class DashboardService : IDashboardService
                         ? Math.Round((decimal)presentCount / totalAttendance * 100, 2)
                         : 0
                 },
+                StaffAttendance = new StaffAttendanceOverviewDto
+                {
+                    TotalTeachers = totalActiveTeachers,
+                    TeachersMarked = teacherAttendance.Count,
+                    TeachersPresent = teacherAttendance.Count(a => a.Status == AttendanceStatus.Present),
+                    TeachersAbsent = teacherAttendance.Count(a => a.Status != AttendanceStatus.Present),
+                    TotalEmployees = totalActiveEmployees,
+                    EmployeesMarked = employeeAttendance.Count,
+                    EmployeesPresent = employeeAttendance.Count(a => a.Status == AttendanceStatus.Present),
+                    EmployeesAbsent = employeeAttendance.Count(a => a.Status != AttendanceStatus.Present)
+                },
                 FeesCollected = new FeeOverviewDto
                 {
                     TotalCollected = totalCollected,
@@ -121,7 +144,9 @@ public class DashboardService : IDashboardService
                 TodayBirthdays = todayBirthdays,
                 LatestAnnouncements = latestAnnouncements,
                 RecentAdmissions = recentAdmissions,
-                UpcomingExamsList = upcomingExamsList
+                UpcomingExamsList = upcomingExamsList,
+                PendingFeeStudents = pendingFeeStudents,
+                ExamResults = examResults
             };
 
             return ApiResponse<DashboardDto>.SuccessResponse(dashboard);
@@ -207,6 +232,118 @@ public class DashboardService : IDashboardService
         }
     }
 
+    private async Task<List<PendingFeeStudentDto>> BuildPendingFeeStudentsAsync(
+        List<Domain.Entities.Fee.FeeInstallment> installments, DateTime today)
+    {
+        var result = new List<PendingFeeStudentDto>();
+
+        var groups = installments
+            .Where(i => i.PaidAmount < i.Amount)
+            .GroupBy(i => i.StudentId)
+            .Select(g => new
+            {
+                StudentId = g.Key,
+                PendingAmount = g.Sum(i => Math.Max(0, i.Amount - i.PaidAmount - i.Discount - i.Scholarship)),
+                IsOverdue = g.Any(i => i.PaidAmount < i.Amount && i.DueDate.Date < today)
+            })
+            .Where(x => x.PendingAmount > 0)
+            .OrderByDescending(x => x.PendingAmount)
+            .Take(10)
+            .ToList();
+
+        foreach (var group in groups)
+        {
+            var student = await _unitOfWork.Students.GetStudentWithDetailsAsync(group.StudentId);
+            if (student is null)
+                continue;
+
+            result.Add(new PendingFeeStudentDto
+            {
+                StudentId = student.Id,
+                StudentName = $"{student.User.FirstName} {student.User.LastName}".Trim(),
+                AdmissionNumber = student.AdmissionNumber,
+                ClassName = student.Section?.ClassRoom?.Name ?? string.Empty,
+                PendingAmount = group.PendingAmount,
+                IsOverdue = group.IsOverdue
+            });
+        }
+
+        return result;
+    }
+
+    private async Task<List<ExamResultChartDto>> BuildExamResultsAsync(Guid schoolId)
+    {
+        var result = new List<ExamResultChartDto>();
+
+        var exams = (await _unitOfWork.Exams.FindAsync(e =>
+                !e.IsDeleted && e.SchoolId == schoolId))
+            .Where(e => e.ApprovalStatus == ApprovalStatus.Approved)
+            .OrderByDescending(e => e.StartDate)
+            .ToList();
+
+        var includedExams = 0;
+        foreach (var exam in exams)
+        {
+            var classStats = new Dictionary<string, (string ClassName, string SectionName, int Passed, int Failed)>();
+
+            void AddStudentResult(string className, string sectionName, bool isPassed)
+            {
+                var key = $"{className}|{sectionName}";
+                if (!classStats.TryGetValue(key, out var stat))
+                    stat = (className, sectionName, 0, 0);
+
+                stat = (stat.ClassName, stat.SectionName, stat.Passed + (isPassed ? 1 : 0), stat.Failed + (isPassed ? 0 : 1));
+                classStats[key] = stat;
+            }
+
+            var marks = await _unitOfWork.Marks.GetByExamAsync(exam.Id);
+            foreach (var studentGroup in marks.GroupBy(m => m.StudentId))
+            {
+                var className = studentGroup.First().Student?.Section?.ClassRoom?.Name ?? string.Empty;
+                var sectionName = studentGroup.First().Student?.Section?.Name ?? string.Empty;
+                var isPassed = studentGroup.All(m => !m.IsAbsent && m.MarksObtained >= m.ExamSchedule.PassMarks);
+                AddStudentResult(className, sectionName, isPassed);
+            }
+
+            var approvedSubmissions = (await _unitOfWork.ExamSubmissions.FindAsync(s =>
+                    s.ExamId == exam.Id && !s.IsDeleted && s.GradingStatus == GradingStatus.Approved))
+                .ToList();
+
+            foreach (var submission in approvedSubmissions)
+            {
+                var student = await _unitOfWork.Students.GetStudentWithDetailsAsync(submission.StudentId);
+                var className = student?.Section?.ClassRoom?.Name ?? string.Empty;
+                var sectionName = student?.Section?.Name ?? string.Empty;
+                var isPassed = submission.TotalMaxMarks > 0 &&
+                    submission.TotalMarksObtained >= submission.TotalMaxMarks * 0.4m;
+                AddStudentResult(className, sectionName, isPassed);
+            }
+
+            if (classStats.Count == 0)
+                continue;
+
+            foreach (var stat in classStats.Values)
+            {
+                result.Add(new ExamResultChartDto
+                {
+                    ExamId = exam.Id,
+                    ExamName = exam.Name,
+                    ClassName = stat.ClassName,
+                    SectionName = stat.SectionName,
+                    PassedCount = stat.Passed,
+                    FailedCount = stat.Failed,
+                    TotalCount = stat.Passed + stat.Failed
+                });
+            }
+
+            includedExams++;
+            if (includedExams >= 5)
+                break;
+        }
+
+        return result;
+    }
+
     private async Task<Guid> ResolveSchoolIdAsync(Guid schoolId)
     {
         if (schoolId != Guid.Empty)
@@ -247,6 +384,22 @@ public class DashboardService : IDashboardService
                 Type = "Teacher",
                 ClassName = t.DepartmentName,
                 DateOfBirth = t.User!.DateOfBirth!.Value
+            });
+        }
+
+        var employees = (await _unitOfWork.Employees.GetPagedEmployeesAsync(
+            1, int.MaxValue, null, null, null, null, null, null)).Items
+            .Where(e => e.SchoolId == schoolId);
+        foreach (var e in employees.Where(e =>
+            e.User?.DateOfBirth is { } dob && dob.Month == today.Month && dob.Day == today.Day))
+        {
+            result.Add(new BirthdayDto
+            {
+                Id = e.Id,
+                Name = $"{e.User!.FirstName} {e.User!.LastName}".Trim(),
+                Type = "Employee",
+                ClassName = e.Department?.Name,
+                DateOfBirth = e.User!.DateOfBirth!.Value
             });
         }
 

@@ -55,6 +55,7 @@ public class UnitOfWork : IUnitOfWork
     public IHostelRepository Hostels => ResolveRepository<IHostelRepository>();
     public INotificationRepository Notifications => ResolveRepository<INotificationRepository>();
     public IAnnouncementRepository Announcements => ResolveRepository<IAnnouncementRepository>();
+    public IChatMessageRepository ChatMessages => ResolveRepository<IChatMessageRepository>();
     public IAuditLogRepository AuditLogs => ResolveRepository<IAuditLogRepository>();
     public IAccountHeadRepository AccountHeads => ResolveRepository<IAccountHeadRepository>();
     public IIncomeRepository Incomes => ResolveRepository<IIncomeRepository>();

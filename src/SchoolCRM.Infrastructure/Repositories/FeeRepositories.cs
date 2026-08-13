@@ -66,6 +66,12 @@ public class FeeInstallmentRepository : GenericRepository<FeeInstallment>, IFeeI
         var pending = result.TotalFees - result.PaidAmount;
         return (result.TotalFees, result.PaidAmount, pending < 0 ? 0m : pending);
     }
+
+    public async Task<bool> HasOutstandingFeesAsync(Guid studentId)
+    {
+        return await _dbSet.AnyAsync(fi =>
+            fi.StudentId == studentId && fi.PaidAmount < fi.Amount && !fi.IsDeleted);
+    }
 }
 
 public class FeeReceiptRepository : GenericRepository<FeeReceipt>, IFeeReceiptRepository

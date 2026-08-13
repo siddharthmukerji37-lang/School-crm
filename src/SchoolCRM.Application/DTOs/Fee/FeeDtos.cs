@@ -13,6 +13,10 @@ public sealed class FeeStructureDto
     public string AcademicYearName { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
     public string FeeType { get; set; } = string.Empty;
+    public int FineAfterDays { get; set; } = 30;
+    public decimal FineAmount { get; set; }
+    public DateTime? FineStartDate { get; set; }
+    public DateTime? FineEndDate { get; set; }
     public bool IsInstallmentApplicable { get; set; }
     public int? NumberOfInstallments { get; set; }
     public bool IsActive { get; set; }
@@ -90,6 +94,9 @@ public sealed class CollectFeeDto
 
     [MaxLength(500)]
     public string? Remarks { get; set; }
+
+    [MaxLength(200)]
+    public string? ReceivedBy { get; set; }
 }
 
 public sealed class FeeSummaryDto
@@ -109,6 +116,7 @@ public sealed class FeeSummaryDto
 public sealed class FeeInstallmentStatusDto
 {
     public Guid InstallmentId { get; set; }
+    public Guid FeeStructureId { get; set; }
     public string Name { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public DateTime DueDate { get; set; }

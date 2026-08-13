@@ -196,7 +196,8 @@ public class HostelController : ControllerBase
         [FromQuery] string? searchTerm = null,
         [FromQuery] string? sortColumn = null,
         [FromQuery] string? sortOrder = null,
-        [FromQuery] Guid? hostelId = null)
+        [FromQuery] Guid? hostelId = null,
+        [FromQuery] Guid? studentId = null)
     {
         var query = new PaginationQuery(pageNumber, pageSize, searchTerm)
         {
@@ -204,7 +205,7 @@ public class HostelController : ControllerBase
             SortOrder = sortOrder
         };
 
-        var result = await _hostelService.GetAllocationsAsync(query, hostelId);
+        var result = await _hostelService.GetAllocationsAsync(query, hostelId, studentId);
         return Ok(result);
     }
 

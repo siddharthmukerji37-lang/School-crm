@@ -4,11 +4,25 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Button, Chip, MenuItem, TextField, Stack } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { fetchTeachers, deleteTeacher } from '../../store/slices/teacherSlice';
+import attendanceService from '../../services/attendanceService';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { hasAdminRole } from '../../utils/roles';
 import toast from 'react-hot-toast';
+
+const getTodayStr = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+const attendanceChip = (status) => {
+  if (!status) {
+    return <Chip label="Not Marked" size="small" variant="outlined" color="default" />;
+  }
+  const color = status === 'Present' ? 'success' : status === 'Absent' ? 'error' : status === 'Late' ? 'warning' : 'default';
+  return <Chip label={status} color={color} size="small" />;
+};
 
 export default function TeacherListPage() {
   const navigate = useNavigate();
@@ -20,6 +34,7 @@ export default function TeacherListPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [attendanceMap, setAttendanceMap] = useState({});
 
   useEffect(() => {
     dispatch(
@@ -30,12 +45,39 @@ export default function TeacherListPage() {
     );
   }, [dispatch, page, rowsPerPage]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const loadAttendance = async () => {
+      try {
+        const res = await attendanceService.getStaff({ date: getTodayStr(), role: 'Teacher', pageSize: 1000 });
+        const items = res.data.data?.items || [];
+        const map = {};
+        items.forEach((r) => {
+          if (r.teacherId) map[r.teacherId] = r.status;
+        });
+        if (!cancelled) setAttendanceMap(map);
+      } catch {
+        if (!cancelled) setAttendanceMap({});
+      }
+    };
+    loadAttendance();
+    return () => { cancelled = true; };
+  }, []);
+
   const columns = [
     { id: 'employeeId', header: 'Employee ID', accessor: 'employeeId', minWidth: 120 },
     { id: 'name', header: 'Name', accessor: 'firstName', minWidth: 180, render: (value, row) => `${value} ${row.lastName || ''}` },
     { id: 'email', header: 'Email', accessor: 'email', minWidth: 200 },
     { id: 'department', header: 'Department', accessor: 'departmentName', minWidth: 140, render: (value) => value || '—' },
     { id: 'phone', header: 'Phone', accessor: 'phone', minWidth: 120 },
+    {
+      id: 'attendanceToday',
+      header: 'Attendance Today',
+      accessor: 'id',
+      minWidth: 140,
+      sortable: false,
+      render: (value) => attendanceChip(attendanceMap[value]),
+    },
     {
       id: 'status',
       header: 'Status',

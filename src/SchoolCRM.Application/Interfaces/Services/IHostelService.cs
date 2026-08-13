@@ -29,7 +29,7 @@ public interface IHostelService
     Task<ApiResponse> DeallocateBedAsync(Guid allocationId);
 
     Task<ApiResponse<PagedResult<BedAllocationDto>>> GetAllocationsAsync(
-        PaginationQuery query, Guid? hostelId);
+        PaginationQuery query, Guid? hostelId, Guid? studentId = null);
 
     public sealed class HostelDto
     {

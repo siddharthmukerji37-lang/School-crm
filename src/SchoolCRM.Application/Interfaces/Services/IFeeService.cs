@@ -29,6 +29,8 @@ public interface IFeeService
     Task<ApiResponse<PagedResult<FeeReceiptDto>>> GetFeeReceiptsAsync(
         PaginationQuery query, Guid? studentId, DateTime? fromDate, DateTime? toDate);
 
+    Task<ApiResponse<PagedResult<FeeReceiptDto>>> GetMyFeeReceiptsAsync(PaginationQuery query);
+
     Task<ApiResponse<FeeReceiptDto>> GetFeeReceiptByIdAsync(Guid id);
 
     Task<ApiResponse<FeeSummaryDto>> GetFeeSummaryAsync(Guid studentId);

@@ -177,6 +177,25 @@ public class FeesController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("my-receipts")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<FeeReceiptDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<PagedResult<FeeReceiptDto>>>> GetMyFeeReceiptsAsync(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortColumn = null,
+        [FromQuery] string? sortOrder = null)
+    {
+        var query = new PaginationQuery(pageNumber, pageSize, searchTerm)
+        {
+            SortColumn = sortColumn,
+            SortOrder = sortOrder
+        };
+
+        var result = await _feeService.GetMyFeeReceiptsAsync(query);
+        return Ok(result);
+    }
+
     [HttpGet("receipt/{receiptNumber}")]
     [ProducesResponseType(typeof(ApiResponse<FeeReceiptDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

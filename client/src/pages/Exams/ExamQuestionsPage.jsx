@@ -72,8 +72,18 @@ export default function ExamQuestionsPage() {
     axiosInstance.get('/schools').then(async (r) => {
       const schools = r.data.data?.items || r.data.data || [];
       if (schools.length > 0) {
-        const sub = await axiosInstance.get(`/schools/${schools[0].id}/subjects`);
-        setSubjects(sub.data.data || []);
+        const params = selectedExam?.classRoomId && selectedExam.classRoomId !== '00000000-0000-0000-0000-000000000000'
+          ? { classRoomId: selectedExam.classRoomId }
+          : {};
+        const sub = await axiosInstance.get(`/schools/${schools[0].id}/subjects`, { params });
+        const list = sub.data.data || [];
+        const seen = new Set();
+        setSubjects(list.filter((s) => {
+          const key = (s.name || '').trim().toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }));
       }
     }).catch(() => {});
     return () => dispatch(clearSelectedExam());

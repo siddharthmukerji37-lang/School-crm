@@ -155,6 +155,12 @@ public enum TransactionType
     Expense = 2
 }
 
+public enum ChatMessageType
+{
+    Direct = 1,
+    Class = 2
+}
+
 public enum HostelAllocationStatus
 {
     Active = 1,

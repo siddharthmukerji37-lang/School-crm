@@ -51,10 +51,13 @@ public class ChatMessage : BaseEntity
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }
     public Guid SenderId { get; set; }
-    public Guid ReceiverId { get; set; }
+    public Guid? ReceiverId { get; set; }
+    public Guid? SectionId { get; set; }
+    public ChatMessageType MessageType { get; set; } = ChatMessageType.Direct;
     public Guid? ParentMessageId { get; set; }
 
     public Identity.ApplicationUser Sender { get; set; } = null!;
-    public Identity.ApplicationUser Receiver { get; set; } = null!;
+    public Identity.ApplicationUser? Receiver { get; set; }
+    public School.Section? Section { get; set; }
     public ChatMessage? ParentMessage { get; set; }
 }

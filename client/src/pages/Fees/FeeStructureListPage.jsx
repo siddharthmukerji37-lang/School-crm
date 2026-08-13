@@ -52,6 +52,24 @@ const feeStructureSchema = Yup.object({
     .required('Amount is required')
     .min(0, 'Must be positive'),
   feeType: Yup.string().required('Fee type is required'),
+  fineAfterDays: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === '' ? undefined : value
+    )
+    .min(0, 'Must be non-negative'),
+  fineAmount: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === '' ? undefined : value
+    )
+    .min(0, 'Must be non-negative'),
+  fineEndDate: Yup.date().test(
+    'end-after-start',
+    'End date must be on or after the start date',
+    function (endDate) {
+      if (!endDate || !this.parent.fineStartDate) return true;
+      return new Date(endDate) >= new Date(this.parent.fineStartDate);
+    }
+  ),
 });
 
 const INITIAL_VALUES = {
@@ -64,6 +82,10 @@ const INITIAL_VALUES = {
   isActive: true,
   isInstallmentApplicable: false,
   numberOfInstallments: '',
+  fineAfterDays: 30,
+  fineAmount: 0,
+  fineStartDate: '',
+  fineEndDate: '',
 };
 
 export default function FeeStructureListPage() {
@@ -132,6 +154,19 @@ export default function FeeStructureListPage() {
     },
     { id: 'feeType', header: 'Fee Type', accessor: 'feeType', minWidth: 120 },
     {
+      id: 'finePolicy',
+      header: 'Overdue Fine',
+      accessor: 'fineAmount',
+      minWidth: 140,
+      render: (value, row) => (
+        value > 0
+          ? row.fineStartDate && row.fineEndDate
+            ? `$${Number(value).toFixed(2)} after ${row.fineEndDate.slice(0, 10)}`
+            : `$${Number(value).toFixed(2)} / ${row.fineAfterDays ?? 30} days`
+          : '—'
+      ),
+    },
+    {
       id: 'isActive',
       header: 'Status',
       accessor: 'isActive',
@@ -198,6 +233,12 @@ export default function FeeStructureListPage() {
         isInstallmentApplicable: values.isInstallmentApplicable,
         numberOfInstallments: values.isInstallmentApplicable && values.numberOfInstallments
           ? Number(values.numberOfInstallments) : null,
+        fineAfterDays: values.fineAfterDays === '' || values.fineAfterDays === undefined
+          ? 30 : Number(values.fineAfterDays),
+        fineAmount: values.fineAmount === '' || values.fineAmount === undefined
+          ? 0 : Number(values.fineAmount),
+        fineStartDate: values.fineStartDate || null,
+        fineEndDate: values.fineEndDate || null,
       };
       if (editingFee) {
         await axiosInstance.put(`/fees/${editingFee.id}`, payload);
@@ -227,6 +268,14 @@ export default function FeeStructureListPage() {
       isActive: editingFee.isActive ?? true,
       isInstallmentApplicable: editingFee.isInstallmentApplicable ?? false,
       numberOfInstallments: editingFee.numberOfInstallments ?? '',
+      fineAfterDays: editingFee.fineAfterDays ?? 30,
+      fineAmount: editingFee.fineAmount ?? 0,
+      fineStartDate: editingFee.fineStartDate
+        ? editingFee.fineStartDate.slice(0, 10)
+        : '',
+      fineEndDate: editingFee.fineEndDate
+        ? editingFee.fineEndDate.slice(0, 10)
+        : '',
     };
   };
 
@@ -302,6 +351,10 @@ export default function FeeStructureListPage() {
               <Typography><b>Class:</b> {viewItem.className || '-'}</Typography>
               <Typography><b>Academic Year:</b> {viewItem.academicYearName || '-'}</Typography>
               <Typography><b>Amount:</b> ${Number(viewItem.totalAmount || 0).toFixed(2)}</Typography>
+              <Typography><b>Overdue Fine:</b> {Number(viewItem.fineAmount || 0).toFixed(2)} after {viewItem.fineAfterDays ?? 30} days past due</Typography>
+              <Typography><b>Fine Date Range:</b> {viewItem.fineStartDate
+                ? `${viewItem.fineStartDate.slice(0, 10)} → ${viewItem.fineEndDate?.slice(0, 10) || '—'}`
+                : 'Not set'}</Typography>
               <Typography><b>Status:</b> {viewItem.isActive ? 'Active' : 'Inactive'}</Typography>
               <Typography><b>Description:</b> {viewItem.description || '-'}</Typography>
             </Stack>
@@ -475,6 +528,76 @@ export default function FeeStructureListPage() {
                       />
                     </Grid>
                   )}
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      fullWidth
+                      name="fineAfterDays"
+                      label="Fine After Days"
+                      type="number"
+                      value={values.fineAfterDays}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.fineAfterDays && Boolean(errors.fineAfterDays)}
+                      helperText={
+                        touched.fineAfterDays && errors.fineAfterDays
+                          ? errors.fineAfterDays
+                          : 'Days past the due date before a fine is applied'
+                      }
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      fullWidth
+                      name="fineAmount"
+                      label="Fine Amount"
+                      type="number"
+                      value={values.fineAmount}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.fineAmount && Boolean(errors.fineAmount)}
+                      helperText={
+                        touched.fineAmount && errors.fineAmount
+                          ? errors.fineAmount
+                          : 'Fixed fine added to an overdue installment'
+                      }
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      fullWidth
+                      name="fineStartDate"
+                      label="Fine Start Date"
+                      type="date"
+                      value={values.fineStartDate}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      InputLabelProps={{ shrink: true }}
+                      error={touched.fineStartDate && Boolean(errors.fineStartDate)}
+                      helperText={
+                        touched.fineStartDate && errors.fineStartDate
+                          ? errors.fineStartDate
+                          : 'Payments made within this date range are not fined'
+                      }
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      fullWidth
+                      name="fineEndDate"
+                      label="Fine End Date"
+                      type="date"
+                      value={values.fineEndDate}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      InputLabelProps={{ shrink: true }}
+                      error={touched.fineEndDate && Boolean(errors.fineEndDate)}
+                      helperText={
+                        touched.fineEndDate && errors.fineEndDate
+                          ? errors.fineEndDate
+                          : 'After this date a late fine is applied'
+                      }
+                    />
+                  </Grid>
                 </Grid>
               </DialogContent>
               <DialogActions sx={{ px: 3, pb: 2.5 }}>

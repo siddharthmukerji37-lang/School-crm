@@ -166,7 +166,12 @@ public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
 
         builder.HasOne(c => c.Sender).WithMany().HasForeignKey(c => c.SenderId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(c => c.Receiver).WithMany().HasForeignKey(c => c.ReceiverId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(c => c.Section).WithMany().HasForeignKey(c => c.SectionId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(c => c.ParentMessage).WithMany().HasForeignKey(c => c.ParentMessageId).OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(c => c.SenderId);
+        builder.HasIndex(c => c.ReceiverId);
+        builder.HasIndex(c => c.SectionId);
     }
 }
 

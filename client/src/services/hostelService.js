@@ -23,6 +23,7 @@ const hostelService = {
     if (params.page) queryParams.append('pageNumber', params.page);
     if (params.pageSize) queryParams.append('pageSize', params.pageSize);
     if (params.hostelId) queryParams.append('hostelId', params.hostelId);
+    if (params.studentId) queryParams.append('studentId', params.studentId);
     return axiosInstance.get(`/hostel/allocations?${queryParams.toString()}`);
   },
   allocate: (data) => axiosInstance.post('/hostel/allocate', data),

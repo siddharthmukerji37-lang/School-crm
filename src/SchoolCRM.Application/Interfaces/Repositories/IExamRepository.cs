@@ -17,6 +17,7 @@ public interface IExamScheduleRepository : IGenericRepository<ExamSchedule>
 public interface IMarkRepository : IGenericRepository<Mark>
 {
     Task<IReadOnlyList<Mark>> GetByExamScheduleAsync(Guid examScheduleId);
+    Task<IReadOnlyList<Mark>> GetByExamAsync(Guid examId);
     Task<IReadOnlyList<Mark>> GetByStudentAsync(Guid studentId, Guid examId);
     Task<IReadOnlyList<Mark>> GetByStudentAllAsync(Guid studentId);
     Task<Mark?> GetByStudentAndScheduleAsync(Guid studentId, Guid examScheduleId);

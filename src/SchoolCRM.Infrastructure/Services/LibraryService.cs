@@ -219,6 +219,11 @@ public class LibraryService : ILibraryService
             if (!dto.StudentId.HasValue && !dto.TeacherId.HasValue)
                 return ApiResponse<BookIssueDto>.FailResponse("Select a student or teacher to issue the book.");
 
+            if (dto.StudentId.HasValue
+                && await _unitOfWork.FeeInstallments.HasOutstandingFeesAsync(dto.StudentId.Value))
+                return ApiResponse<BookIssueDto>.FailResponse(
+                    "Student has pending fees. Book issue is blocked until fee dues are cleared.");
+
             var hasActive = await _unitOfWork.BookIssues.HasActiveIssueAsync(
                 dto.BookId, dto.StudentId, dto.TeacherId);
             if (hasActive)

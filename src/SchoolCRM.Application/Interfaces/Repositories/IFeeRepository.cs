@@ -12,6 +12,7 @@ public interface IFeeInstallmentRepository : IGenericRepository<FeeInstallment>
     Task<IReadOnlyList<FeeInstallment>> GetByStudentAsync(Guid studentId);
     Task<IReadOnlyList<FeeInstallment>> GetPendingByStudentAsync(Guid studentId);
     Task<(decimal TotalFees, decimal PaidAmount, decimal PendingAmount)> GetFeeSummaryAsync(Guid studentId);
+    Task<bool> HasOutstandingFeesAsync(Guid studentId);
 }
 
 public interface IFeeReceiptRepository : IGenericRepository<FeeReceipt>

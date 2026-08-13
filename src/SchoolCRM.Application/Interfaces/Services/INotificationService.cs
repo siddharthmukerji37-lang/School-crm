@@ -18,11 +18,11 @@ public interface INotificationService
     Task<ApiResponse> SendAsync(SendNotificationDto dto);
 
     Task NotifyUsersAsync(IEnumerable<Guid> userIds, string title, string message,
-        NotificationType type, string? link = null);
+        NotificationType type, string? link = null, string? data = null);
 
     Task NotifyAdminsAsync(string title, string message,
         NotificationType type = NotificationType.Info, string? link = null);
 
     Task NotifyStudentsOfClassAsync(Guid classRoomId, string title, string message,
-        NotificationType type = NotificationType.Info, Guid? sectionId = null, string? link = null);
+        NotificationType type = NotificationType.Info, Guid? sectionId = null, string? link = null, string? data = null);
 }

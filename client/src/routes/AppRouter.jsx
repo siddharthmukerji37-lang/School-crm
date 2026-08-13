@@ -22,6 +22,8 @@ const EmployeeFormPage = lazy(() => import('../pages/Employees/EmployeeFormPage'
 const EmployeeDetailPage = lazy(() => import('../pages/Employees/EmployeeDetailPage'));
 const AttendanceListPage = lazy(() => import('../pages/Attendance/AttendanceListPage'));
 const AttendanceMarkPage = lazy(() => import('../pages/Attendance/AttendanceMarkPage'));
+const StaffAttendancePage = lazy(() => import('../pages/Attendance/StaffAttendancePage'));
+const MyAttendancePage = lazy(() => import('../pages/Attendance/MyAttendancePage'));
 const ExamListPage = lazy(() => import('../pages/Exams/ExamListPage'));
 const ExamFormPage = lazy(() => import('../pages/Exams/ExamFormPage'));
 const ExamQuestionsPage = lazy(() => import('../pages/Exams/ExamQuestionsPage'));
@@ -39,6 +41,7 @@ const HostelPage = lazy(() => import('../pages/Hostel/HostelPage'));
 const FeeStructureListPage = lazy(() => import('../pages/Fees/FeeStructureListPage'));
 const FeeCollectPage = lazy(() => import('../pages/Fees/FeeCollectPage'));
 const FeeReceiptListPage = lazy(() => import('../pages/Fees/FeeReceiptListPage'));
+const MyFeeReceiptsPage = lazy(() => import('../pages/Fees/MyFeeReceiptsPage'));
 const InventoryListPage = lazy(() => import('../pages/Inventory/InventoryListPage'));
 const InventoryFormPage = lazy(() => import('../pages/Inventory/InventoryFormPage'));
 const VendorFormPage = lazy(() => import('../pages/Inventory/VendorFormPage'));
@@ -49,14 +52,21 @@ const SettingsPage = lazy(() => import('../pages/Settings/SettingsPage'));
 const NoticeBoardPage = lazy(() => import('../pages/NoticeBoard/NoticeBoardPage'));
 const NoticeManagementPage = lazy(() => import('../pages/NoticeBoard/NoticeManagementPage'));
 const TimetablePage = lazy(() => import('../pages/Timetable/TimetablePage'));
+const ChatPage = lazy(() => import('../pages/Chat/ChatPage'));
 
 const ADMIN_ROLES = ['SuperAdmin', 'Admin'];
 const STAFF_ROLES = ['SuperAdmin', 'Admin', 'Teacher', 'ClassTeacher'];
 const FEE_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
+const ACCOUNTS_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
 const LIBRARY_ROLES = ['SuperAdmin', 'Admin', 'Librarian'];
 const GENERAL_ROLES = [
   'SuperAdmin', 'Admin', 'SchoolAdmin', 'Principal', 'VicePrincipal',
   'Teacher', 'ClassTeacher', 'Receptionist', 'Student', 'Parent',
+];
+const CHAT_ROLES = [
+  'SuperAdmin', 'Admin', 'SchoolAdmin', 'Principal', 'VicePrincipal',
+  'Teacher', 'ClassTeacher', 'Receptionist', 'Student', 'Parent',
+  'Librarian', 'Accountant',
 ];
 
 export default function AppRouter() {
@@ -129,7 +139,13 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={GENERAL_ROLES}><AttendanceListPage /></ProtectedRoute>
         } />
         <Route path="attendance/mark" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><AttendanceMarkPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><AttendanceMarkPage /></ProtectedRoute>
+        } />
+        <Route path="attendance/staff" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><StaffAttendancePage /></ProtectedRoute>
+        } />
+        <Route path="my-attendance" element={
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><MyAttendancePage /></ProtectedRoute>
         } />
 
         <Route path="exams" element={
@@ -176,7 +192,7 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={GENERAL_ROLES}><TransportPage /></ProtectedRoute>
         } />
         <Route path="hostel" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><HostelPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={GENERAL_ROLES}><HostelPage /></ProtectedRoute>
         } />
 
         <Route path="fees" element={<FeeStructureListPage />} />
@@ -185,6 +201,9 @@ export default function AppRouter() {
         } />
         <Route path="fees/receipts" element={
           <ProtectedRoute allowedRoles={FEE_ROLES}><FeeReceiptListPage /></ProtectedRoute>
+        } />
+        <Route path="fees/my-receipts" element={
+          <ProtectedRoute allowedRoles={['Student']}><MyFeeReceiptsPage /></ProtectedRoute>
         } />
 
         <Route path="inventory" element={
@@ -204,7 +223,7 @@ export default function AppRouter() {
         } />
 
         <Route path="accounts" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><AccountsPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={ACCOUNTS_ROLES}><AccountsPage /></ProtectedRoute>
         } />
 
         <Route path="notifications" element={<NotificationListPage />} />
@@ -224,6 +243,10 @@ export default function AppRouter() {
 
         <Route path="timetable" element={
           <ProtectedRoute allowedRoles={GENERAL_ROLES}><TimetablePage /></ProtectedRoute>
+        } />
+
+        <Route path="chat" element={
+          <ProtectedRoute allowedRoles={CHAT_ROLES}><ChatPage /></ProtectedRoute>
         } />
       </Route>
 

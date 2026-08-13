@@ -19,6 +19,10 @@ public class AttendanceRepository : GenericRepository<Attendance>, IAttendanceRe
                 .ThenInclude(t => t!.User)
             .Include(a => a.Employee)
                 .ThenInclude(e => e!.User)
+            .Include(a => a.Employee)
+                .ThenInclude(e => e!.Designation)
+            .Include(a => a.Employee)
+                .ThenInclude(e => e!.Department)
             .Where(a => a.Date.Date == date.Date);
 
         if (schoolId.HasValue)

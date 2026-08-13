@@ -13,6 +13,7 @@ import {
   fetchAllocations, allocateTransport, deallocateTransport,
 } from '../../store/slices/transportSlice';
 import { fetchStudents } from '../../store/slices/studentSlice';
+import { findCurrentStudent, filterStudentAllocations } from '../../utils/studentAllocationUtils';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
@@ -44,6 +45,8 @@ export default function TransportPage() {
   const { user } = useSelector((state) => state.auth);
   const userRole = user?.roles?.[0] || user?.role || 'Admin';
   const isAdmin = ['SuperAdmin', 'Admin'].includes(userRole);
+  const isStudent = userRole === 'Student';
+  const currentStudent = findCurrentStudent(students, user);
 
   const [tab, setTab] = useState(0);
   const [page, setPage] = useState(0);
@@ -60,10 +63,16 @@ export default function TransportPage() {
 
   useEffect(() => {
     const params = { page: page + 1, pageSize: rowsPerPage };
+
+    if (isStudent) {
+      dispatch(fetchAllocations({ ...params, studentId: currentStudent?.id }));
+      return;
+    }
+
     if (tab === 0) dispatch(fetchRoutes(params));
     else if (tab === 1) dispatch(fetchVehicles(params));
     else dispatch(fetchAllocations(params));
-  }, [dispatch, tab, page, rowsPerPage]);
+  }, [dispatch, isStudent, currentStudent?.id, tab, page, rowsPerPage]);
 
   useEffect(() => {
     dispatch(fetchStudents({ page: 1, pageSize: 500 }));
@@ -177,8 +186,13 @@ export default function TransportPage() {
     }
   };
 
-  const currentData = tab === 0 ? routes : tab === 1 ? vehicles : allocations;
-  const currentColumns = tab === 0 ? routeColumns : tab === 1 ? vehicleColumns : allocationColumns;
+  const studentScopedAllocations = isStudent
+    ? filterStudentAllocations(allocations?.items || [], currentStudent)
+    : allocations?.items || [];
+  const currentData = isStudent
+    ? { items: studentScopedAllocations, totalCount: studentScopedAllocations.length }
+    : tab === 0 ? routes : tab === 1 ? vehicles : allocations;
+  const currentColumns = isStudent ? allocationColumns : tab === 0 ? routeColumns : tab === 1 ? vehicleColumns : allocationColumns;
 
   const initialValues = tab === 0
     ? {
@@ -199,14 +213,14 @@ export default function TransportPage() {
 
   return (
     <Box>
-      <PageHeader title="Transport Management" subtitle="Manage routes, vehicles and student allocations" />
-      <Tabs value={tab} onChange={(_, v) => { setTab(v); setPage(0); }} sx={{ mb: 2 }}>
-        <Tab label="Routes" />
-        <Tab label="Vehicles" />
-        <Tab label="Allocations" />
+      <PageHeader title="Transport Management" subtitle={isStudent ? 'Your assigned route' : 'Manage routes, vehicles and student allocations'} />
+      <Tabs value={isStudent ? 2 : tab} onChange={(_, v) => { setTab(v); setPage(0); }} sx={{ mb: 2 }}>
+        {!isStudent && <Tab label="Routes" />}
+        {!isStudent && <Tab label="Vehicles" />}
+        <Tab label={isStudent ? 'My Allocation' : 'Allocations'} />
       </Tabs>
 
-      {isAdmin && (
+      {!isStudent && isAdmin && (
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
           <Button
             variant="contained"
@@ -228,10 +242,10 @@ export default function TransportPage() {
         onPageChange={(_, p) => setPage(p)}
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
         onView={(row) => setViewItem(row)}
-        onEdit={isAdmin && tab < 2 ? (row) => handleOpenDialog(row) : undefined}
-        onDelete={isAdmin && tab < 2 ? (row) => handleDelete(row, tab === 0 ? 'route' : 'vehicle') : undefined}
-        onReturn={isAdmin && tab === 2 ? (row) => setDeallocTarget(row) : undefined}
-        emptyMessage={`No ${tab === 0 ? 'routes' : tab === 1 ? 'vehicles' : 'allocations'} found`}
+        onEdit={isAdmin && !isStudent && tab < 2 ? (row) => handleOpenDialog(row) : undefined}
+        onDelete={isAdmin && !isStudent && tab < 2 ? (row) => handleDelete(row, tab === 0 ? 'route' : 'vehicle') : undefined}
+        onReturn={isAdmin && !isStudent && tab === 2 ? (row) => setDeallocTarget(row) : undefined}
+        emptyMessage={isStudent ? 'No transport allocation found' : `No ${tab === 0 ? 'routes' : tab === 1 ? 'vehicles' : 'allocations'} found`}
       />
 
       <ConfirmDialog

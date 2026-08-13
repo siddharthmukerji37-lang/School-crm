@@ -39,6 +39,7 @@ public interface IUnitOfWork : IDisposable
     IHostelRepository Hostels { get; }
     INotificationRepository Notifications { get; }
     IAnnouncementRepository Announcements { get; }
+    IChatMessageRepository ChatMessages { get; }
     IAuditLogRepository AuditLogs { get; }
     IAccountHeadRepository AccountHeads { get; }
     IIncomeRepository Incomes { get; }

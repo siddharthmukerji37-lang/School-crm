@@ -27,6 +27,18 @@ const attendanceService = {
     if (params.pageSize) queryParams.append('pageSize', params.pageSize);
     return axiosInstance.get(`/attendance/student/${studentId}?${queryParams.toString()}`);
   },
+  getMy: () => axiosInstance.get('/attendance/me'),
+  clockIn: () => axiosInstance.post('/attendance/me/clock-in'),
+  clockOut: () => axiosInstance.post('/attendance/me/clock-out'),
+  getStaff: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('pageNumber', params.page);
+    if (params.pageSize) queryParams.append('pageSize', params.pageSize);
+    if (params.date) queryParams.append('date', params.date);
+    if (params.role) queryParams.append('role', params.role);
+    if (params.status) queryParams.append('status', params.status);
+    return axiosInstance.get(`/attendance/staff?${queryParams.toString()}`);
+  },
 };
 
 export default attendanceService;

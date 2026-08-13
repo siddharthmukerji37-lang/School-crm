@@ -360,7 +360,7 @@ public class HostelService : IHostelService
     }
 
     public async Task<ApiResponse<PagedResult<BedAllocationDto>>> GetAllocationsAsync(
-        PaginationQuery query, Guid? hostelId)
+        PaginationQuery query, Guid? hostelId, Guid? studentId = null)
     {
         try
         {
@@ -372,9 +372,10 @@ public class HostelService : IHostelService
                 .Where(a => !a.IsDeleted)
                 .ToListAsync();
 
-            var filtered = hostelId.HasValue
-                ? allocations.Where(a => a.Room.HostelId == hostelId.Value).ToList()
-                : allocations;
+            var filtered = allocations
+                .Where(a => !hostelId.HasValue || a.Room != null && a.Room.HostelId == hostelId.Value)
+                .Where(a => !studentId.HasValue || a.StudentId == studentId.Value)
+                .ToList();
 
             var totalCount = filtered.Count;
 

@@ -185,7 +185,7 @@ public class NotificationService : INotificationService
     }
 
     public async Task NotifyUsersAsync(IEnumerable<Guid> userIds, string title, string message,
-        NotificationType type, string? link = null)
+        NotificationType type, string? link = null, string? data = null)
     {
         var uniqueIds = userIds.Where(id => id != Guid.Empty).Distinct().ToList();
         if (uniqueIds.Count == 0)
@@ -203,6 +203,7 @@ public class NotificationService : INotificationService
                 Message = message,
                 Type = type,
                 Link = link,
+                Data = data,
                 IsRead = false,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -236,10 +237,10 @@ public class NotificationService : INotificationService
     }
 
     public async Task NotifyStudentsOfClassAsync(Guid classRoomId, string title, string message,
-        NotificationType type = NotificationType.Info, Guid? sectionId = null, string? link = null)
+        NotificationType type = NotificationType.Info, Guid? sectionId = null, string? link = null, string? data = null)
     {
         var userIds = await GetUserIdsOfStudentsInClassAsync(classRoomId, sectionId);
-        await NotifyUsersAsync(userIds, title, message, type, link);
+        await NotifyUsersAsync(userIds, title, message, type, link, data);
     }
 
     private async Task<List<Guid>> GetUserIdsByRoleAsync(params string[] roleNames)
