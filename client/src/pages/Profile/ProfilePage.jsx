@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Grid,
-  Avatar,
-  Chip,
-  Divider,
-  CircularProgress,
-  Alert,
-} from '@mui/material';
+import { Box, Paper, Typography, Avatar, Chip, Divider, CircularProgress, Alert } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
 import BadgeIcon from '@mui/icons-material/Badge';

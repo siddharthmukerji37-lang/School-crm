@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box, Tabs, Tab, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Grid, Typography, Stack, MenuItem, Chip, CircularProgress,
-} from '@mui/material';
+import { Box, Tabs, Tab, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography, Stack, MenuItem, Chip, CircularProgress } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import AddIcon from '@mui/icons-material/Add';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -383,21 +381,21 @@ export default function TransportPage() {
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.name && Boolean(errors.name)} helperText={touched.name && errors.name} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="startPoint" label="Start Location" value={values.startPoint}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.startPoint && Boolean(errors.startPoint)} helperText={touched.startPoint && errors.startPoint} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="endPoint" label="End Location" value={values.endPoint}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.endPoint && Boolean(errors.endPoint)} helperText={touched.endPoint && errors.endPoint} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="distance" label="Distance (km)" type="number" value={values.distance}
                         onChange={handleChange} onBlur={handleBlur} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="monthlyFee" label="Fare" type="number" value={values.monthlyFee}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.monthlyFee && Boolean(errors.monthlyFee)} helperText={touched.monthlyFee && errors.monthlyFee} />
@@ -405,36 +403,36 @@ export default function TransportPage() {
                   </Grid>
                 ) : (
                   <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="registrationNumber" label="Registration Number" value={values.registrationNumber}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.registrationNumber && Boolean(errors.registrationNumber)} helperText={touched.registrationNumber && errors.registrationNumber} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth select name="vehicleType" label="Vehicle Type" value={values.vehicleType}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.vehicleType && Boolean(errors.vehicleType)} helperText={touched.vehicleType && errors.vehicleType}>
                         {VEHICLE_TYPES.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
                       </TextField>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth select name="routeId" label="Route" value={values.routeId}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.routeId && Boolean(errors.routeId)} helperText={touched.routeId && errors.routeId}>
                         {(routes.items || []).map((r) => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
                       </TextField>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="capacity" label="Capacity" type="number" value={values.capacity}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.capacity && Boolean(errors.capacity)} helperText={touched.capacity && errors.capacity} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="driverName" label="Driver Name" value={values.driverName}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.driverName && Boolean(errors.driverName)} helperText={touched.driverName && errors.driverName} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth select name="isActive" label="Status" value={values.isActive}
                         onChange={handleChange} onBlur={handleBlur}>
                         <MenuItem value={true}>Active</MenuItem>

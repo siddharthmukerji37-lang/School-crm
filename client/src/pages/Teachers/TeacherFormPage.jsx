@@ -2,18 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box,
-  Grid,
-  TextField,
-  MenuItem,
-  Button,
-  Paper,
-  Typography,
-  CircularProgress,
-  Divider,
-  Stack,
-} from '@mui/material';
+import { Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
@@ -175,7 +165,7 @@ export default function TeacherFormPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="firstName"
@@ -187,7 +177,7 @@ export default function TeacherFormPage() {
                     helperText={touched.firstName && errors.firstName}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="lastName"
@@ -199,7 +189,7 @@ export default function TeacherFormPage() {
                     helperText={touched.lastName && errors.lastName}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="email"
@@ -212,7 +202,7 @@ export default function TeacherFormPage() {
                     helperText={touched.email && errors.email}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="password"
@@ -226,7 +216,7 @@ export default function TeacherFormPage() {
                     required={!isEditMode}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="phone"
@@ -238,7 +228,7 @@ export default function TeacherFormPage() {
                     helperText={touched.phone && errors.phone}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -278,7 +268,7 @@ export default function TeacherFormPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="employeeId"
@@ -290,7 +280,7 @@ export default function TeacherFormPage() {
                     helperText={touched.employeeId && errors.employeeId}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -309,7 +299,7 @@ export default function TeacherFormPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="dateOfJoining"
@@ -323,7 +313,7 @@ export default function TeacherFormPage() {
                     slotProps={{ inputLabel: { shrink: true } }}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="qualification"
@@ -333,7 +323,7 @@ export default function TeacherFormPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="experience"
@@ -346,7 +336,7 @@ export default function TeacherFormPage() {
                     helperText={touched.experience && errors.experience}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select

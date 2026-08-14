@@ -2,17 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box,
-  Grid,
-  TextField,
-  Button,
-  Paper,
-  Typography,
-  CircularProgress,
-  Divider,
-  Stack,
-} from '@mui/material';
+import { Box, TextField, Button, Paper, Typography, CircularProgress, Divider, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
@@ -138,7 +129,7 @@ export default function VendorFormPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="name"
@@ -150,7 +141,7 @@ export default function VendorFormPage() {
                     helperText={touched.name && errors.name}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="contactPerson"
@@ -160,7 +151,7 @@ export default function VendorFormPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="phone"
@@ -170,7 +161,7 @@ export default function VendorFormPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="email"
@@ -194,7 +185,7 @@ export default function VendorFormPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="gstNumber"

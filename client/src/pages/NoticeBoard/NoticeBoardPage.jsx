@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box, Button, Typography, Grid, Card, CardContent,
-  Chip, Stack, Avatar, CircularProgress,
-} from '@mui/material';
+import { Box, Button, Typography, Card, CardContent, Chip, Stack, Avatar, CircularProgress } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CampaignIcon from '@mui/icons-material/Campaign';

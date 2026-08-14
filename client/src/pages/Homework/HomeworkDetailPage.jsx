@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box, Paper, Typography, Grid, Chip, Button, Divider, CircularProgress,
-  TextField, Stack, Card, CardContent, Alert, LinearProgress, Dialog, DialogTitle,
-  DialogContent, DialogActions,
-} from '@mui/material';
+import { Box, Paper, Typography, Chip, Button, Divider, CircularProgress, TextField, Stack, Card, CardContent, Alert, LinearProgress, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import UploadIcon from '@mui/icons-material/Upload';

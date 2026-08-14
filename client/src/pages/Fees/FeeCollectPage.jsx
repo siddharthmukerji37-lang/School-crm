@@ -2,20 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box,
-  Grid,
-  TextField,
-  MenuItem,
-  Button,
-  Paper,
-  Typography,
-  CircularProgress,
-  Divider,
-  Stack,
-  Chip,
-  Autocomplete,
-} from '@mui/material';
+import { Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack, Chip, Autocomplete } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
@@ -203,7 +191,7 @@ export default function FeeCollectPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <Autocomplete
                     options={students}
                     getOptionLabel={(option) =>
@@ -239,7 +227,7 @@ export default function FeeCollectPage() {
                     )}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -265,7 +253,7 @@ export default function FeeCollectPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -294,7 +282,7 @@ export default function FeeCollectPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="amount"
@@ -307,7 +295,7 @@ export default function FeeCollectPage() {
                     helperText={touched.amount && errors.amount}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -326,7 +314,7 @@ export default function FeeCollectPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="transactionReference"
@@ -336,7 +324,7 @@ export default function FeeCollectPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="paymentDate"
@@ -348,7 +336,7 @@ export default function FeeCollectPage() {
                     slotProps={{ inputLabel: { shrink: true } }}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="receivedBy"
@@ -360,7 +348,7 @@ export default function FeeCollectPage() {
                     helperText={touched.receivedBy && errors.receivedBy}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="remarks"

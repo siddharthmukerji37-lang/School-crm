@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box, Paper, Typography, Chip, Button, Stack, TextField, MenuItem,
-  RadioGroup, FormControlLabel, Radio, Grid, CircularProgress, IconButton,
-  Tooltip, Divider, Card, CardContent,
-} from '@mui/material';
+import { Box, Paper, Typography, Chip, Button, Stack, TextField, MenuItem, RadioGroup, FormControlLabel, Radio, CircularProgress, IconButton, Tooltip, Divider, Card, CardContent } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -297,7 +294,7 @@ export default function ExamQuestionsPage() {
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth select label="Question Type" size="small" value={form.questionType}
                     onChange={(e) => setForm({ ...form, questionType: e.target.value })}
@@ -306,13 +303,13 @@ export default function ExamQuestionsPage() {
                     <MenuItem value="Descriptive">Descriptive</MenuItem>
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth label="Marks" type="number" size="small" value={form.marks}
                     onChange={(e) => setForm({ ...form, marks: e.target.value })}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth select label="Subject (optional)" size="small" value={form.subjectId}
                     onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
@@ -331,7 +328,7 @@ export default function ExamQuestionsPage() {
                 {form.questionType === 'MCQ' ? (
                   <>
                     {['A', 'B', 'C', 'D'].map((opt) => (
-                      <Grid key={opt} size={{ xs: 12, sm: 6 }}>
+                      <Grid key={opt} size={{ xs: 12 }}>
                         <TextField
                           fullWidth label={`Option ${opt}`} size="small" value={form[`option${opt}`]}
                           onChange={(e) => setForm({ ...form, [`option${opt}`]: e.target.value })}

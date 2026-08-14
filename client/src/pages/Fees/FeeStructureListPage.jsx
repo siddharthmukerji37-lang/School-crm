@@ -1,22 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-  Grid,
-  Divider,
-  FormControlLabel,
-  Switch,
-  Typography,
-  Stack,
-} from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Divider, FormControlLabel, Switch, Typography, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import ReceiptIcon from '@mui/icons-material/Receipt';
@@ -407,7 +392,7 @@ export default function FeeStructureListPage() {
                       helperText={touched.name && errors.name}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       select
@@ -426,7 +411,7 @@ export default function FeeStructureListPage() {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       select
@@ -445,7 +430,7 @@ export default function FeeStructureListPage() {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       select
@@ -464,7 +449,7 @@ export default function FeeStructureListPage() {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       name="totalAmount"
@@ -489,7 +474,7 @@ export default function FeeStructureListPage() {
                       onBlur={handleBlur}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -502,7 +487,7 @@ export default function FeeStructureListPage() {
                       label="Active"
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -516,7 +501,7 @@ export default function FeeStructureListPage() {
                     />
                   </Grid>
                   {values.isInstallmentApplicable && (
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         fullWidth
                         name="numberOfInstallments"
@@ -528,7 +513,7 @@ export default function FeeStructureListPage() {
                       />
                     </Grid>
                   )}
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       name="fineAfterDays"
@@ -545,7 +530,7 @@ export default function FeeStructureListPage() {
                       }
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       name="fineAmount"
@@ -562,7 +547,7 @@ export default function FeeStructureListPage() {
                       }
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       name="fineStartDate"
@@ -580,7 +565,7 @@ export default function FeeStructureListPage() {
                       }
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       name="fineEndDate"

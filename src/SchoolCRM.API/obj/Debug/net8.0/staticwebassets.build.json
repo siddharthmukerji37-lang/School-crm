@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "izkLHNqVSNFbQz3cqGPJ56+ZLN2zUQCjXEuz7wL0l8U=",
+  "Hash": "G70ipdNvK5Jg5RGMfVAaK+/sT2mmZWWdxEsqIxrbWlA=",
   "Source": "SchoolCRM.API",
   "BasePath": "_content/SchoolCRM.API",
   "Mode": "Default",
@@ -16,6 +16,25 @@
     }
   ],
   "Assets": [
+    {
+      "Identity": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/06804b7a03b24fdb92f572b955d021a1.png",
+      "SourceId": "SchoolCRM.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/",
+      "BasePath": "_content/SchoolCRM.API",
+      "RelativePath": "uploads/06804b7a03b24fdb92f572b955d021a1.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/06804b7a03b24fdb92f572b955d021a1.png"
+    },
     {
       "Identity": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/4813258d640148d7a42a42d5fd8f617d.png",
       "SourceId": "SchoolCRM.API",
@@ -72,6 +91,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/75293a5a5e4b4769817d3c437936b2ed.png"
+    },
+    {
+      "Identity": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/7793b41eb11d43ceaa383a1a8ba2bd38.png",
+      "SourceId": "SchoolCRM.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/",
+      "BasePath": "_content/SchoolCRM.API",
+      "RelativePath": "uploads/7793b41eb11d43ceaa383a1a8ba2bd38.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/7793b41eb11d43ceaa383a1a8ba2bd38.png"
     },
     {
       "Identity": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/a14eb1df16bc427db64de3018d9de8bf.png",

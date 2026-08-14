@@ -1,24 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box,
-  Tabs,
-  Tab,
-  Button,
-  Grid,
-  TextField,
-  MenuItem,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Stack,
-  Chip,
-  Paper,
-  Divider,
-} from '@mui/material';
+import { Box, Tabs, Tab, Button, TextField, MenuItem, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Chip, Paper, Divider } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import AddIcon from '@mui/icons-material/Add';
 import * as Yup from 'yup';
 import {
@@ -272,7 +256,7 @@ export default function AccountsPage() {
             Date Range
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Stack direction="row" spacing={2}>
+          <Stack direction="column" spacing={2}>
             <TextField
               label="From Date"
               type="date"
@@ -428,7 +412,7 @@ function AccountFormDialog({ open, onClose, type, editingRecord }) {
           <Form>
             <DialogContent dividers>
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="title"
@@ -440,7 +424,7 @@ function AccountFormDialog({ open, onClose, type, editingRecord }) {
                     helperText={touched.title && errors.title}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="amount"
@@ -465,7 +449,7 @@ function AccountFormDialog({ open, onClose, type, editingRecord }) {
                     helperText={touched.description && errors.description}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -484,7 +468,7 @@ function AccountFormDialog({ open, onClose, type, editingRecord }) {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="date"
@@ -498,7 +482,7 @@ function AccountFormDialog({ open, onClose, type, editingRecord }) {
                     slotProps={{ inputLabel: { shrink: true } }}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -517,7 +501,7 @@ function AccountFormDialog({ open, onClose, type, editingRecord }) {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="referenceNumber"
@@ -528,7 +512,7 @@ function AccountFormDialog({ open, onClose, type, editingRecord }) {
                   />
                 </Grid>
                 {type === 'expense' && (
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       name="vendor"
@@ -566,7 +550,7 @@ function AccountViewDialog({ open, onClose, record, type }) {
       <DialogContent>
         {record && (
           <Grid container spacing={2} sx={{ mt: 0 }}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Title
               </Typography>
@@ -574,7 +558,7 @@ function AccountViewDialog({ open, onClose, record, type }) {
                 {record.title || 'N/A'}
               </Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Amount
               </Typography>
@@ -588,13 +572,13 @@ function AccountViewDialog({ open, onClose, record, type }) {
               </Typography>
               <Typography variant="body1">{record.description || 'N/A'}</Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Category
               </Typography>
               <Typography variant="body1">{record.category || 'N/A'}</Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Date
               </Typography>
@@ -602,20 +586,20 @@ function AccountViewDialog({ open, onClose, record, type }) {
                 {record.date ? new Date(record.date).toLocaleDateString() : 'N/A'}
               </Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Payment Method
               </Typography>
               <Typography variant="body1">{record.paymentMethod || 'N/A'}</Typography>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle2" color="text.secondary">
                 Reference Number
               </Typography>
               <Typography variant="body1">{record.referenceNumber || 'N/A'}</Typography>
             </Grid>
             {type === 'expense' && (
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" color="text.secondary">
                   Vendor
                 </Typography>

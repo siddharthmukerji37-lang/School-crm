@@ -137,7 +137,7 @@ export default function StaffAttendancePage() {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" fontWeight={600} gutterBottom>Attendance Details</Typography>
         <Divider sx={{ mb: 3 }} />
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+        <Stack direction="column" spacing={2} alignItems="flex-start">
           <Tabs value={tab} onChange={(_, v) => setTab(v)} textColor="primary" indicatorColor="primary">
             <Tab label="Teachers" value="Teacher" />
             <Tab label="Employees" value="Employee" />

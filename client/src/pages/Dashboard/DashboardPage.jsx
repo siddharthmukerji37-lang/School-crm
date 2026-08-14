@@ -1,24 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Avatar,
-  Skeleton,
-  Divider,
-  Chip,
-  LinearProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from '@mui/material';
+import { Box, Paper, Typography, List, ListItem, ListItemAvatar, ListItemText, Avatar, Skeleton, Divider, Chip, LinearProgress, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SchoolIcon from '@mui/icons-material/School';
 import PeopleIcon from '@mui/icons-material/People';
 import BadgeIcon from '@mui/icons-material/Badge';

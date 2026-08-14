@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Stack, Grid, MenuItem, FormControl, InputLabel, Select,
-  Switch, FormControlLabel,
-} from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import AddIcon from '@mui/icons-material/Add';
 import {
   fetchNotices, createNotice, updateNotice, deleteNotice,
@@ -202,7 +199,7 @@ export default function NoticeManagementPage() {
               fullWidth multiline rows={4}
             />
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth>
                   <InputLabel>Type</InputLabel>
                   <Select
@@ -214,7 +211,7 @@ export default function NoticeManagementPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth>
                   <InputLabel>Priority</InputLabel>
                   <Select

@@ -118,7 +118,7 @@ export default function AttendanceMarkPage() {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" fontWeight={600} gutterBottom>Attendance Details</Typography>
         <Divider sx={{ mb: 3 }} />
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Stack direction="column" spacing={2}>
           <TextField
             size="small" label="Date" type="date" value={date}
             onChange={(e) => setDate(e.target.value)}

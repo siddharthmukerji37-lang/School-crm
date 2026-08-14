@@ -159,7 +159,7 @@ export default function StudentListPage() {
         title="Students"
         subtitle={`Total ${students.totalCount || 0} students`}
         actions={
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="column" spacing={2} alignItems="stretch" sx={{ minWidth: 200 }}>
             <TextField
               select
               size="small"

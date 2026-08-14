@@ -1,18 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-  Divider,
-  Stack,
-  Grid,
-} from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Divider, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import PageHeader from '../../components/common/PageHeader';

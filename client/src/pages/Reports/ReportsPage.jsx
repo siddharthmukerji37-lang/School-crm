@@ -1,24 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  TextField,
-  Stack,
-  Avatar,
-} from '@mui/material';
+import { Box, Button, Typography, Card, CardContent, CardActions, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, TextField, Stack, Avatar } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SchoolIcon from '@mui/icons-material/School';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -304,7 +286,7 @@ export default function ReportsPage() {
             </FormControl>
 
             {showDateRange && (
-              <Box sx={{ display: 'flex', gap: 2 }}>
+              <Stack spacing={2}>
                 <TextField
                   label="Start Date"
                   type="date"
@@ -321,7 +303,7 @@ export default function ReportsPage() {
                   InputLabelProps={{ shrink: true }}
                   fullWidth
                 />
-              </Box>
+              </Stack>
             )}
 
             {showClass && (

@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import {
-  Box, Paper, Typography, Chip, Button, Stack, TextField, Divider,
-  CircularProgress, Card, CardContent, Grid, Dialog, DialogTitle,
-  DialogContent, DialogActions,
-} from '@mui/material';
+import { Box, Paper, Typography, Chip, Button, Stack, TextField, Divider, CircularProgress, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
@@ -205,14 +202,14 @@ export default function ExamSubmissionsPage() {
                     </Box>
                   )}
                   <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid size={{ xs: 12, sm: 4 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         fullWidth label="Marks Obtained" type="number" size="small"
                         value={grades[a.id]?.marks ?? ''}
                         onChange={(e) => setGrades({ ...grades, [a.id]: { ...grades[a.id], marks: e.target.value } })}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 8 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         fullWidth label="Remarks" size="small"
                         value={grades[a.id]?.remarks ?? ''}

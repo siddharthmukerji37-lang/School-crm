@@ -2,18 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box,
-  Grid,
-  TextField,
-  MenuItem,
-  Button,
-  Paper,
-  Typography,
-  CircularProgress,
-  Divider,
-  Stack,
-} from '@mui/material';
+import { Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
@@ -203,7 +193,7 @@ export default function EmployeeFormPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="firstName"
@@ -215,7 +205,7 @@ export default function EmployeeFormPage() {
                     helperText={touched.firstName && errors.firstName}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="lastName"
@@ -227,7 +217,7 @@ export default function EmployeeFormPage() {
                     helperText={touched.lastName && errors.lastName}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="email"
@@ -240,7 +230,7 @@ export default function EmployeeFormPage() {
                     helperText={touched.email && errors.email}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="phone"
@@ -252,7 +242,7 @@ export default function EmployeeFormPage() {
                     helperText={touched.phone && errors.phone}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -271,7 +261,7 @@ export default function EmployeeFormPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="password"
@@ -306,7 +296,7 @@ export default function EmployeeFormPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="employeeId"
@@ -318,7 +308,7 @@ export default function EmployeeFormPage() {
                     helperText={touched.employeeId && errors.employeeId}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -348,7 +338,7 @@ export default function EmployeeFormPage() {
                     )}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="designation"
@@ -358,7 +348,7 @@ export default function EmployeeFormPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -377,7 +367,7 @@ export default function EmployeeFormPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -394,7 +384,7 @@ export default function EmployeeFormPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="joiningDate"

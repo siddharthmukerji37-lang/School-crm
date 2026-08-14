@@ -2,18 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box,
-  Grid,
-  TextField,
-  MenuItem,
-  Button,
-  Paper,
-  Typography,
-  CircularProgress,
-  Divider,
-  Stack,
-} from '@mui/material';
+import { Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
@@ -173,7 +163,7 @@ export default function InventoryFormPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="name"
@@ -185,7 +175,7 @@ export default function InventoryFormPage() {
                     helperText={touched.name && errors.name}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -216,7 +206,7 @@ export default function InventoryFormPage() {
                     onBlur={handleBlur}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -236,7 +226,7 @@ export default function InventoryFormPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="purchasePrice"
@@ -258,7 +248,7 @@ export default function InventoryFormPage() {
               </Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="quantity"
@@ -271,7 +261,7 @@ export default function InventoryFormPage() {
                     helperText={touched.quantity && errors.quantity}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     select
@@ -290,7 +280,7 @@ export default function InventoryFormPage() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     name="reorderLevel"

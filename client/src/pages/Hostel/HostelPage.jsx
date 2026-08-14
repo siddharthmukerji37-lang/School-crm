@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box, Tabs, Tab, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Grid, Typography, Stack, MenuItem, Chip, CircularProgress,
-} from '@mui/material';
+import { Box, Tabs, Tab, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Typography, Stack, MenuItem, Chip, CircularProgress } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import AddIcon from '@mui/icons-material/Add';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -418,14 +416,14 @@ export default function HostelPage() {
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.name && Boolean(errors.name)} helperText={touched.name && errors.name} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth select name="type" label="Type" value={values.type}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.type && Boolean(errors.type)} helperText={touched.type && errors.type}>
                         {HOSTEL_TYPES.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
                       </TextField>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="wardenName" label="Warden Name" value={values.wardenName}
                         onChange={handleChange} onBlur={handleBlur} />
                     </Grid>
@@ -436,7 +434,7 @@ export default function HostelPage() {
                   </Grid>
                 ) : (
                   <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth select name="hostelId" label="Hostel" value={values.hostelId}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.hostelId && Boolean(errors.hostelId)} helperText={touched.hostelId && errors.hostelId}>
@@ -445,19 +443,19 @@ export default function HostelPage() {
                         ))}
                       </TextField>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="roomNumber" label="Room Number" value={values.roomNumber}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.roomNumber && Boolean(errors.roomNumber)} helperText={touched.roomNumber && errors.roomNumber} />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth select name="roomType" label="Room Type" value={values.roomType}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.roomType && Boolean(errors.roomType)} helperText={touched.roomType && errors.roomType}>
                         {ROOM_TYPES.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
                       </TextField>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField fullWidth name="totalBeds" label="Total Beds" type="number" value={values.totalBeds}
                         onChange={handleChange} onBlur={handleBlur}
                         error={touched.totalBeds && Boolean(errors.totalBeds)} helperText={touched.totalBeds && errors.totalBeds} />

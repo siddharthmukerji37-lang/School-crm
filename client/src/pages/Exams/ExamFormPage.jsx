@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box, Grid, TextField, MenuItem, Button, Paper, Typography,
-  CircularProgress, Divider, Stack,
-} from '@mui/material';
+import { Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import * as Yup from 'yup';
@@ -131,19 +129,19 @@ export default function ExamFormPage() {
               <Typography variant="h6" fontWeight={600} gutterBottom>Exam Details</Typography>
               <Divider sx={{ mb: 3 }} />
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth name="name" label="Exam Name" value={values.name}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.name && Boolean(errors.name)} helperText={touched.name && errors.name} />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth select name="examType" label="Exam Type" value={values.examType}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.examType && Boolean(errors.examType)} helperText={touched.examType && errors.examType}>
                     {examTypeOptions.map((o) => <MenuItem key={o} value={o}>{o}</MenuItem>)}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth select name="classRoomId" label="Class" value={values.classRoomId}
                     onChange={(e) => { handleChange(e); setFieldValue('sectionId', ''); fetchSections(e.target.value); }}
                     onBlur={handleBlur}
@@ -151,7 +149,7 @@ export default function ExamFormPage() {
                     {classes.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth select name="sectionId" label="Section" value={values.sectionId}
                     onChange={handleChange} onBlur={handleBlur} disabled={!values.classRoomId}
                     helperText={values.sectionId ? '' : 'Leave blank to include all sections'}
@@ -160,24 +158,24 @@ export default function ExamFormPage() {
                     {sections.map((s) => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth name="startDate" label="Start Date" type="date" value={values.startDate}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.startDate && Boolean(errors.startDate)} helperText={touched.startDate && errors.startDate}
                     slotProps={{ inputLabel: { shrink: true } }} />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth name="endDate" label="End Date" type="date" value={values.endDate}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.endDate && Boolean(errors.endDate)} helperText={touched.endDate && errors.endDate}
                     slotProps={{ inputLabel: { shrink: true } }} />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth name="maxMarks" label="Max Marks" type="number" value={values.maxMarks}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.maxMarks && Boolean(errors.maxMarks)} helperText={touched.maxMarks && errors.maxMarks} />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth name="passingMarks" label="Passing Marks" type="number" value={values.passingMarks}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.passingMarks && Boolean(errors.passingMarks)} helperText={touched.passingMarks && errors.passingMarks} />

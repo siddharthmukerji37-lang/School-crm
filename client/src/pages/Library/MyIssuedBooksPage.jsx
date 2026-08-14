@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Chip,
-  Typography,
-  Stack,
-  Grid,
-  Paper,
-  Alert,
-} from '@mui/material';
+import { Box, Chip, Typography, Stack, Paper, Alert } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';

@@ -1,25 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Tabs,
-  Tab,
-  Paper,
-  TextField,
-  Button,
-  Typography,
-  Grid,
-  Switch,
-  Divider,
-  CircularProgress,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-} from '@mui/material';
+import { Box, Tabs, Tab, Paper, TextField, Button, Typography, Switch, Divider, CircularProgress, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import DownloadIcon from '@mui/icons-material/Download';
 import axiosInstance from '../../services/axiosInstance';
@@ -103,7 +84,7 @@ function SchoolProfileTab() {
         School Information
       </Typography>
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             label="School Name"
             value={school.name}
@@ -111,7 +92,7 @@ function SchoolProfileTab() {
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             label="Phone"
             value={school.phone}
@@ -129,7 +110,7 @@ function SchoolProfileTab() {
             rows={2}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             label="Email"
             value={school.email}
@@ -137,7 +118,7 @@ function SchoolProfileTab() {
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             label="Website"
             value={school.website}

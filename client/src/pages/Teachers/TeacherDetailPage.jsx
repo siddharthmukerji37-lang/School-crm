@@ -1,17 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Box,
-  Paper,
-  Typography,
-  Grid,
-  Avatar,
-  Chip,
-  Button,
-  Divider,
-  CircularProgress,
-} from '@mui/material';
+import { Box, Paper, Typography, Avatar, Chip, Button, Divider, CircularProgress } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { fetchTeacherById, clearSelectedTeacher } from '../../store/slices/teacherSlice';

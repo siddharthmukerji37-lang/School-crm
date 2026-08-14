@@ -1,0 +1,1 @@
+import{bf as a,b6 as m,bg as u}from"./index-kCcigiF2.js";const n=a();function p({props:t,name:r,defaultTheme:o,themeId:s}){let e=m(o);return s&&(e=e[s]||e),u({theme:e,name:r,props:t})}export{n as s,p as u};

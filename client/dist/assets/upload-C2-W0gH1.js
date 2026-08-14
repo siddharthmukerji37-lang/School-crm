@@ -1,0 +1,1 @@
+import{d as o,j as s,V as e}from"./index-kCcigiF2.js";const r=o(s.jsx("path",{d:"M5 20h14v-2H5zm0-10h4v6h6v-6h4l-7-7z"}),"Upload");async function d(t){const a=new FormData;return a.append("file",t),(await e.post("/files/upload",a,{headers:{"Content-Type":"multipart/form-data"},timeout:6e4})).data}export{r as U,d as u};

@@ -68,7 +68,7 @@ export default function AttendanceListPage() {
         title="Attendance"
         subtitle={`Total ${totalCount} records`}
         actions={
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="column" spacing={2} alignItems="stretch" sx={{ minWidth: 200 }}>
             <TextField
               size="small"
               label="Filter by Date"

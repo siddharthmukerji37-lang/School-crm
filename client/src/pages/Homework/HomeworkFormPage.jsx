@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  Box, Grid, TextField, MenuItem, Button, Paper, Typography,
-  CircularProgress, Divider, Stack,
-} from '@mui/material';
+import { Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import UploadIcon from '@mui/icons-material/Upload';
@@ -173,7 +171,7 @@ export default function HomeworkFormPage() {
                     value={values.description} onChange={handleChange} onBlur={handleBlur}
                     error={touched.description && Boolean(errors.description)} helperText={touched.description && errors.description} />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth select name="classRoomId" label="Class" value={values.classRoomId}
                     onChange={(e) => { handleChange(e); setFieldValue('sectionId', ''); setFieldValue('subjectId', ''); fetchSections(e.target.value); fetchSubjects(e.target.value); }}
                     onBlur={handleBlur}
@@ -181,21 +179,21 @@ export default function HomeworkFormPage() {
                     {classes.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth select name="sectionId" label="Section" value={values.sectionId}
                     onChange={handleChange} onBlur={handleBlur} disabled={!values.classRoomId}
                     error={touched.sectionId && Boolean(errors.sectionId)} helperText={touched.sectionId && errors.sectionId}>
                     {sections.map((s) => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth select name="subjectId" label="Subject" value={values.subjectId}
                     onChange={handleChange} onBlur={handleBlur} disabled={!values.classRoomId}
                     error={touched.subjectId && Boolean(errors.subjectId)} helperText={touched.subjectId && errors.subjectId}>
                     {subjects.map((s) => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField fullWidth name="dueDate" label="Due Date" type="date" value={values.dueDate}
                     onChange={handleChange} onBlur={handleBlur}
                     error={touched.dueDate && Boolean(errors.dueDate)} helperText={touched.dueDate && errors.dueDate}

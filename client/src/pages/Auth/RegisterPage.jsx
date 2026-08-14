@@ -2,18 +2,8 @@ import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import {
-  TextField,
-  Button,
-  Typography,
-  Link,
-  Alert,
-  InputAdornment,
-  IconButton,
-  Box,
-  MenuItem,
-  Grid,
-} from '@mui/material';
+import { TextField, Button, Typography, Link, Alert, InputAdornment, IconButton, Box, MenuItem } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -57,7 +47,7 @@ export default function RegisterPage() {
         {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
           <Form>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   id="firstName"
@@ -71,7 +61,7 @@ export default function RegisterPage() {
                   autoFocus
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   id="lastName"

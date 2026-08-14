@@ -368,6 +368,13 @@ public class FeeService : IFeeService
 
             await _unitOfWork.SaveChangesAsync();
 
+            await _notificationService.NotifyUsersAsync(
+                new[] { student.UserId },
+                "Fee payment received",
+                $"Your payment of {primaryReceipt!.TotalPaid:C} for '{structure.Name}' was received. Receipt No: {primaryReceipt.ReceiptNumber}.",
+                NotificationType.Success,
+                link: "/fees/my-receipts");
+
             return ApiResponse<FeeReceiptDto>.SuccessResponse(
                 MapReceiptToDto(primaryReceipt!), ApplicationMessages.CreateSuccess);
         }
