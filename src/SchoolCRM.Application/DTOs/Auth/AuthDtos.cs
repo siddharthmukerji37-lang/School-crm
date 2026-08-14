@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using SchoolCRM.Application.DTOs.Employee;
+using SchoolCRM.Application.DTOs.Student;
+using SchoolCRM.Application.DTOs.Teacher;
 
 namespace SchoolCRM.Application.DTOs.Auth;
 
@@ -161,4 +164,12 @@ public sealed class UpdateProfileDto
     public string? PostalCode { get; set; }
 
     public string? ProfilePictureUrl { get; set; }
+}
+
+public sealed class MyProfileDto
+{
+    public UserProfileDto User { get; set; } = new();
+    public StudentDto? Student { get; set; }
+    public TeacherDto? Teacher { get; set; }
+    public EmployeeDto? Employee { get; set; }
 }

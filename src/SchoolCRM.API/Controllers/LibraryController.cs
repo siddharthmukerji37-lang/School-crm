@@ -163,5 +163,26 @@ public class LibraryController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("teacher/{teacherId:guid}/issues")]
+    [ProducesResponseType(typeof(ApiResponse<List<BookIssueDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<BookIssueDto>>>> GetTeacherIssuesAsync(
+        [FromRoute] Guid teacherId)
+    {
+        var result = await _libraryService.GetTeacherIssuesAsync(teacherId);
+        return Ok(result);
+    }
+
+    [HttpGet("my-issues")]
+    [ProducesResponseType(typeof(ApiResponse<List<BookIssueDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<List<BookIssueDto>>>> GetMyIssuesAsync()
+    {
+        var result = await _libraryService.GetMyIssuesAsync();
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     #endregion
 }

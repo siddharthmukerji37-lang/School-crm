@@ -397,6 +397,59 @@ public class LibraryService : ILibraryService
         }
     }
 
+    public async Task<ApiResponse<List<BookIssueDto>>> GetMyIssuesAsync()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUserService.UserId) ||
+                !Guid.TryParse(_currentUserService.UserId, out var userId))
+                return ApiResponse<List<BookIssueDto>>.FailResponse("Unable to identify current user.");
+
+            var student = await _unitOfWork.Students.GetStudentByUserIdAsync(userId);
+            if (student is not null && !student.IsDeleted)
+                return await GetStudentIssuesAsync(student.Id);
+
+            var teacher = await _unitOfWork.Teachers.GetTeacherByUserIdAsync(userId);
+            if (teacher is not null && !teacher.IsDeleted)
+                return await GetTeacherIssuesAsync(teacher.Id);
+
+            return ApiResponse<List<BookIssueDto>>.FailResponse("No student or teacher profile linked to this account.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<BookIssueDto>>.FailResponse(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<List<BookIssueDto>>> GetTeacherIssuesAsync(Guid teacherId)
+    {
+        try
+        {
+            var issues = await _unitOfWork.BookIssues.GetByTeacherAsync(teacherId);
+            var dtos = issues.Select(i => new BookIssueDto
+            {
+                Id = i.Id,
+                BookId = i.BookId,
+                BookTitle = i.Book?.Title ?? string.Empty,
+                TeacherId = i.TeacherId,
+                TeacherName = i.Teacher?.User is not null
+                    ? $"{i.Teacher.User.FirstName} {i.Teacher.User.LastName}"
+                    : string.Empty,
+                IssueDate = i.IssueDate,
+                DueDate = i.DueDate,
+                ReturnedDate = i.ReturnDate,
+                IsReturned = i.IsReturned,
+                FineAmount = i.Fine > 0 ? i.Fine : null
+            }).ToList();
+
+            return ApiResponse<List<BookIssueDto>>.SuccessResponse(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<List<BookIssueDto>>.FailResponse(ex.Message);
+        }
+    }
+
     private async Task<Guid> ResolveCategoryAsync(string categoryName, Guid schoolId)
     {
         if (string.IsNullOrWhiteSpace(categoryName))

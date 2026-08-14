@@ -24,6 +24,8 @@ public class EmployeeRepository : GenericRepository<Employee>, IEmployeeReposito
     {
         return await _dbSet
             .Include(e => e.User)
+            .Include(e => e.Department)
+            .Include(e => e.Designation)
             .Include(e => e.School)
             .FirstOrDefaultAsync(e => e.UserId == userId);
     }

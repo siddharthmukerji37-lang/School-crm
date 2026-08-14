@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SchoolCRM.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4512f620088bf15b658f35779d1c38b2450391b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+992300e5d63586139a3e2b257a927d2e8addbbf9")]
 [assembly: System.Reflection.AssemblyProductAttribute("SchoolCRM.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SchoolCRM.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

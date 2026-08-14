@@ -13,4 +13,5 @@ public interface IAuthService
     Task<bool> ChangePasswordAsync(string userId, ChangePasswordDto dto);
     Task<UserProfileDto?> GetProfileAsync(string userId);
     Task<UserProfileDto> UpdateProfileAsync(string userId, UpdateProfileDto dto);
+    Task<MyProfileDto?> GetMyProfileAsync(string userId);
 }

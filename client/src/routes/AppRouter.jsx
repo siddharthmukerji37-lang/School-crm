@@ -36,6 +36,7 @@ const BookListPage = lazy(() => import('../pages/Library/BookListPage'));
 const BookFormPage = lazy(() => import('../pages/Library/BookFormPage'));
 const BookDetailPage = lazy(() => import('../pages/Library/BookDetailPage'));
 const IssuedBooksPage = lazy(() => import('../pages/Library/IssuedBooksPage'));
+const MyIssuedBooksPage = lazy(() => import('../pages/Library/MyIssuedBooksPage'));
 const TransportPage = lazy(() => import('../pages/Transport/TransportPage'));
 const HostelPage = lazy(() => import('../pages/Hostel/HostelPage'));
 const FeeStructureListPage = lazy(() => import('../pages/Fees/FeeStructureListPage'));
@@ -53,6 +54,7 @@ const NoticeBoardPage = lazy(() => import('../pages/NoticeBoard/NoticeBoardPage'
 const NoticeManagementPage = lazy(() => import('../pages/NoticeBoard/NoticeManagementPage'));
 const TimetablePage = lazy(() => import('../pages/Timetable/TimetablePage'));
 const ChatPage = lazy(() => import('../pages/Chat/ChatPage'));
+const ProfilePage = lazy(() => import('../pages/Profile/ProfilePage'));
 
 const ADMIN_ROLES = ['SuperAdmin', 'Admin'];
 const STAFF_ROLES = ['SuperAdmin', 'Admin', 'Teacher', 'ClassTeacher'];
@@ -180,6 +182,9 @@ export default function AppRouter() {
 
         <Route path="library" element={<BookListPage />} />
         <Route path="library/issued" element={<IssuedBooksPage />} />
+        <Route path="library/my-issues" element={
+          <ProtectedRoute allowedRoles={['Student', 'Teacher']}><MyIssuedBooksPage /></ProtectedRoute>
+        } />
         <Route path="library/:id" element={<BookDetailPage />} />
         <Route path="library/create" element={
           <ProtectedRoute allowedRoles={LIBRARY_ROLES}><BookFormPage /></ProtectedRoute>
@@ -248,6 +253,8 @@ export default function AppRouter() {
         <Route path="chat" element={
           <ProtectedRoute allowedRoles={CHAT_ROLES}><ChatPage /></ProtectedRoute>
         } />
+
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

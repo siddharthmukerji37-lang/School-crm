@@ -26,6 +26,7 @@ const libraryService = {
     if (params.teacherId) queryParams.append('teacherId', params.teacherId);
     return axiosInstance.get(`/library/issued?${queryParams.toString()}`);
   },
+  getMyIssuedBooks: () => axiosInstance.get('/library/my-issues'),
 };
 
 export default libraryService;

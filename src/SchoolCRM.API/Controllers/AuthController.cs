@@ -133,6 +133,24 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
+    [HttpGet("my-profile")]
+    [ProducesResponseType(typeof(ApiResponse<MyProfileDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<MyProfileDto>>> GetMyProfileAsync()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized(ApiResponse<MyProfileDto>.UnauthorizedResponse());
+
+        var result = await _authService.GetMyProfileAsync(userId);
+        if (result is null)
+            return NotFound(ApiResponse<MyProfileDto>.NotFoundResponse("Profile not found"));
+
+        return Ok(ApiResponse<MyProfileDto>.SuccessResponse(result));
+    }
+
+    [Authorize]
     [HttpPut("me")]
     [ProducesResponseType(typeof(ApiResponse<UserProfileDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

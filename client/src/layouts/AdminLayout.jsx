@@ -121,6 +121,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
     { label: 'Transport', icon: <DirectionsBusIcon />, path: '/transport' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'My Books', icon: <MenuBookIcon />, path: '/library/my-issues' },
     { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
@@ -134,6 +135,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Transport', icon: <DirectionsBusIcon />, path: '/transport' },
     { label: 'Hostel', icon: <HotelIcon />, path: '/hostel' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
+    { label: 'My Books', icon: <MenuBookIcon />, path: '/library/my-issues' },
     { label: 'My Fees', icon: <PaymentsIcon />, path: '/fees/my-receipts' },
     { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
@@ -224,6 +226,7 @@ export default function AdminLayout() {
   const notifications = useSelector((state) => state.notifications.notifications) || [];
 
   const userRole = user?.roles?.[0] || user?.role || 'Admin';
+  const isAdmin = ['SuperAdmin', 'Admin'].includes(userRole);
   const navItems = NAV_ITEMS_BY_ROLE[userRole] || NAV_ITEMS_BY_ROLE.Admin;
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -562,7 +565,7 @@ export default function AdminLayout() {
           <MenuItem
             onClick={() => {
               handleProfileMenuClose();
-              handleNavigation('/settings');
+              handleNavigation('/profile');
             }}
           >
             <ListItemIcon>
@@ -570,17 +573,19 @@ export default function AdminLayout() {
             </ListItemIcon>
             My Profile
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              handleProfileMenuClose();
-              handleNavigation('/settings');
-            }}
-          >
-            <ListItemIcon>
-              <SettingsIcon fontSize="small" />
-            </ListItemIcon>
-            Settings
-          </MenuItem>
+          {isAdmin && (
+            <MenuItem
+              onClick={() => {
+                handleProfileMenuClose();
+                handleNavigation('/settings');
+              }}
+            >
+              <ListItemIcon>
+                <SettingsIcon fontSize="small" />
+              </ListItemIcon>
+              Settings
+            </MenuItem>
+          )}
           <Divider />
           <MenuItem onClick={handleLogout}>
             <ListItemIcon>

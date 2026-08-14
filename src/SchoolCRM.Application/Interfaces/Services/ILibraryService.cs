@@ -23,6 +23,10 @@ public interface ILibraryService
 
     Task<ApiResponse<List<BookIssueDto>>> GetStudentIssuesAsync(Guid studentId);
 
+    Task<ApiResponse<List<BookIssueDto>>> GetTeacherIssuesAsync(Guid teacherId);
+
+    Task<ApiResponse<List<BookIssueDto>>> GetMyIssuesAsync();
+
     public sealed class BookDto
     {
         public Guid Id { get; set; }

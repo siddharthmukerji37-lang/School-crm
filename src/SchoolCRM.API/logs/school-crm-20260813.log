@@ -2493,3 +2493,15 @@ MySqlConnector.MySqlException (0x80004005): The Command Timeout expired before t
 2026-08-13 17:05:01.425 +05:30 [INF] [a4cda204-9c1e-4811-a6b9-f6472af189f3] GET /api/attendance responded 200 in 435ms
 2026-08-13 17:05:01.434 +05:30 [INF] [52c70141-d718-4d29-b894-fdec9e2a509c] GET /api/attendance from 127.0.0.1 by Anonymous
 2026-08-13 17:05:01.477 +05:30 [INF] [52c70141-d718-4d29-b894-fdec9e2a509c] GET /api/attendance responded 200 in 42ms
+2026-08-13 17:05:20.975 +05:30 [INF] [982a0199-fe4a-4e5d-8792-bd34b0f71f74] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-13 17:05:20.986 +05:30 [INF] [982a0199-fe4a-4e5d-8792-bd34b0f71f74] GET /api/notifications/unread-count responded 200 in 10ms
+2026-08-13 17:05:21.781 +05:30 [INF] [e586a80e-5d87-4940-aa4b-bd7192988115] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-13 17:05:21.813 +05:30 [INF] [e586a80e-5d87-4940-aa4b-bd7192988115] GET /api/notifications/unread-count responded 200 in 30ms
+2026-08-13 17:05:36.363 +05:30 [INF] [1299255b-179d-43db-879d-3ff030684770] GET /hubs/notifications responded 200 in 90028ms
+2026-08-13 17:05:36.399 +05:30 [INF] [3568fb82-f0d7-467e-9f60-0565cb9d4be3] GET /hubs/notifications from 127.0.0.1 by Anonymous
+2026-08-13 17:05:36.421 +05:30 [INF] [778095d6-82cb-46fe-8681-4f5ae11d7639] GET /hubs/notifications responded 200 in 90013ms
+2026-08-13 17:05:36.432 +05:30 [INF] [89c40cdc-f8fc-4dc3-b127-80eef82e7688] GET /hubs/notifications from 127.0.0.1 by Anonymous
+2026-08-13 17:05:50.977 +05:30 [INF] [0db87a7f-cc1a-4bdf-b2f4-5df5dfa4c812] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-13 17:05:51.007 +05:30 [INF] [0db87a7f-cc1a-4bdf-b2f4-5df5dfa4c812] GET /api/notifications/unread-count responded 200 in 29ms
+2026-08-13 17:05:51.785 +05:30 [INF] [75e4dece-b8b0-4645-b244-b29eae322a93] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-13 17:05:51.801 +05:30 [INF] [75e4dece-b8b0-4645-b244-b29eae322a93] GET /api/notifications/unread-count responded 200 in 16ms

@@ -296,16 +296,17 @@ export default function TimetablePage() {
 
   const handleSave = async () => {
     if (!sectionId) return;
-    const day = DAYS[activeDay];
-    const payload = (entriesByDay[day.label] || []).map((e) => ({
-      id: e.id,
-      sectionId,
-      subjectId: e.subjectId,
-      teacherId: e.teacherId,
-      dayOfWeek: day.dayOfWeek,
-      startTime: e.startTime,
-      endTime: e.endTime,
-    }));
+    const payload = DAYS.flatMap((day) =>
+      (entriesByDay[day.label] || []).map((e) => ({
+        id: e.id,
+        sectionId,
+        subjectId: e.subjectId,
+        teacherId: e.teacherId,
+        dayOfWeek: day.dayOfWeek,
+        startTime: e.startTime,
+        endTime: e.endTime,
+      }))
+    );
 
     setSaving(true);
     try {
@@ -441,8 +442,8 @@ export default function TimetablePage() {
                 </TableHead>
                 <TableBody>
                   {periods.map((period, idx) => {
-                    const cellEntry = (day) => {
-                      const row = dayRows.find((d) => d.dayOfWeek === day.dayOfWeek);
+                    const cellEntry = (dayOfWeek) => {
+                      const row = dayRows.find((d) => d.dayOfWeek === dayOfWeek);
                       return (row?.entries || []).find(
                         (e) => formatTime(e.startTime) === formatTime(period.startTime) &&
                               formatTime(e.endTime) === formatTime(period.endTime)
@@ -471,7 +472,10 @@ export default function TimetablePage() {
                                     size="small" color="primary" variant="outlined"
                                   />
                                   <Typography variant="caption" color="text.secondary">
-                                    {entry.className} • {entry.sectionName}
+                                    {entry.teacherName || 'Not assigned'}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.disabled">
+                                    {entry.className} • Sec {entry.sectionName}
                                   </Typography>
                                 </Stack>
                               ) : (
@@ -556,8 +560,8 @@ export default function TimetablePage() {
                 </TableHead>
                 <TableBody>
                   {periods.map((period, idx) => {
-                    const cellEntry = (day) => {
-                      const row = dayRows.find((d) => d.dayOfWeek === day.dayOfWeek);
+                    const cellEntry = (dayOfWeek) => {
+                      const row = dayRows.find((d) => d.dayOfWeek === dayOfWeek);
                       return (row?.entries || []).find(
                         (e) => formatTime(e.startTime) === formatTime(period.startTime) &&
                               formatTime(e.endTime) === formatTime(period.endTime)

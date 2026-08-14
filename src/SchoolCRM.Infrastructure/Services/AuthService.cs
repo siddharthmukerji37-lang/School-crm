@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SchoolCRM.Application.DTOs.Auth;
+using SchoolCRM.Application.DTOs.Employee;
+using SchoolCRM.Application.DTOs.Student;
+using SchoolCRM.Application.DTOs.Teacher;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Entities.Identity;
@@ -293,6 +296,120 @@ public class AuthService : IAuthService
             DateOfBirth = user.DateOfBirth,
             ProfilePictureUrl = user.ProfilePictureUrl,
             Roles = roles.ToList()
+        };
+    }
+
+    public async Task<MyProfileDto?> GetMyProfileAsync(string userId)
+    {
+        var profile = await GetProfileAsync(userId);
+        if (profile is null)
+            return null;
+
+        var myProfile = new MyProfileDto { User = profile };
+
+        if (!Guid.TryParse(userId, out var userGuid))
+            return myProfile;
+
+        var student = await _unitOfWork.Students.GetStudentByUserIdAsync(userGuid);
+        if (student is not null && !student.IsDeleted)
+            myProfile.Student = MapStudentDto(student);
+
+        var teacher = await _unitOfWork.Teachers.GetTeacherByUserIdAsync(userGuid);
+        if (teacher is not null && !teacher.IsDeleted)
+            myProfile.Teacher = MapTeacherDto(teacher);
+
+        var employee = await _unitOfWork.Employees.GetEmployeeByUserIdAsync(userGuid);
+        if (employee is not null && !employee.IsDeleted)
+            myProfile.Employee = MapEmployeeDto(employee);
+
+        return myProfile;
+    }
+
+    private static StudentDto MapStudentDto(Domain.Entities.Student.Student student)
+    {
+        return new StudentDto
+        {
+            Id = student.Id,
+            AdmissionNumber = student.AdmissionNumber,
+            RollNumber = int.TryParse(student.RollNumber, out var rn) ? rn : 0,
+            FirstName = student.User.FirstName,
+            LastName = student.User.LastName,
+            Email = student.User.Email ?? string.Empty,
+            Phone = student.User.PhoneNumber,
+            Gender = student.User.Gender.ToString(),
+            DateOfBirth = student.User.DateOfBirth ?? DateTime.MinValue,
+            SectionId = student.SectionId,
+            SectionName = student.Section?.Name ?? string.Empty,
+            ClassRoomId = student.Section?.ClassRoomId ?? Guid.Empty,
+            ClassName = student.Section?.ClassRoom?.Name ?? string.Empty,
+            ParentId = student.ParentId,
+            ParentName = !string.IsNullOrWhiteSpace(student.ParentName)
+                ? student.ParentName
+                : student.Parent?.User is not null
+                    ? $"{student.Parent.User.FirstName} {student.Parent.User.LastName}"
+                    : null,
+            ParentPhone = student.ParentPhone,
+            ParentEmail = student.ParentEmail,
+            TransportRequired = student.TransportRequired,
+            HostelRequired = student.HostelRequired,
+            Notes = student.Notes,
+            AdmissionDate = student.AdmissionDate,
+            Status = student.Status.ToString(),
+            ProfilePictureUrl = student.User.ProfilePictureUrl,
+            Address = student.User.Address,
+            BloodGroup = student.User.BloodGroup.ToDisplayString()
+        };
+    }
+
+    private static TeacherDto MapTeacherDto(Domain.Entities.Teacher.Teacher teacher)
+    {
+        return new TeacherDto
+        {
+            Id = teacher.Id,
+            EmployeeId = teacher.EmployeeCode,
+            FirstName = teacher.User.FirstName,
+            LastName = teacher.User.LastName,
+            Email = teacher.User.Email ?? string.Empty,
+            Phone = teacher.User.PhoneNumber,
+            Gender = teacher.User.Gender.ToString(),
+            DateOfBirth = teacher.User.DateOfBirth ?? DateTime.MinValue,
+            JoiningDate = teacher.JoiningDate,
+            DepartmentId = teacher.DepartmentId,
+            DepartmentName = teacher.DepartmentName ?? teacher.Department?.Name ?? string.Empty,
+            Designation = teacher.EmploymentType,
+            Qualification = teacher.Qualification,
+            Salary = teacher.BasicSalary,
+            Address = teacher.User.Address,
+            BloodGroup = teacher.User.BloodGroup?.ToString(),
+            ProfilePictureUrl = teacher.User.ProfilePictureUrl,
+            Status = teacher.Status.ToString(),
+            Specialization = teacher.Specialization,
+            Experience = teacher.ExperienceYears
+        };
+    }
+
+    private static EmployeeDto MapEmployeeDto(Domain.Entities.Employee.Employee employee)
+    {
+        return new EmployeeDto
+        {
+            Id = employee.Id,
+            EmployeeCode = employee.EmployeeCode,
+            FirstName = employee.User.FirstName,
+            LastName = employee.User.LastName,
+            Email = employee.User.Email ?? string.Empty,
+            Phone = employee.User.PhoneNumber,
+            Gender = employee.User.Gender.ToString(),
+            DateOfBirth = employee.User.DateOfBirth ?? DateTime.MinValue,
+            JoiningDate = employee.JoiningDate,
+            DepartmentId = employee.DepartmentId,
+            DepartmentName = employee.Department?.Name,
+            Designation = employee.Designation?.Name,
+            EmployeeType = employee.EmploymentType,
+            Salary = employee.BasicSalary,
+            Address = employee.User.Address,
+            BloodGroup = employee.User.BloodGroup?.ToString(),
+            ProfilePictureUrl = employee.User.ProfilePictureUrl,
+            Status = employee.Status.ToString()
         };
     }
 

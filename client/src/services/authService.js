@@ -25,6 +25,9 @@ const authService = {
   getProfile: () =>
     axiosInstance.get('/auth/me'),
 
+  getMyProfile: () =>
+    axiosInstance.get('/auth/my-profile'),
+
   updateProfile: (data) =>
     axiosInstance.put('/auth/me', data),
 };

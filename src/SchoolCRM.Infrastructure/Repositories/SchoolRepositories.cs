@@ -122,6 +122,8 @@ public class TimetableRepository : GenericRepository<Timetable>, ITimetableRepos
     {
         return await _dbSet
             .Include(t => t.Subject)
+            .Include(t => t.Teacher)
+                .ThenInclude(t => t.User)
             .Include(t => t.Section)
                 .ThenInclude(s => s.ClassRoom)
             .Where(t => t.TeacherId == teacherId)

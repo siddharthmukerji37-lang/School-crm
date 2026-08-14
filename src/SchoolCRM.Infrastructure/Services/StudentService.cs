@@ -117,7 +117,7 @@ public class StudentService : IStudentService
             var student = new Domain.Entities.Student.Student
             {
                 AdmissionNumber = admissionNumber,
-                RollNumber = admissionNumber,
+                RollNumber = GetRollNumberFromAdmissionNumber(admissionNumber),
                 UserId = user.Id,
                 SectionId = dto.SectionId,
                 SchoolId = classRoom.SchoolId,
@@ -164,7 +164,10 @@ public class StudentService : IStudentService
             student.SectionId = dto.SectionId;
             student.AdmissionDate = dto.AdmissionDate;
             if (!string.IsNullOrWhiteSpace(dto.AdmissionNumber))
+            {
                 student.AdmissionNumber = dto.AdmissionNumber.Trim();
+                student.RollNumber = GetRollNumberFromAdmissionNumber(student.AdmissionNumber);
+            }
             student.Status = Enum.Parse<StudentStatus>(dto.Status);
             student.ParentName = dto.ParentName;
             student.ParentPhone = dto.ParentPhone;
@@ -318,6 +321,22 @@ public class StudentService : IStudentService
         {
             return ApiResponse<List<StudentDocumentDto>>.FailResponse(ex.Message);
         }
+    }
+
+    private static string GetRollNumberFromAdmissionNumber(string admissionNumber)
+    {
+        if (string.IsNullOrWhiteSpace(admissionNumber))
+            return string.Empty;
+
+        var index = admissionNumber.Length;
+        while (index > 0 && char.IsDigit(admissionNumber[index - 1]))
+            index--;
+
+        var trailingDigits = admissionNumber[index..];
+        if (trailingDigits.Length == 0)
+            return string.Empty;
+
+        return trailingDigits.Length >= 2 ? trailingDigits[^2..] : trailingDigits;
     }
 
     private static StudentDto MapToDto(Domain.Entities.Student.Student student)

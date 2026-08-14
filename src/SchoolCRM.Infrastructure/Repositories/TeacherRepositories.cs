@@ -23,6 +23,7 @@ public class TeacherRepository : GenericRepository<Teacher>, ITeacherRepository
     {
         return await _dbSet
             .Include(t => t.User)
+            .Include(t => t.Department)
             .Include(t => t.School)
             .FirstOrDefaultAsync(t => t.UserId == userId);
     }

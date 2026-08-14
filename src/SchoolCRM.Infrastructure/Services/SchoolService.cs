@@ -678,6 +678,9 @@ public class SchoolService : ISchoolService
                 SubjectId = t.SubjectId,
                 SubjectName = t.Subject?.Name ?? string.Empty,
                 TeacherId = t.TeacherId,
+                TeacherName = t.Teacher?.User is not null
+                    ? $"{t.Teacher.User.FirstName} {t.Teacher.User.LastName}"
+                    : null,
                 DayOfWeek = t.DayOfWeek,
                 StartTime = TimeOnly.FromTimeSpan(t.StartTime),
                 EndTime = TimeOnly.FromTimeSpan(t.EndTime),

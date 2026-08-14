@@ -36,6 +36,10 @@ public class StudentRepository : GenericRepository<Student>, IStudentRepository
         return await _dbSet
             .Include(s => s.User)
             .Include(s => s.Section)
+                .ThenInclude(sec => sec.ClassRoom)
+            .Include(s => s.Parent)
+                .ThenInclude(p => p!.User)
+            .Include(s => s.School)
             .FirstOrDefaultAsync(s => s.UserId == userId);
     }
 
