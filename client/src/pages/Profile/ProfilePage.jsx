@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Typography, Avatar, Chip, Divider, CircularProgress, Alert } from '@mui/material';
+import { Box, Paper, Typography, Avatar, Chip, Divider, CircularProgress, Alert, Button, Stack } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
 import BadgeIcon from '@mui/icons-material/Badge';
 import WorkIcon from '@mui/icons-material/Work';
+import DownloadIcon from '@mui/icons-material/Download';
+import QuizIcon from '@mui/icons-material/Quiz';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import authService from '../../services/authService';
+import examService from '../../services/examService';
+import attendanceService from '../../services/attendanceService';
+import { generateExamResultsPDF, generateAttendanceReportPDF } from '../../utils/pdfGenerator';
+import toast from 'react-hot-toast';
 
 function DetailRow({ label, value }) {
   return (
@@ -54,6 +62,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [downloading, setDownloading] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -72,6 +81,56 @@ export default function ProfilePage() {
       active = false;
     };
   }, []);
+
+  const handleDownloadExamResults = async () => {
+    if (!student?.id) return;
+    setDownloading('exam');
+    try {
+      const res = await examService.getStudentResults(student.id);
+      const results = res.data.data || [];
+      generateExamResultsPDF(
+        `${student.firstName || user.firstName} ${student.lastName || user.lastName}`,
+        student.admissionNumber,
+        student.className,
+        student.sectionName,
+        results
+      );
+      toast.success('Exam results downloaded');
+    } catch {
+      toast.error('Failed to download exam results');
+    } finally {
+      setDownloading('');
+    }
+  };
+
+  const handleDownloadAttendance = async () => {
+    if (!student?.id) return;
+    setDownloading('attendance');
+    try {
+      const res = await attendanceService.getStudentAttendance(student.id, { pageSize: 1000 });
+      const data = res.data.data;
+      const items = data?.items || [];
+      const total = items.length;
+      const present = items.filter((a) => a.status === 'Present').length;
+      const absent = items.filter((a) => a.status === 'Absent').length;
+      const late = items.filter((a) => a.status === 'Late').length;
+      const excused = items.filter((a) => a.status === 'Excused').length;
+      const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+      generateAttendanceReportPDF(
+        `${student.firstName || user.firstName} ${student.lastName || user.lastName}`,
+        student.admissionNumber,
+        student.className,
+        student.sectionName,
+        items,
+        { percentage, present, absent, late, excused }
+      );
+      toast.success('Attendance report downloaded');
+    } catch {
+      toast.error('Failed to download attendance report');
+    } finally {
+      setDownloading('');
+    }
+  };
 
   if (loading) {
     return (
@@ -178,6 +237,29 @@ export default function ProfilePage() {
               <DetailRow label="Notes" value={student.notes} />
             </Grid>
           </Grid>
+        </SectionCard>
+      )}
+
+      {student && (
+        <SectionCard icon={<DownloadIcon color="primary" />} title="Downloads">
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <Button
+              variant="outlined"
+              startIcon={downloading === 'exam' ? <CircularProgress size={18} /> : <QuizIcon />}
+              onClick={handleDownloadExamResults}
+              disabled={!!downloading}
+            >
+              Exam Results
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={downloading === 'attendance' ? <CircularProgress size={18} /> : <EventAvailableIcon />}
+              onClick={handleDownloadAttendance}
+              disabled={!!downloading}
+            >
+              Attendance Report
+            </Button>
+          </Stack>
         </SectionCard>
       )}
 

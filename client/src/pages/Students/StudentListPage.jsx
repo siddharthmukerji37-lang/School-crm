@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Button, Chip, MenuItem, TextField, Stack } from '@mui/material';
+import { Box, Button, Chip, MenuItem, TextField, Stack, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { fetchStudents, deleteStudent } from '../../store/slices/studentSlice';
 import attendanceService from '../../services/attendanceService';
+import axiosInstance from '../../services/axiosInstance';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
@@ -24,22 +25,6 @@ const attendanceChip = (status) => {
   return <Chip label={status} color={color} size="small" />;
 };
 
-const CLASS_OPTIONS = [
-  { value: '', label: 'All Classes' },
-  { value: '1', label: 'Class 1' },
-  { value: '2', label: 'Class 2' },
-  { value: '3', label: 'Class 3' },
-  { value: '4', label: 'Class 4' },
-  { value: '5', label: 'Class 5' },
-  { value: '6', label: 'Class 6' },
-  { value: '7', label: 'Class 7' },
-  { value: '8', label: 'Class 8' },
-  { value: '9', label: 'Class 9' },
-  { value: '10', label: 'Class 10' },
-  { value: '11', label: 'Class 11' },
-  { value: '12', label: 'Class 12' },
-];
-
 export default function StudentListPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -50,15 +35,31 @@ export default function StudentListPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [classFilter, setClassFilter] = useState('');
+  const [classes, setClasses] = useState([]);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [attendanceMap, setAttendanceMap] = useState({});
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const schoolsRes = await axiosInstance.get('/schools', { params: { pageSize: 1 } });
+        const schoolId = schoolsRes.data?.data?.items?.[0]?.id;
+        if (!schoolId) return;
+        const classRes = await axiosInstance.get(`/schools/${schoolId}/classes`);
+        setClasses(classRes.data?.data || []);
+      } catch {
+        setClasses([]);
+      }
+    };
+    fetchClasses();
+  }, []);
 
   useEffect(() => {
     dispatch(
       fetchStudents({
         page: page + 1,
         pageSize: rowsPerPage,
-        classId: classFilter || undefined,
+        classRoomId: classFilter || undefined,
       })
     );
   }, [dispatch, page, rowsPerPage, classFilter]);
@@ -145,7 +146,7 @@ export default function StudentListPage() {
         fetchStudents({
           page: page + 1,
           pageSize: rowsPerPage,
-          classId: classFilter || undefined,
+          classRoomId: classFilter || undefined,
         })
       );
     } else {
@@ -171,9 +172,10 @@ export default function StudentListPage() {
               }}
               sx={{ minWidth: 160 }}
             >
-              {CLASS_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
+              <MenuItem value="">All Classes</MenuItem>
+              {classes.map((cls) => (
+                <MenuItem key={cls.id} value={cls.id}>
+                  {cls.name}
                 </MenuItem>
               ))}
             </TextField>

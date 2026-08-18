@@ -193,6 +193,10 @@ public class ExamSubmissionRepository : GenericRepository<ExamSubmission>, IExam
             .Include(s => s.Exam)
                 .ThenInclude(e => e!.ExamType)
             .Include(s => s.Answers)
+                .ThenInclude(a => a.ExamQuestion)
+                    .ThenInclude(q => q!.Subject)
+            .Include(s => s.Student)
+                .ThenInclude(st => st!.User)
             .Where(s => s.StudentId == studentId)
             .OrderByDescending(s => s.SubmittedAt)
             .ToListAsync();

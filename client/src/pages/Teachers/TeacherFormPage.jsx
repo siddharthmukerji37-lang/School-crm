@@ -11,6 +11,17 @@ import { createTeacher, updateTeacher, fetchTeacherById } from '../../store/slic
 import toast from 'react-hot-toast';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
+const BLOOD_GROUP_OPTIONS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const DESIGNATION_OPTIONS = [
+  'Principal',
+  'Vice Principal',
+  'Head of Department',
+  'Senior Teacher',
+  'Teacher',
+  'Assistant Teacher',
+  'Lab Assistant',
+  'Librarian',
+];
 const STATUS_OPTIONS = ['Active', 'OnLeave', 'Inactive'];
 const DEPARTMENT_OPTIONS = [
   'Mathematics',
@@ -32,10 +43,15 @@ const teacherSchema = Yup.object({
   departmentName: Yup.string().required('Department is required'),
   gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required('Gender is required'),
   dateOfJoining: Yup.date().nullable().required('Date of joining is required'),
+  designation: Yup.string(),
   qualification: Yup.string().trim(),
   experience: Yup.number().transform((value, originalValue) =>
     originalValue === '' ? undefined : value
   ).min(0, 'Must be positive').max(50, 'Must be 50 or less'),
+  salary: Yup.number().transform((value, originalValue) =>
+    originalValue === '' ? undefined : value
+  ).min(0, 'Must be positive'),
+  bloodGroup: Yup.string(),
   address: Yup.string().trim(),
   password: Yup.string()
     .min(6, 'Password must be at least 6 characters'),
@@ -57,8 +73,11 @@ export default function TeacherFormPage() {
     departmentName: '',
     gender: '',
     dateOfJoining: '',
+    designation: '',
     qualification: '',
     experience: '',
+    salary: '',
+    bloodGroup: '',
     address: '',
     password: '',
     status: 'Active',
@@ -83,8 +102,11 @@ export default function TeacherFormPage() {
         dateOfJoining: selectedTeacher.dateOfJoining
           ? new Date(selectedTeacher.dateOfJoining).toISOString().split('T')[0]
           : '',
+        designation: selectedTeacher.designation || '',
         qualification: selectedTeacher.qualification || '',
         experience: selectedTeacher.experience ?? '',
+        salary: selectedTeacher.salary ?? '',
+        bloodGroup: selectedTeacher.bloodGroup || '',
         address: selectedTeacher.address || '',
         password: '',
         status: selectedTeacher.status || 'Active',
@@ -94,10 +116,11 @@ export default function TeacherFormPage() {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const payload = {
-        ...values,
-        experience: values.experience !== '' ? Number(values.experience) : null,
-      };
+    const payload = {
+      ...values,
+      experience: values.experience !== '' ? Number(values.experience) : null,
+      salary: values.salary !== '' ? Number(values.salary) : null,
+    };
       if (isEditMode) {
         delete payload.password;
         const result = await dispatch(updateTeacher({ id, data: payload }));
@@ -250,6 +273,24 @@ export default function TeacherFormPage() {
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
+                    select
+                    name="bloodGroup"
+                    label="Blood Group"
+                    value={values.bloodGroup}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  >
+                    <MenuItem value="">None</MenuItem>
+                    {BLOOD_GROUP_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
                     name="address"
                     label="Address"
                     multiline
@@ -334,6 +375,37 @@ export default function TeacherFormPage() {
                     onBlur={handleBlur}
                     error={touched.experience && Boolean(errors.experience)}
                     helperText={touched.experience && errors.experience}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    select
+                    name="designation"
+                    label="Designation"
+                    value={values.designation}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  >
+                    <MenuItem value="">None</MenuItem>
+                    {DESIGNATION_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    name="salary"
+                    label="Salary"
+                    type="number"
+                    value={values.salary}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.salary && Boolean(errors.salary)}
+                    helperText={touched.salary && errors.salary}
                   />
                 </Grid>
                 <Grid size={{ xs: 12 }}>

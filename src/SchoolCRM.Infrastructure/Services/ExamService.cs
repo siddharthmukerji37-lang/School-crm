@@ -470,19 +470,85 @@ public class ExamService : IExamService
     {
         try
         {
+            var results = new List<ResultDto>();
+            var seenExamIds = new HashSet<Guid>();
+
             var allMarks = await _unitOfWork.Marks.GetByStudentAllAsync(studentId);
-            var examIds = allMarks
+            var markExamIds = allMarks
                 .Where(m => m.ExamSchedule?.ExamId != Guid.Empty)
                 .Select(m => m.ExamSchedule!.ExamId)
                 .Distinct()
                 .ToList();
 
-            var results = new List<ResultDto>();
-            foreach (var examId in examIds)
+            foreach (var examId in markExamIds)
             {
+                seenExamIds.Add(examId);
                 var resultResponse = await GetStudentResultAsync(studentId, examId);
                 if (resultResponse.Data is not null)
                     results.Add(resultResponse.Data);
+            }
+
+            var submissions = await _unitOfWork.ExamSubmissions.GetByStudentAsync(studentId);
+            var approvedSubmissions = submissions
+                .Where(s => s.GradingStatus == Domain.Enums.GradingStatus.Approved && !seenExamIds.Contains(s.ExamId))
+                .ToList();
+
+            foreach (var submission in approvedSubmissions)
+            {
+                seenExamIds.Add(submission.ExamId);
+
+                var answers = submission.Answers?.ToList() ?? new List<Domain.Entities.Exam.ExamAnswer>();
+                var subjectGroups = answers
+                    .Where(a => a.ExamQuestion?.SubjectId != null)
+                    .GroupBy(a => a.ExamQuestion!.SubjectId!.Value)
+                    .ToList();
+
+                var subjectResultsList = subjectGroups.Select(g => new SubjectResultDto
+                {
+                    SubjectId = g.Key,
+                    SubjectName = g.First().ExamQuestion.Subject?.Name ?? string.Empty,
+                    MarksObtained = g.Sum(a => a.MarksObtained),
+                    MaxMarks = g.Sum(a => a.ExamQuestion.Marks),
+                    PassingMarks = 0,
+                    IsPass = true,
+                    Remarks = null
+                }).ToList();
+
+                if (subjectResultsList.Count == 0 && submission.TotalMaxMarks > 0)
+                {
+                    subjectResultsList.Add(new SubjectResultDto
+                    {
+                        SubjectId = Guid.Empty,
+                        SubjectName = submission.Exam?.Name ?? "Overall",
+                        MarksObtained = submission.TotalMarksObtained,
+                        MaxMarks = submission.TotalMaxMarks,
+                        PassingMarks = 0,
+                        IsPass = true,
+                        Remarks = null
+                    });
+                }
+
+                var totalObtained = submission.TotalMarksObtained;
+                var totalMax = submission.TotalMaxMarks;
+
+                var result = new ResultDto
+                {
+                    StudentId = studentId,
+                    StudentName = string.Empty,
+                    AdmissionNumber = string.Empty,
+                    ClassName = string.Empty,
+                    SectionName = string.Empty,
+                    ExamId = submission.ExamId,
+                    ExamName = submission.Exam?.Name ?? string.Empty,
+                    SubjectResults = subjectResultsList,
+                    TotalMarksObtained = totalObtained,
+                    TotalMaxMarks = totalMax,
+                    Percentage = totalMax > 0 ? Math.Round(totalObtained / totalMax * 100, 2) : 0,
+                    Grade = string.Empty,
+                    IsPassed = true
+                };
+
+                results.Add(result);
             }
 
             return ApiResponse<List<ResultDto>>.SuccessResponse(results);

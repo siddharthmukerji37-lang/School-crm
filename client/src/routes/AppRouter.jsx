@@ -60,6 +60,7 @@ const ADMIN_ROLES = ['SuperAdmin', 'Admin'];
 const STAFF_ROLES = ['SuperAdmin', 'Admin', 'Teacher', 'ClassTeacher'];
 const FEE_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
 const ACCOUNTS_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
+const INVENTORY_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
 const LIBRARY_ROLES = ['SuperAdmin', 'Admin', 'Librarian'];
 const GENERAL_ROLES = [
   'SuperAdmin', 'Admin', 'SchoolAdmin', 'Principal', 'VicePrincipal',
@@ -212,19 +213,19 @@ export default function AppRouter() {
         } />
 
         <Route path="inventory" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><InventoryListPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={INVENTORY_ROLES}><InventoryListPage /></ProtectedRoute>
         } />
         <Route path="inventory/create" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><InventoryFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={INVENTORY_ROLES}><InventoryFormPage /></ProtectedRoute>
         } />
         <Route path="inventory/:id/edit" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><InventoryFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={INVENTORY_ROLES}><InventoryFormPage /></ProtectedRoute>
         } />
         <Route path="vendors/create" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><VendorFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={INVENTORY_ROLES}><VendorFormPage /></ProtectedRoute>
         } />
         <Route path="vendors/:id/edit" element={
-          <ProtectedRoute allowedRoles={ADMIN_ROLES}><VendorFormPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={INVENTORY_ROLES}><VendorFormPage /></ProtectedRoute>
         } />
 
         <Route path="accounts" element={

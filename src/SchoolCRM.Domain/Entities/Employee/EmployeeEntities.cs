@@ -10,6 +10,7 @@ public class Employee : BaseEntity
     public Guid SchoolId { get; set; }
     public Guid? DepartmentId { get; set; }
     public Guid? DesignationId { get; set; }
+    public string? DesignationName { get; set; }
     public DateTime JoiningDate { get; set; }
     public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
     public string? EmploymentType { get; set; }

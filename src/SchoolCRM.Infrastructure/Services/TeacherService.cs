@@ -14,11 +14,19 @@ public class TeacherService : ITeacherService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
 
-    public TeacherService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    public TeacherService(
+        IUnitOfWork unitOfWork,
+        UserManager<ApplicationUser> userManager,
+        IEmailService emailService,
+        INotificationService notificationService)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;
+        _emailService = emailService;
+        _notificationService = notificationService;
     }
 
     public async Task<ApiResponse<PagedResult<TeacherDto>>> GetTeachersAsync(
@@ -112,6 +120,7 @@ public class TeacherService : ITeacherService
                 JoiningDate = dto.JoiningDate,
                 Status = TeacherStatus.Active,
                 Qualification = dto.Qualification,
+                Designation = dto.Designation,
                 Specialization = dto.Specialization,
                 ExperienceYears = dto.Experience ?? 0,
                 EmploymentType = "Full-Time",
@@ -121,6 +130,24 @@ public class TeacherService : ITeacherService
 
             await _unitOfWork.Teachers.AddAsync(teacher);
             await _unitOfWork.SaveChangesAsync();
+
+            var password = dto.Password ?? "Teacher@123";
+            var teacherName = $"{dto.FirstName} {dto.LastName}";
+
+            await _notificationService.NotifyUsersAsync(
+                new[] { user.Id },
+                "Welcome to the school",
+                $"Your teacher account has been created. Email: {dto.Email}",
+                Domain.Enums.NotificationType.Success,
+                "/profile");
+
+            await _emailService.SendEmailAsync(dto.Email, "Your teacher account has been created",
+                $@"<h3>Welcome, {teacherName}!</h3>
+                   <p>Your teacher account has been created.</p>
+                   <p><strong>Email:</strong> {dto.Email}</p>
+                   <p><strong>Password:</strong> {password}</p>
+                   <p><strong>Employee Code:</strong> {employeeCode}</p>
+                   <p>Please log in and change your password after first login.</p>");
 
             var created = await _unitOfWork.Teachers.GetTeacherWithDetailsAsync(teacher.Id);
             return ApiResponse<TeacherDto>.SuccessResponse(MapToDto(created!), ApplicationMessages.CreateSuccess);
@@ -142,6 +169,7 @@ public class TeacherService : ITeacherService
             teacher.DepartmentId = dto.DepartmentId;
             teacher.DepartmentName = dto.DepartmentName;
             teacher.Qualification = dto.Qualification;
+            teacher.Designation = dto.Designation;
             teacher.Specialization = dto.Specialization;
             teacher.ExperienceYears = dto.Experience ?? 0;
             teacher.BasicSalary = dto.Salary;
@@ -218,6 +246,7 @@ public class TeacherService : ITeacherService
             JoiningDate = teacher.JoiningDate,
             DepartmentId = teacher.DepartmentId,
             DepartmentName = teacher.DepartmentName ?? teacher.Department?.Name ?? string.Empty,
+            Designation = teacher.Designation,
             Qualification = teacher.Qualification,
             Salary = teacher.BasicSalary,
             Address = teacher.User.Address,

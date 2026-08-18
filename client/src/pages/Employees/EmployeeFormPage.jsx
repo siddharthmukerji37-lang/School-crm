@@ -12,6 +12,7 @@ import axiosInstance from '../../services/axiosInstance';
 import toast from 'react-hot-toast';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
+const BLOOD_GROUP_OPTIONS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const EMPLOYEE_TYPE_OPTIONS = ['FullTime', 'PartTime', 'Contract', 'Intern', 'Temporary'];
 const STATUS_OPTIONS = ['Active', 'OnLeave', 'Inactive'];
 
@@ -25,6 +26,10 @@ const createEmployeeSchema = Yup.object({
   gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required('Gender is required'),
   joiningDate: Yup.date().nullable().required('Date of joining is required'),
   designation: Yup.string().trim(),
+  salary: Yup.number().transform((value, originalValue) =>
+    originalValue === '' ? undefined : value
+  ).min(0, 'Must be positive'),
+  bloodGroup: Yup.string(),
   address: Yup.string().trim(),
   password: Yup.string()
     .min(6, 'Password must be at least 6 characters'),
@@ -40,6 +45,10 @@ const updateEmployeeSchema = Yup.object({
   gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required('Gender is required'),
   joiningDate: Yup.date().nullable().required('Date of joining is required'),
   designation: Yup.string().trim(),
+  salary: Yup.number().transform((value, originalValue) =>
+    originalValue === '' ? undefined : value
+  ).min(0, 'Must be positive'),
+  bloodGroup: Yup.string(),
   address: Yup.string().trim(),
   password: Yup.string().min(8, 'Password must be at least 8 characters'),
 });
@@ -64,6 +73,8 @@ export default function EmployeeFormPage() {
     gender: '',
     joiningDate: '',
     designation: '',
+    salary: '',
+    bloodGroup: '',
     employeeType: 'FullTime',
     status: 'Active',
     address: '',
@@ -115,6 +126,8 @@ export default function EmployeeFormPage() {
           ? new Date(selectedEmployee.joiningDate).toISOString().split('T')[0]
           : '',
         designation: selectedEmployee.designation || '',
+        salary: selectedEmployee.salary ?? '',
+        bloodGroup: selectedEmployee.bloodGroup || '',
         employeeType: selectedEmployee.employeeType || 'FullTime',
         status: selectedEmployee.status || 'Active',
         address: selectedEmployee.address || '',
@@ -278,6 +291,24 @@ export default function EmployeeFormPage() {
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
+                    select
+                    name="bloodGroup"
+                    label="Blood Group"
+                    value={values.bloodGroup}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  >
+                    <MenuItem value="">None</MenuItem>
+                    {BLOOD_GROUP_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
                     name="address"
                     label="Address"
                     multiline
@@ -346,6 +377,19 @@ export default function EmployeeFormPage() {
                     value={values.designation}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    name="salary"
+                    label="Salary"
+                    type="number"
+                    value={values.salary}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.salary && Boolean(errors.salary)}
+                    helperText={touched.salary && errors.salary}
                   />
                 </Grid>
                 <Grid size={{ xs: 12 }}>

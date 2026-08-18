@@ -163,6 +163,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Accounts', icon: <AccountBalanceIcon />, path: '/accounts' },
+    { label: 'Inventory', icon: <InventoryIcon />, path: '/inventory' },
     { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },

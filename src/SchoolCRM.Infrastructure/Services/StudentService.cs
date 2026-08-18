@@ -14,11 +14,19 @@ public class StudentService : IStudentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
 
-    public StudentService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    public StudentService(
+        IUnitOfWork unitOfWork,
+        UserManager<ApplicationUser> userManager,
+        IEmailService emailService,
+        INotificationService notificationService)
     {
         _unitOfWork = unitOfWork;
         _userManager = userManager;
+        _emailService = emailService;
+        _notificationService = notificationService;
     }
 
     public async Task<ApiResponse<PagedResult<StudentDto>>> GetStudentsAsync(
@@ -135,6 +143,40 @@ public class StudentService : IStudentService
 
             await _unitOfWork.Students.AddAsync(student);
             await _unitOfWork.SaveChangesAsync();
+
+            var password = string.IsNullOrWhiteSpace(dto.Password) ? "Student@123" : dto.Password;
+            var studentName = $"{dto.FirstName} {dto.LastName}";
+            var className = classRoom.Name;
+            var sectionName = section.Name;
+
+            await _notificationService.NotifyUsersAsync(
+                new[] { user.Id },
+                "Welcome to the school",
+                $"Your student account has been created. Email: {dto.Email}",
+                Domain.Enums.NotificationType.Success,
+                "/profile");
+
+            await _emailService.SendEmailAsync(dto.Email, "Your student account has been created",
+                $@"<h3>Welcome, {studentName}!</h3>
+                   <p>Your student account has been created.</p>
+                   <p><strong>Email:</strong> {dto.Email}</p>
+                   <p><strong>Password:</strong> {password}</p>
+                   <p><strong>Class:</strong> {className} — {sectionName}</p>
+                   <p><strong>Admission No:</strong> {admissionNumber}</p>
+                   <p>Please log in and change your password after first login.</p>");
+
+            if (!string.IsNullOrWhiteSpace(dto.ParentEmail))
+            {
+                await _emailService.SendEmailAsync(dto.ParentEmail,
+                    $"Your child {studentName} has been enrolled",
+                    $@"<h3>Your child has been enrolled</h3>
+                       <p><strong>Student:</strong> {studentName}</p>
+                       <p><strong>Email:</strong> {dto.Email}</p>
+                       <p><strong>Password:</strong> {password}</p>
+                       <p><strong>Class:</strong> {className} — {sectionName}</p>
+                       <p><strong>Admission No:</strong> {admissionNumber}</p>
+                       <p>Please share these credentials with your child.</p>");
+            }
 
             var created = await _unitOfWork.Students.GetStudentWithDetailsAsync(student.Id);
             return ApiResponse<StudentDto>.SuccessResponse(MapToDto(created!), ApplicationMessages.CreateSuccess);

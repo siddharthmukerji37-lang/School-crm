@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Divider } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import DownloadIcon from '@mui/icons-material/Download';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import axiosInstance from '../../services/axiosInstance';
+import { generateFeeReceiptPDF } from '../../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 
 export default function MyFeeReceiptsPage() {
@@ -250,6 +252,18 @@ export default function MyFeeReceiptsPage() {
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            onClick={() => {
+              if (selectedReceipt) {
+                generateFeeReceiptPDF(selectedReceipt);
+                toast.success('Receipt downloaded');
+              }
+            }}
+          >
+            Download PDF
+          </Button>
           <Button
             variant="outlined"
             onClick={() => {

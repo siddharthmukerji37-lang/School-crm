@@ -7069,3 +7069,11 @@ System.UnauthorizedAccessException: Invalid email or password.
 2026-08-14 15:31:15.640 +05:30 [INF] [837b3de4-f562-4ac5-8b18-a75fd46d007b] POST /hubs/notifications responded 404 in 44ms
 2026-08-14 15:31:19.975 +05:30 [INF] [e3f944e0-8af0-4b15-9e08-af0dba374b0f] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
 2026-08-14 15:31:19.989 +05:30 [INF] [e3f944e0-8af0-4b15-9e08-af0dba374b0f] GET /api/notifications/unread-count responded 200 in 12ms
+2026-08-14 15:31:49.974 +05:30 [INF] [6e810629-029c-440b-8742-3e5a58aad948] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-14 15:31:49.994 +05:30 [INF] [6e810629-029c-440b-8742-3e5a58aad948] GET /api/notifications/unread-count responded 200 in 19ms
+2026-08-14 15:32:19.975 +05:30 [INF] [a6ded522-cf54-42b9-b463-fe288df721ed] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-14 15:32:19.993 +05:30 [INF] [a6ded522-cf54-42b9-b463-fe288df721ed] GET /api/notifications/unread-count responded 200 in 18ms
+2026-08-14 15:32:49.971 +05:30 [INF] [abe7d70c-47ff-4674-9965-694a438a2d7a] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-14 15:32:49.991 +05:30 [INF] [abe7d70c-47ff-4674-9965-694a438a2d7a] GET /api/notifications/unread-count responded 200 in 19ms
+2026-08-14 15:33:19.975 +05:30 [INF] [f63710dd-12dc-44df-bbcf-f7c0d37aaf0e] GET /api/notifications/unread-count from 127.0.0.1 by Anonymous
+2026-08-14 15:33:19.998 +05:30 [INF] [f63710dd-12dc-44df-bbcf-f7c0d37aaf0e] GET /api/notifications/unread-count responded 200 in 22ms

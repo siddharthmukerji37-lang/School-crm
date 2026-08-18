@@ -15,6 +15,7 @@ public class Teacher : BaseEntity
     public string? Qualification { get; set; }
     public string? Specialization { get; set; }
     public int ExperienceYears { get; set; }
+    public string? Designation { get; set; }
     public string? EmploymentType { get; set; }
     public decimal? BasicSalary { get; set; }
     public string? BankAccountNumber { get; set; }

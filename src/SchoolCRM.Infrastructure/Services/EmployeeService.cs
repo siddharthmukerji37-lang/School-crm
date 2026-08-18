@@ -123,6 +123,7 @@ public class EmployeeService : IEmployeeService
                 UserId = user.Id,
                 SchoolId = schoolId.Value,
                 DepartmentId = dto.DepartmentId,
+                DesignationName = dto.Designation,
                 JoiningDate = dto.JoiningDate,
                 Status = EmployeeStatus.Active,
                 EmploymentType = dto.EmployeeType,
@@ -151,6 +152,7 @@ public class EmployeeService : IEmployeeService
                 return ApiResponse<EmployeeDto>.NotFoundResponse(ApplicationMessages.NotFound);
 
             employee.DepartmentId = dto.DepartmentId;
+            employee.DesignationName = dto.Designation;
             employee.EmploymentType = dto.EmployeeType;
             employee.BasicSalary = dto.Salary;
             employee.Status = Enum.Parse<EmployeeStatus>(dto.Status);
@@ -226,7 +228,7 @@ public class EmployeeService : IEmployeeService
             JoiningDate = employee.JoiningDate,
             DepartmentId = employee.DepartmentId,
             DepartmentName = employee.Department?.Name,
-            Designation = employee.Designation?.Name,
+            Designation = employee.DesignationName ?? employee.Designation?.Name,
             EmployeeType = employee.EmploymentType,
             Salary = employee.BasicSalary,
             Address = employee.User.Address,
