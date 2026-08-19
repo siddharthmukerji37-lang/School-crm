@@ -2,16 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
-import { Autocomplete, Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack, Checkbox } from '@mui/material';
+import { Autocomplete, Box, TextField, MenuItem, Button, Paper, Typography, CircularProgress, Divider, Stack, Checkbox, Avatar } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import * as Yup from 'yup';
 import { createParent, updateParent, fetchParentById, clearSelectedParent } from '../../store/slices/parentSlice';
 import { fetchStudents } from '../../store/slices/studentSlice';
 import toast from 'react-hot-toast';
+import { uploadFile } from '../../utils/upload';
 
 const RELATIONSHIP_OPTIONS = ['Father', 'Mother', 'Guardian', 'Other'];
 
@@ -53,6 +55,7 @@ export default function ParentFormPage() {
     country: '',
     postalCode: '',
     childrenStudentIds: [],
+    profilePictureUrl: '',
   });
 
   useEffect(() => {
@@ -83,6 +86,7 @@ export default function ParentFormPage() {
         country: selectedParent.country || '',
         postalCode: selectedParent.postalCode || '',
         childrenStudentIds: (selectedParent.children || []).map((c) => c.studentId),
+        profilePictureUrl: selectedParent.profilePictureUrl || '',
       });
     }
   }, [isEditMode, selectedParent]);
@@ -154,6 +158,59 @@ export default function ParentFormPage() {
           isSubmitting,
         }) => (
           <Form>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" fontWeight={600} gutterBottom>
+                Profile Photo
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Box sx={{ position: 'relative' }}>
+                  <Avatar
+                    src={values.profilePictureUrl || undefined}
+                    sx={{ width: 96, height: 96, bgcolor: 'primary.main', fontSize: '2rem', cursor: 'pointer' }}
+                    onClick={() => document.getElementById('parent-photo-input').click()}
+                  >
+                    {values.firstName?.charAt(0)}{values.lastName?.charAt(0)}
+                  </Avatar>
+                  <Box
+                    sx={{
+                      position: 'absolute', bottom: 0, right: 0, bgcolor: 'primary.main',
+                      borderRadius: '50%', width: 28, height: 28, display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                    }}
+                    onClick={() => document.getElementById('parent-photo-input').click()}
+                  >
+                    <CameraAltIcon sx={{ fontSize: 16, color: 'white' }} />
+                  </Box>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Click the photo or camera icon to upload
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    JPG, PNG or WebP. Max 10MB.
+                  </Typography>
+                </Box>
+                <input
+                  id="parent-photo-input"
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const res = await uploadFile(file);
+                      setFieldValue('profilePictureUrl', res.url);
+                      toast.success('Photo uploaded');
+                    } catch {
+                      toast.error('Failed to upload photo');
+                    }
+                  }}
+                />
+              </Box>
+            </Paper>
+
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Personal Information

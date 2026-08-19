@@ -218,6 +218,15 @@ builder.Services.AddScoped<IAccountHeadRepository, AccountHeadRepository>();
 builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
 builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 builder.Services.AddScoped<IInventoryItemRepository, InventoryItemRepository>();
+builder.Services.AddScoped<IAttendancePolicyRepository, AttendancePolicyRepository>();
+builder.Services.AddScoped<IAttendanceMonthlySummaryRepository, AttendanceMonthlySummaryRepository>();
+builder.Services.AddScoped<ISalaryDeductionRepository, SalaryDeductionRepository>();
+builder.Services.AddScoped<ILeaveCalendarRepository, LeaveCalendarRepository>();
+builder.Services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
+builder.Services.AddScoped<ILeaveTypeConfigRepository, LeaveTypeConfigRepository>();
+builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
+builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
+builder.Services.AddScoped<ILeaveRequestDayRepository, LeaveRequestDayRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -237,6 +246,9 @@ builder.Services.AddScoped<ITransportService, TransportService>();
 builder.Services.AddScoped<IHostelService, HostelService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IAttendancePolicyService, AttendancePolicyService>();
+builder.Services.AddScoped<ISalaryDeductionService, SalaryDeductionService>();
+builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IHomeworkService, HomeworkService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
@@ -280,6 +292,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.Converters.Add(new SchoolCRM.API.Converters.TimeOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new SchoolCRM.API.Converters.TimeSpanJsonConverter());
     });
 
 builder.Services.AddEndpointsApiExplorer();

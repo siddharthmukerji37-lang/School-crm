@@ -19,6 +19,15 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Domain.Entities.
         builder.HasOne(a => a.Employee).WithMany(e => e.Attendances).HasForeignKey(a => a.EmployeeId).OnDelete(DeleteBehavior.SetNull);
         builder.HasOne(a => a.School).WithMany().HasForeignKey(a => a.SchoolId).OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(a => a.LateMinutes);
+        builder.Property(a => a.LateReason).HasMaxLength(500);
+        builder.Property(a => a.EarlyMinutes);
+        builder.Property(a => a.EarlyReason).HasMaxLength(500);
+        builder.Property(a => a.LateCountMonth);
+        builder.Property(a => a.LatePolicyExceeded);
+        builder.Property(a => a.SalaryDeductionRequired);
+        builder.Property(a => a.SalaryDeductionId);
+
         builder.HasIndex(a => new { a.Date, a.StudentId });
         builder.HasIndex(a => new { a.Date, a.TeacherId });
         builder.HasIndex(a => new { a.Date, a.EmployeeId });
@@ -150,5 +159,49 @@ public class ReportCardConfiguration : IEntityTypeConfiguration<ReportCard>
 
         builder.HasOne(r => r.Student).WithMany().HasForeignKey(r => r.StudentId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(r => r.Exam).WithMany().HasForeignKey(r => r.ExamId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public class AttendancePolicyConfiguration : IEntityTypeConfiguration<AttendancePolicy>
+{
+    public void Configure(EntityTypeBuilder<AttendancePolicy> builder)
+    {
+        builder.ToTable("AttendancePolicies");
+        builder.HasKey(p => p.Id);
+
+        builder.HasOne(p => p.School).WithMany().HasForeignKey(p => p.SchoolId).OnDelete(DeleteBehavior.Cascade);
+        builder.Property(p => p.AllowedLateArrivals);
+        builder.Property(p => p.DeductionAmount).HasPrecision(18, 2);
+        builder.Property(p => p.SchoolStartTime);
+        builder.Property(p => p.SchoolEndTime);
+    }
+}
+
+public class AttendanceMonthlySummaryConfiguration : IEntityTypeConfiguration<AttendanceMonthlySummary>
+{
+    public void Configure(EntityTypeBuilder<AttendanceMonthlySummary> builder)
+    {
+        builder.ToTable("AttendanceMonthlySummaries");
+        builder.HasKey(s => s.Id);
+
+        builder.HasOne(s => s.User).WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.Property(s => s.SalaryDeductionAmount).HasPrecision(18, 2);
+
+        builder.HasIndex(s => new { s.UserId, s.Month, s.Year }).IsUnique();
+    }
+}
+
+public class SalaryDeductionConfiguration : IEntityTypeConfiguration<SalaryDeduction>
+{
+    public void Configure(EntityTypeBuilder<SalaryDeduction> builder)
+    {
+        builder.ToTable("SalaryDeductions");
+        builder.HasKey(d => d.Id);
+
+        builder.HasOne(d => d.User).WithMany().HasForeignKey(d => d.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(d => d.Attendance).WithMany().HasForeignKey(d => d.AttendanceId).OnDelete(DeleteBehavior.Cascade);
+        builder.Property(d => d.DeductionAmount).HasPrecision(18, 2);
+        builder.Property(d => d.Reason).HasMaxLength(500);
+        builder.Property(d => d.ApprovedBy).HasMaxLength(200);
     }
 }

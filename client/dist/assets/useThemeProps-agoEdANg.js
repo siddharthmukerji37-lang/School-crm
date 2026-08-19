@@ -1,0 +1,1 @@
+import{b9 as o,b0 as m,ba as u}from"./index-Cvkk0slq.js";const p=o();function b({props:t,name:r,defaultTheme:a,themeId:s}){let e=m(a);return s&&(e=e[s]||e),u({theme:e,name:r,props:t})}export{p as s,b as u};

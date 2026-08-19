@@ -137,6 +137,17 @@ public sealed class MyAttendanceDto
     public string? Remarks { get; set; }
     public bool IsCheckedIn { get; set; }
     public bool IsCheckedOut { get; set; }
+    public int LateMinutes { get; set; }
+    public string? LateReason { get; set; }
+    public int LateCount { get; set; }
+    public int AllowedLateCount { get; set; }
+    public bool PolicyExceeded { get; set; }
+    public bool SalaryDeductionRequired { get; set; }
+    public string? Warning { get; set; }
+    public int EarlyMinutes { get; set; }
+    public string? EarlyReason { get; set; }
+    public bool EarlyDeparture { get; set; }
+    public string? EarlyWarning { get; set; }
 }
 
 public sealed class StaffAttendanceStatsDto
@@ -148,4 +159,35 @@ public sealed class StaffAttendanceStatsDto
     public int TotalEmployees { get; set; }
     public int EmployeesPresent { get; set; }
     public int EmployeesAbsent { get; set; }
+}
+
+public sealed class ClockInDto
+{
+    [MaxLength(500)]
+    public string? LateReason { get; set; }
+}
+
+public sealed class ClockOutDto
+{
+    [MaxLength(500)]
+    public string? EarlyReason { get; set; }
+}
+
+public sealed class LateStaffDto
+{
+    public Guid Id { get; set; }
+    public Guid? TeacherId { get; set; }
+    public Guid? EmployeeId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public TimeSpan? CheckInTime { get; set; }
+    public int LateMinutes { get; set; }
+    public int LateCountMonth { get; set; }
+    public int AllowedLateCount { get; set; }
+    public string? LateReason { get; set; }
+    public bool LatePolicyExceeded { get; set; }
+    public bool SalaryDeductionRequired { get; set; }
+    public Domain.Enums.SalaryDeductionStatus? SalaryDeductionStatus { get; set; }
+    public decimal? SalaryDeductionAmount { get; set; }
 }

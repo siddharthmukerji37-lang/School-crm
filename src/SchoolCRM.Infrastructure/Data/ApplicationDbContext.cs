@@ -23,6 +23,7 @@ using TeacherEntity = SchoolCRM.Domain.Entities.Teacher.Teacher;
 using EmployeeEntity = SchoolCRM.Domain.Entities.Employee.Employee;
 using SchoolCRM.Domain.Entities.Transport;
 using SchoolCRM.Domain.Entities.Inventory;
+using SchoolCRM.Domain.Entities.Leave;
 
 namespace SchoolCRM.Infrastructure.Data;
 
@@ -75,6 +76,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 
     public DbSet<Domain.Entities.Attendance.Attendance> Attendances => Set<Domain.Entities.Attendance.Attendance>();
     public DbSet<AttendanceSummary> AttendanceSummaries => Set<AttendanceSummary>();
+    public DbSet<AttendancePolicy> AttendancePolicies => Set<AttendancePolicy>();
+    public DbSet<AttendanceMonthlySummary> AttendanceMonthlySummaries => Set<AttendanceMonthlySummary>();
+    public DbSet<SalaryDeduction> SalaryDeductions => Set<SalaryDeduction>();
+
+    public DbSet<LeaveCalendar> LeaveCalendars => Set<LeaveCalendar>();
+    public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
+    public DbSet<LeaveTypeConfig> LeaveTypeConfigs => Set<LeaveTypeConfig>();
+    public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
+    public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
+    public DbSet<LeaveRequestDay> LeaveRequestDays => Set<LeaveRequestDay>();
 
     public DbSet<ExamType> ExamTypes => Set<ExamType>();
     public DbSet<Exam> Exams => Set<Exam>();

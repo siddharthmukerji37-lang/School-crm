@@ -49,6 +49,8 @@ import ClassIcon from '@mui/icons-material/Class';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatIcon from '@mui/icons-material/Chat';
+import PolicyIcon from '@mui/icons-material/Policy';
+import MoneyOffIcon from '@mui/icons-material/MoneyOff';
 import { toggleSidebar } from '../store/slices/uiSlice';
 import { logout } from '../store/slices/authSlice';
 import {
@@ -70,6 +72,9 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Employees', icon: <BadgeIcon />, path: '/employees' },
     { label: 'Attendance', icon: <EventAvailableIcon />, path: '/attendance' },
     { label: 'Staff Attendance', icon: <EventAvailableIcon />, path: '/attendance/staff' },
+    { label: 'Attendance Policy', icon: <PolicyIcon />, path: '/attendance/policy' },
+    { label: 'Salary Deductions', icon: <MoneyOffIcon />, path: '/attendance/salary-deductions' },
+    { label: 'Late Staff', icon: <PeopleIcon />, path: '/attendance/late-staff' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
@@ -93,6 +98,9 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Employees', icon: <BadgeIcon />, path: '/employees' },
     { label: 'Attendance', icon: <EventAvailableIcon />, path: '/attendance' },
     { label: 'Staff Attendance', icon: <EventAvailableIcon />, path: '/attendance/staff' },
+    { label: 'Attendance Policy', icon: <PolicyIcon />, path: '/attendance/policy' },
+    { label: 'Salary Deductions', icon: <MoneyOffIcon />, path: '/attendance/salary-deductions' },
+    { label: 'Late Staff', icon: <PeopleIcon />, path: '/attendance/late-staff' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
@@ -540,6 +548,7 @@ export default function AdminLayout() {
               <Tooltip title="Account">
                 <IconButton onClick={handleProfileMenuOpen} sx={{ ml: 1 }}>
                   <Avatar
+                    src={user?.profilePictureUrl || undefined}
                     sx={{
                       width: 36,
                       height: 36,

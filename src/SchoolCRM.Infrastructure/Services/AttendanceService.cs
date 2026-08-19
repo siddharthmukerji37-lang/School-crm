@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SchoolCRM.Application.DTOs.Attendance;
 using SchoolCRM.Application.Interfaces.Repositories;
 using SchoolCRM.Application.Interfaces.Services;
@@ -395,7 +396,7 @@ public class AttendanceService : IAttendanceService
         }
     }
 
-    public async Task<ApiResponse<MyAttendanceDto>> ClockInAsync()
+    public async Task<ApiResponse<MyAttendanceDto>> ClockInAsync(ClockInDto? dto = null)
     {
         try
         {
@@ -424,25 +425,109 @@ public class AttendanceService : IAttendanceService
                 existing.CheckInTime ??= now;
                 existing.UpdatedAt = DateTime.UtcNow;
                 await _unitOfWork.Attendances.UpdateAsync(existing);
+                await _unitOfWork.SaveChangesAsync();
+                var existingDto = await BuildMyAttendanceDtoAsync(today, teacherId, employeeId);
+                return ApiResponse<MyAttendanceDto>.SuccessResponse(existingDto);
             }
-            else
+
+            var policy = (await _unitOfWork.AttendancePolicies.FindAsync(
+                p => p.SchoolId == schoolId && p.IsActive && !p.IsDeleted)).FirstOrDefault();
+
+            var lateMinutes = 0;
+            var isLate = false;
+            if (policy is not null && now > policy.SchoolStartTime)
             {
-                await _unitOfWork.Attendances.AddAsync(new Domain.Entities.Attendance.Attendance
-                {
-                    Date = today,
-                    Status = AttendanceStatus.Present,
-                    CheckInTime = now,
-                    TeacherId = teacherId,
-                    EmployeeId = employeeId,
-                    SchoolId = schoolId.Value,
-                    CreatedAt = DateTime.UtcNow
-                });
+                lateMinutes = (int)(now - policy.SchoolStartTime).TotalMinutes;
+                isLate = lateMinutes > 0;
             }
+            else if (policy is null && now > new TimeSpan(9, 30, 0))
+            {
+                lateMinutes = (int)(now - new TimeSpan(9, 30, 0)).TotalMinutes;
+                isLate = lateMinutes > 0;
+            }
+
+            var userId = Guid.TryParse(_currentUserService.UserId, out var uid) ? uid : Guid.Empty;
+            var allowedLate = policy?.AllowedLateArrivals ?? 6;
+            var month = today.Month;
+            var year = today.Year;
+
+            var monthlySummary = userId != Guid.Empty
+                ? (await _unitOfWork.AttendanceMonthlySummaries.FindAsync(
+                    s => s.UserId == userId && s.Month == month && s.Year == year && !s.IsDeleted)).FirstOrDefault()
+                : null;
+
+            var lateCountMonth = monthlySummary?.TotalLateCount ?? 0;
+            if (isLate) lateCountMonth++;
+
+            var policyExceeded = policy?.SalaryDeductionEnabled == true && lateCountMonth > allowedLate;
+            var salaryDeductionRequired = policyExceeded;
+
+            if (isLate && monthlySummary is null && userId != Guid.Empty)
+            {
+                monthlySummary = new Domain.Entities.Attendance.AttendanceMonthlySummary
+                {
+                    UserId = userId,
+                    Month = month,
+                    Year = year,
+                    TotalLateCount = lateCountMonth,
+                    AllowedLateCount = allowedLate,
+                    PolicyExceeded = policyExceeded,
+                    SalaryDeductionCount = salaryDeductionRequired ? 1 : 0,
+                    SalaryDeductionAmount = salaryDeductionRequired ? policy?.DeductionAmount ?? 0 : 0,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.AttendanceMonthlySummaries.AddAsync(monthlySummary);
+            }
+            else if (isLate && monthlySummary is not null)
+            {
+                monthlySummary.TotalLateCount = lateCountMonth;
+                monthlySummary.PolicyExceeded = policyExceeded;
+                if (salaryDeductionRequired)
+                {
+                    monthlySummary.SalaryDeductionCount++;
+                    monthlySummary.SalaryDeductionAmount += policy?.DeductionAmount ?? 0;
+                }
+                monthlySummary.UpdatedAt = DateTime.UtcNow;
+                await _unitOfWork.AttendanceMonthlySummaries.UpdateAsync(monthlySummary);
+            }
+
+            var status = isLate ? AttendanceStatus.Late : AttendanceStatus.Present;
+
+            var attendance = new Domain.Entities.Attendance.Attendance
+            {
+                Date = today,
+                Status = status,
+                CheckInTime = now,
+                TeacherId = teacherId,
+                EmployeeId = employeeId,
+                SchoolId = schoolId.Value,
+                LateMinutes = isLate ? lateMinutes : null,
+                LateReason = isLate ? dto?.LateReason : null,
+                LateCountMonth = lateCountMonth,
+                LatePolicyExceeded = policyExceeded,
+                SalaryDeductionRequired = salaryDeductionRequired,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Attendances.AddAsync(attendance);
 
             await _unitOfWork.SaveChangesAsync();
 
-            var dto = await BuildMyAttendanceDtoAsync(today, teacherId, employeeId);
-            return ApiResponse<MyAttendanceDto>.SuccessResponse(dto);
+            string? warning = null;
+            if (policyExceeded)
+                warning = $"You have exceeded the allowed {allowedLate} late arrivals this month. A salary deduction of {policy?.DeductionAmount} will be applied.";
+            else if (isLate && lateCountMonth == allowedLate)
+                warning = $"This is your {allowedLate}th late arrival this month. One more late arrival will trigger a salary deduction.";
+
+            var resultDto = await BuildMyAttendanceDtoAsync(today, teacherId, employeeId);
+            resultDto.LateMinutes = lateMinutes;
+            resultDto.LateReason = isLate ? dto?.LateReason : null;
+            resultDto.LateCount = lateCountMonth;
+            resultDto.AllowedLateCount = allowedLate;
+            resultDto.PolicyExceeded = policyExceeded;
+            resultDto.SalaryDeductionRequired = salaryDeductionRequired;
+            resultDto.Warning = warning;
+
+            return ApiResponse<MyAttendanceDto>.SuccessResponse(resultDto);
         }
         catch (Exception ex)
         {
@@ -450,7 +535,7 @@ public class AttendanceService : IAttendanceService
         }
     }
 
-    public async Task<ApiResponse<MyAttendanceDto>> ClockOutAsync()
+    public async Task<ApiResponse<MyAttendanceDto>> ClockOutAsync(ClockOutDto? dto = null)
     {
         try
         {
@@ -459,7 +544,9 @@ public class AttendanceService : IAttendanceService
                 return ApiResponse<MyAttendanceDto>.FailResponse(
                     "No teacher or employee profile is linked to your account.");
 
+            var schoolId = await ResolveSchoolIdAsync();
             var today = DateTime.Now.Date;
+            var now = DateTime.Now.TimeOfDay;
 
             var existing = (await _unitOfWork.Attendances.FindAsync(a =>
                 a.Date.Date == today &&
@@ -470,13 +557,38 @@ public class AttendanceService : IAttendanceService
             if (existing is null)
                 return ApiResponse<MyAttendanceDto>.FailResponse("You have not clocked in today.");
 
-            existing.CheckOutTime = DateTime.Now.TimeOfDay;
+            var policy = (await _unitOfWork.AttendancePolicies.FindAsync(
+                p => p.SchoolId == schoolId && p.IsActive && !p.IsDeleted)).FirstOrDefault();
+
+            var schoolEndTime = policy?.SchoolEndTime ?? new TimeSpan(18, 30, 0);
+            var isEarly = now < schoolEndTime;
+            var earlyMinutes = 0;
+
+            if (isEarly)
+            {
+                earlyMinutes = (int)(schoolEndTime - now).TotalMinutes;
+            }
+
+            existing.CheckOutTime = now;
+            existing.EarlyMinutes = isEarly ? earlyMinutes : null;
+            existing.EarlyReason = isEarly ? dto?.EarlyReason : null;
             existing.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.Attendances.UpdateAsync(existing);
             await _unitOfWork.SaveChangesAsync();
 
-            var dto = await BuildMyAttendanceDtoAsync(today, teacherId, employeeId);
-            return ApiResponse<MyAttendanceDto>.SuccessResponse(dto);
+            string? earlyWarning = null;
+            if (isEarly && !string.IsNullOrWhiteSpace(dto?.EarlyReason))
+            {
+                earlyWarning = $"You are leaving {earlyMinutes} minutes early. Your early departure has been recorded.";
+            }
+
+            var resultDto = await BuildMyAttendanceDtoAsync(today, teacherId, employeeId);
+            resultDto.EarlyMinutes = isEarly ? earlyMinutes : 0;
+            resultDto.EarlyReason = isEarly ? dto?.EarlyReason : null;
+            resultDto.EarlyDeparture = isEarly;
+            resultDto.EarlyWarning = earlyWarning;
+
+            return ApiResponse<MyAttendanceDto>.SuccessResponse(resultDto);
         }
         catch (Exception ex)
         {
@@ -522,7 +634,15 @@ public class AttendanceService : IAttendanceService
             CheckOutTime = record.CheckOutTime,
             Remarks = record.Remarks,
             IsCheckedIn = record.CheckInTime.HasValue,
-            IsCheckedOut = record.CheckOutTime.HasValue
+            IsCheckedOut = record.CheckOutTime.HasValue,
+            LateMinutes = record.LateMinutes ?? 0,
+            LateReason = record.LateReason,
+            LateCount = record.LateCountMonth,
+            PolicyExceeded = record.LatePolicyExceeded,
+            SalaryDeductionRequired = record.SalaryDeductionRequired,
+            EarlyMinutes = record.EarlyMinutes ?? 0,
+            EarlyReason = record.EarlyReason,
+            EarlyDeparture = record.EarlyMinutes.HasValue && record.EarlyMinutes > 0
         };
     }
 
@@ -536,5 +656,66 @@ public class AttendanceService : IAttendanceService
         }
 
         return schoolId;
+    }
+
+    public async Task<ApiResponse<PagedResult<LateStaffDto>>> GetLateStaffAsync(DateTime? date, int pageNumber = 1, int pageSize = 20)
+    {
+        try
+        {
+            var schoolId = await ResolveSchoolIdAsync();
+            var day = date?.Date ?? DateTime.UtcNow.Date;
+
+            var query = _unitOfWork.Attendances.AsQueryable()
+                .Where(a => a.Date.Date == day && a.SchoolId == schoolId && !a.IsDeleted && a.LateMinutes.HasValue && a.LateMinutes > 0)
+                .Include(a => a.Teacher).ThenInclude(t => t!.User)
+                .Include(a => a.Employee).ThenInclude(e => e!.User);
+
+            var totalCount = await query.CountAsync();
+            var paged = await query
+                .OrderByDescending(a => a.LateMinutes)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dtos = paged.Select(a =>
+            {
+                var name = a.Teacher?.User is not null
+                    ? $"{a.Teacher.User.FirstName} {a.Teacher.User.LastName}".Trim()
+                    : a.Employee?.User is not null
+                        ? $"{a.Employee.User.FirstName} {a.Employee.User.LastName}".Trim()
+                        : string.Empty;
+                var role = a.TeacherId.HasValue ? "Teacher" : a.Employee?.Designation?.Name ?? "Employee";
+                return new LateStaffDto
+                {
+                    Id = a.Id,
+                    TeacherId = a.TeacherId,
+                    EmployeeId = a.EmployeeId,
+                    Name = name,
+                    Role = role,
+                    Date = a.Date,
+                    CheckInTime = a.CheckInTime,
+                    LateMinutes = a.LateMinutes ?? 0,
+                    LateCountMonth = a.LateCountMonth,
+                    AllowedLateCount = 6,
+                    LateReason = a.LateReason,
+                    LatePolicyExceeded = a.LatePolicyExceeded,
+                    SalaryDeductionRequired = a.SalaryDeductionRequired
+                };
+            }).ToList();
+
+            var result = new PagedResult<LateStaffDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return ApiResponse<PagedResult<LateStaffDto>>.SuccessResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<PagedResult<LateStaffDto>>.FailResponse(ex.Message);
+        }
     }
 }

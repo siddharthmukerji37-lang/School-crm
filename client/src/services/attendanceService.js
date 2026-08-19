@@ -28,8 +28,18 @@ const attendanceService = {
     return axiosInstance.get(`/attendance/student/${studentId}?${queryParams.toString()}`);
   },
   getMy: () => axiosInstance.get('/attendance/me'),
-  clockIn: () => axiosInstance.post('/attendance/me/clock-in'),
-  clockOut: () => axiosInstance.post('/attendance/me/clock-out'),
+  clockIn: () => axiosInstance.post('/attendance/me/clock-in', {}),
+  clockOut: () => axiosInstance.post('/attendance/me/clock-out', {}),
+  clockInWithReason: (data) => axiosInstance.post('/attendance/me/clock-in', data),
+  clockOutWithReason: (data) => axiosInstance.post('/attendance/me/clock-out', data),
+  getLateStaff: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('pageNumber', params.page);
+    if (params.pageSize) queryParams.append('pageSize', params.pageSize);
+    if (params.month) queryParams.append('month', params.month);
+    if (params.year) queryParams.append('year', params.year);
+    return axiosInstance.get(`/attendance/late-staff?${queryParams.toString()}`);
+  },
   getStaff: (params = {}) => {
     const queryParams = new URLSearchParams();
     if (params.page) queryParams.append('pageNumber', params.page);

@@ -45,6 +45,15 @@ public interface IUnitOfWork : IDisposable
     IIncomeRepository Incomes { get; }
     IExpenseRepository Expenses { get; }
     IInventoryItemRepository InventoryItems { get; }
+    IAttendancePolicyRepository AttendancePolicies { get; }
+    IAttendanceMonthlySummaryRepository AttendanceMonthlySummaries { get; }
+    ISalaryDeductionRepository SalaryDeductions { get; }
+    ILeaveCalendarRepository LeaveCalendars { get; }
+    ILeaveTypeRepository LeaveTypes { get; }
+    ILeaveTypeConfigRepository LeaveTypeConfigs { get; }
+    ILeaveBalanceRepository LeaveBalances { get; }
+    ILeaveRequestRepository LeaveRequests { get; }
+    ILeaveRequestDayRepository LeaveRequestDays { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

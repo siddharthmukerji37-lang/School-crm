@@ -27,7 +27,9 @@ public interface IAttendanceService
 
     Task<ApiResponse<MyAttendanceDto>> GetMyAttendanceAsync();
 
-    Task<ApiResponse<MyAttendanceDto>> ClockInAsync();
+    Task<ApiResponse<MyAttendanceDto>> ClockInAsync(ClockInDto? dto = null);
 
-    Task<ApiResponse<MyAttendanceDto>> ClockOutAsync();
+    Task<ApiResponse<MyAttendanceDto>> ClockOutAsync(ClockOutDto? dto = null);
+
+    Task<ApiResponse<PagedResult<LateStaffDto>>> GetLateStaffAsync(DateTime? date, int pageNumber = 1, int pageSize = 20);
 }

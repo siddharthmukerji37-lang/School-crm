@@ -21,6 +21,18 @@ public class Attendance : BaseEntity
     public Teacher.Teacher? Teacher { get; set; }
     public Employee.Employee? Employee { get; set; }
     public School.School School { get; set; } = null!;
+
+    public int? LateMinutes { get; set; }
+    public string? LateReason { get; set; }
+    public int? EarlyMinutes { get; set; }
+    public string? EarlyReason { get; set; }
+    public int LateCountMonth { get; set; }
+    public bool LatePolicyExceeded { get; set; }
+    public bool SalaryDeductionRequired { get; set; }
+    public Guid? SalaryDeductionId { get; set; }
+    public Guid? LeaveRequestId { get; set; }
+    public Guid? LeaveTypeId { get; set; }
+    public string? LeaveReason { get; set; }
 }
 
 public class AttendanceSummary : BaseEntity

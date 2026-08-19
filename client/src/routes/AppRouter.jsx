@@ -24,6 +24,9 @@ const AttendanceListPage = lazy(() => import('../pages/Attendance/AttendanceList
 const AttendanceMarkPage = lazy(() => import('../pages/Attendance/AttendanceMarkPage'));
 const StaffAttendancePage = lazy(() => import('../pages/Attendance/StaffAttendancePage'));
 const MyAttendancePage = lazy(() => import('../pages/Attendance/MyAttendancePage'));
+const AttendancePolicyPage = lazy(() => import('../pages/Attendance/AttendancePolicyPage'));
+const SalaryDeductionPage = lazy(() => import('../pages/Attendance/SalaryDeductionPage'));
+const StaffLateListPage = lazy(() => import('../pages/Attendance/StaffLateListPage'));
 const ExamListPage = lazy(() => import('../pages/Exams/ExamListPage'));
 const ExamFormPage = lazy(() => import('../pages/Exams/ExamFormPage'));
 const ExamQuestionsPage = lazy(() => import('../pages/Exams/ExamQuestionsPage'));
@@ -149,6 +152,15 @@ export default function AppRouter() {
         } />
         <Route path="my-attendance" element={
           <ProtectedRoute allowedRoles={STAFF_ROLES}><MyAttendancePage /></ProtectedRoute>
+        } />
+        <Route path="attendance/policy" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><AttendancePolicyPage /></ProtectedRoute>
+        } />
+        <Route path="attendance/salary-deductions" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><SalaryDeductionPage /></ProtectedRoute>
+        } />
+        <Route path="attendance/late-staff" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><StaffLateListPage /></ProtectedRoute>
         } />
 
         <Route path="exams" element={

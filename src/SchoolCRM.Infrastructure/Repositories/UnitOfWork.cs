@@ -61,6 +61,15 @@ public class UnitOfWork : IUnitOfWork
     public IIncomeRepository Incomes => ResolveRepository<IIncomeRepository>();
     public IExpenseRepository Expenses => ResolveRepository<IExpenseRepository>();
     public IInventoryItemRepository InventoryItems => ResolveRepository<IInventoryItemRepository>();
+    public IAttendancePolicyRepository AttendancePolicies => ResolveRepository<IAttendancePolicyRepository>();
+    public IAttendanceMonthlySummaryRepository AttendanceMonthlySummaries => ResolveRepository<IAttendanceMonthlySummaryRepository>();
+    public ISalaryDeductionRepository SalaryDeductions => ResolveRepository<ISalaryDeductionRepository>();
+    public ILeaveCalendarRepository LeaveCalendars => ResolveRepository<ILeaveCalendarRepository>();
+    public ILeaveTypeRepository LeaveTypes => ResolveRepository<ILeaveTypeRepository>();
+    public ILeaveTypeConfigRepository LeaveTypeConfigs => ResolveRepository<ILeaveTypeConfigRepository>();
+    public ILeaveBalanceRepository LeaveBalances => ResolveRepository<ILeaveBalanceRepository>();
+    public ILeaveRequestRepository LeaveRequests => ResolveRepository<ILeaveRequestRepository>();
+    public ILeaveRequestDayRepository LeaveRequestDays => ResolveRepository<ILeaveRequestDayRepository>();
 
     public IGenericRepository<T> Repository<T>() where T : class
     {

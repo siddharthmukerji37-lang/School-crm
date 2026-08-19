@@ -144,9 +144,10 @@ public class AttendanceController : ControllerBase
     [HttpPost("me/clock-in")]
     [ProducesResponseType(typeof(ApiResponse<MyAttendanceDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<MyAttendanceDto>>> ClockInAsync()
+    public async Task<ActionResult<ApiResponse<MyAttendanceDto>>> ClockInAsync(
+        [FromBody] ClockInDto? dto = null)
     {
-        var result = await _attendanceService.ClockInAsync();
+        var result = await _attendanceService.ClockInAsync(dto);
         if (!result.Success)
             return BadRequest(result);
 
@@ -156,9 +157,10 @@ public class AttendanceController : ControllerBase
     [HttpPost("me/clock-out")]
     [ProducesResponseType(typeof(ApiResponse<MyAttendanceDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<MyAttendanceDto>>> ClockOutAsync()
+    public async Task<ActionResult<ApiResponse<MyAttendanceDto>>> ClockOutAsync(
+        [FromBody] ClockOutDto? dto = null)
     {
-        var result = await _attendanceService.ClockOutAsync();
+        var result = await _attendanceService.ClockOutAsync(dto);
         if (!result.Success)
             return BadRequest(result);
 
@@ -219,6 +221,17 @@ public class AttendanceController : ControllerBase
         [FromQuery] DateTime date)
     {
         var result = await _attendanceService.GetStaffAttendanceStatsAsync(date);
+        return Ok(result);
+    }
+
+    [HttpGet("late-staff")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<LateStaffDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<PagedResult<LateStaffDto>>>> GetLateStaffAsync(
+        [FromQuery] DateTime? date = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var result = await _attendanceService.GetLateStaffAsync(date, pageNumber, pageSize);
         return Ok(result);
     }
 }

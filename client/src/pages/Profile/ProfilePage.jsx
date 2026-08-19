@@ -9,10 +9,12 @@ import DownloadIcon from '@mui/icons-material/Download';
 import QuizIcon from '@mui/icons-material/Quiz';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import authService from '../../services/authService';
 import examService from '../../services/examService';
 import attendanceService from '../../services/attendanceService';
 import { generateExamResultsPDF, generateAttendanceReportPDF } from '../../utils/pdfGenerator';
+import { uploadFile } from '../../utils/upload';
 import toast from 'react-hot-toast';
 
 function DetailRow({ label, value }) {
@@ -63,6 +65,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -81,6 +84,56 @@ export default function ProfilePage() {
       active = false;
     };
   }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  const user = profile?.user || {};
+  const student = profile?.student;
+  const teacher = profile?.teacher;
+  const employee = profile?.employee;
+
+  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
+  const role = user.roles?.[0] || '';
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadFile(file);
+      await authService.updateProfile({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone || '',
+        gender: user.gender || '',
+        dateOfBirth: user.dateOfBirth || null,
+        profilePictureUrl: res.url,
+      });
+      setProfile((prev) => ({
+        ...prev,
+        user: { ...prev.user, profilePictureUrl: res.url },
+      }));
+      toast.success('Profile photo updated');
+    } catch {
+      toast.error('Failed to update photo');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleDownloadExamResults = async () => {
     if (!student?.id) return;
@@ -132,30 +185,6 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box>
-        <Alert severity="error">{error}</Alert>
-      </Box>
-    );
-  }
-
-  const user = profile?.user || {};
-  const student = profile?.student;
-  const teacher = profile?.teacher;
-  const employee = profile?.employee;
-
-  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
-  const role = user.roles?.[0] || '';
-
   return (
     <Box>
       <Typography variant="h4" fontWeight={700} sx={{ mb: 3 }}>
@@ -164,19 +193,41 @@ export default function ProfilePage() {
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
-          <Avatar
-            src={user.profilePictureUrl || undefined}
-            sx={{
-              width: 88,
-              height: 88,
-              bgcolor: 'primary.main',
-              fontSize: '2rem',
-              fontWeight: 700,
-            }}
-          >
-            {user.firstName?.charAt(0)}
-            {user.lastName?.charAt(0)}
-          </Avatar>
+          <Box sx={{ position: 'relative' }}>
+            <Avatar
+              src={user.profilePictureUrl || undefined}
+              sx={{
+                width: 88,
+                height: 88,
+                bgcolor: 'primary.main',
+                fontSize: '2rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+              onClick={() => document.getElementById('profile-photo-input').click()}
+            >
+              {user.firstName?.charAt(0)}
+              {user.lastName?.charAt(0)}
+            </Avatar>
+            <Box
+              sx={{
+                position: 'absolute', bottom: 0, right: 0, bgcolor: 'primary.main',
+                borderRadius: '50%', width: 28, height: 28, display: 'flex',
+                alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                opacity: uploading ? 0.5 : 1,
+              }}
+              onClick={() => !uploading && document.getElementById('profile-photo-input').click()}
+            >
+              {uploading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <CameraAltIcon sx={{ fontSize: 16, color: 'white' }} />}
+            </Box>
+            <input
+              id="profile-photo-input"
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handlePhotoUpload}
+            />
+          </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" fontWeight={600}>
               {fullName}

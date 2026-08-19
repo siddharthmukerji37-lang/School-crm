@@ -93,7 +93,15 @@ public enum AttendanceStatus
     Absent = 2,
     Late = 3,
     Excused = 4,
-    HalfDay = 5
+    HalfDay = 5,
+    Leave = 6
+}
+
+public enum ApplicableUserType
+{
+    Teacher = 1,
+    Employee = 2,
+    Both = 3
 }
 
 public enum StudentStatus
@@ -261,4 +269,20 @@ public enum GradingStatus
     Pending = 1,
     Approved = 2,
     Rejected = 3
+}
+
+public enum DeductionType
+{
+    FixedAmount = 1,
+    Percentage = 2,
+    PerDay = 3
+}
+
+public enum SalaryDeductionStatus
+{
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3,
+    Applied = 4,
+    Cancelled = 5
 }

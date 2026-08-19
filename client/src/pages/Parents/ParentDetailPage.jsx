@@ -68,6 +68,7 @@ export default function ParentDetailPage() {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
           <Avatar
+            src={parent.profilePictureUrl || undefined}
             sx={{
               width: 80,
               height: 80,
