@@ -33,6 +33,10 @@
       "PackagePath": "staticwebassets/uploads/618ea7412d3f4f3b87bc23d9a3a070fd.png"
     },
     {
+      "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/65db969827bb462fb261c5e2198a3f08.png",
+      "PackagePath": "staticwebassets/uploads/65db969827bb462fb261c5e2198a3f08.png"
+    },
+    {
       "Id": "/var/www/html/school-crm/src/SchoolCRM.API/wwwroot/uploads/70e78abfb8bc4d0e9b34c512623e025e.png",
       "PackagePath": "staticwebassets/uploads/70e78abfb8bc4d0e9b34c512623e025e.png"
     },

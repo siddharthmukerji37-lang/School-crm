@@ -15,6 +15,7 @@ public interface ILeaveService
 
     // Admin APIs
     Task<ApiResponse<LeaveCalendarDto>> CreateLeaveCalendarAsync(CreateLeaveCalendarDto dto);
+    Task<ApiResponse<LeaveCalendarDto>> UpdateLeaveCalendarAsync(Guid id, CreateLeaveCalendarDto dto);
     Task<ApiResponse<List<LeaveCalendarDto>>> GetLeaveCalendarsAsync();
     Task<ApiResponse<LeaveCalendarDto>> GetActiveLeaveCalendarAsync();
 

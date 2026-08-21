@@ -26,6 +26,13 @@ public class LeaveAdminController : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
+    [HttpPut("calendar/{id}")]
+    public async Task<ActionResult<ApiResponse<LeaveCalendarDto>>> UpdateCalendar(Guid id, [FromBody] CreateLeaveCalendarDto dto)
+    {
+        var result = await _leaveService.UpdateLeaveCalendarAsync(id, dto);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
     [HttpGet("calendar")]
     public async Task<ActionResult<ApiResponse<List<LeaveCalendarDto>>>> GetCalendars()
     {

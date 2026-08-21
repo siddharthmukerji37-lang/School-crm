@@ -6,7 +6,9 @@ using SchoolCRM.Application.Interfaces.Services;
 using SchoolCRM.Domain.Entities.Attendance;
 using SchoolCRM.Domain.Entities.Leave;
 using SchoolCRM.Domain.Enums;
+using SchoolCRM.Infrastructure.Data;
 using SchoolCRM.Shared.Models;
+using SchoolCRM.Domain.Entities.Identity;
 
 namespace SchoolCRM.Infrastructure.Services;
 
@@ -28,11 +30,17 @@ public class LeaveService : ILeaveService
 
         var teacher = (await _unitOfWork.Teachers.FindAsync(t => t.UserId == userId && !t.IsDeleted)).FirstOrDefault();
         if (teacher is not null)
-            return (teacher.Id, null, "Teacher", teacher.Gender.ToString());
+        {
+            var user = (await _unitOfWork.Repository<ApplicationUser>().FindAsync(u => u.Id == userId)).FirstOrDefault();
+            return (teacher.Id, null, "Teacher", user?.Gender.ToString() ?? "Male");
+        }
 
         var employee = (await _unitOfWork.Employees.FindAsync(e => e.UserId == userId && !e.IsDeleted)).FirstOrDefault();
         if (employee is not null)
-            return (null, employee.Id, "Employee", employee.Gender.ToString());
+        {
+            var user = (await _unitOfWork.Repository<ApplicationUser>().FindAsync(u => u.Id == userId)).FirstOrDefault();
+            return (null, employee.Id, "Employee", user?.Gender.ToString() ?? "Male");
+        }
 
         return (null, null, "", "");
     }
@@ -61,11 +69,19 @@ public class LeaveService : ILeaveService
     {
         var teacher = (await _unitOfWork.Teachers.FindAsync(t => t.UserId == userId && !t.IsDeleted)).FirstOrDefault();
         if (teacher is not null)
-            return new UserProfile { Name = $"{teacher.FirstName} {teacher.LastName}".Trim(), Type = "Teacher" };
+        {
+            var user = (await _unitOfWork.Repository<ApplicationUser>().FindAsync(u => u.Id == userId)).FirstOrDefault();
+            var name = user != null ? $"{user.FirstName} {user.LastName}".Trim() : teacher.EmployeeCode;
+            return new UserProfile { Name = name, Type = "Teacher" };
+        }
 
         var employee = (await _unitOfWork.Employees.FindAsync(e => e.UserId == userId && !e.IsDeleted)).FirstOrDefault();
         if (employee is not null)
-            return new UserProfile { Name = $"{employee.FirstName} {employee.LastName}".Trim(), Type = "Employee" };
+        {
+            var user = (await _unitOfWork.Repository<ApplicationUser>().FindAsync(u => u.Id == userId)).FirstOrDefault();
+            var name = user != null ? $"{user.FirstName} {user.LastName}".Trim() : employee.EmployeeCode;
+            return new UserProfile { Name = name, Type = "Employee" };
+        }
 
         return null;
     }
@@ -192,6 +208,8 @@ public class LeaveService : ILeaveService
             if (config is null)
                 return ApiResponse<LeaveRequestDto>.FailResponse("Leave type is not available for the current calendar.");
 
+            var leaveType = (await _unitOfWork.LeaveTypes.FindAsync(t => t.Id == dto.LeaveTypeId && !t.IsDeleted)).FirstOrDefault();
+
             if (totalDays < config.MinimumDays || totalDays > config.MaximumDays)
                 return ApiResponse<LeaveRequestDto>.FailResponse($"Leave duration must be between {config.MinimumDays} and {config.MaximumDays} days.");
 
@@ -211,8 +229,8 @@ public class LeaveService : ILeaveService
             if (string.IsNullOrWhiteSpace(dto.Reason))
                 return ApiResponse<LeaveRequestDto>.FailResponse("Reason is required.");
 
-            if (config.LeaveType.RequiresAttachment && string.IsNullOrEmpty(dto.AttachmentPath))
-                return ApiResponse<LeaveRequestDto>.FailResponse("Attachment is required for this leave type.");
+            if (leaveType is not null && leaveType.RequiresAttachment && totalDays > 3 && string.IsNullOrEmpty(dto.AttachmentPath))
+                return ApiResponse<LeaveRequestDto>.FailResponse("Attachment is required for this leave type when applying for more than 3 days.");
 
             var request = new LeaveRequest
             {
@@ -253,7 +271,7 @@ public class LeaveService : ILeaveService
             await _unitOfWork.SaveChangesAsync();
 
             var profile = await GetUserProfileAsync(userId);
-            var leaveType = (await _unitOfWork.LeaveTypes.GetByIdAsync(dto.LeaveTypeId));
+            var lt = (await _unitOfWork.LeaveTypes.GetByIdAsync(dto.LeaveTypeId));
 
             return ApiResponse<LeaveRequestDto>.SuccessResponse(new LeaveRequestDto
             {
@@ -262,8 +280,8 @@ public class LeaveService : ILeaveService
                 UserName = profile?.Name ?? "",
                 UserType = profile?.Type ?? "",
                 LeaveTypeId = dto.LeaveTypeId,
-                LeaveTypeName = leaveType?.Name ?? "",
-                LeaveTypeCode = leaveType?.Code ?? "",
+                LeaveTypeName = lt?.Name ?? "",
+                LeaveTypeCode = lt?.Code ?? "",
                 FromDate = request.FromDate,
                 ToDate = request.ToDate,
                 TotalDays = totalDays,
@@ -438,6 +456,40 @@ public class LeaveService : ILeaveService
         }
     }
 
+    public async Task<ApiResponse<LeaveCalendarDto>> UpdateLeaveCalendarAsync(Guid id, CreateLeaveCalendarDto dto)
+    {
+        try
+        {
+            var calendar = await _unitOfWork.LeaveCalendars.GetByIdAsync(id);
+            if (calendar is null)
+                return ApiResponse<LeaveCalendarDto>.FailResponse("Calendar not found.");
+
+            calendar.Name = dto.Name;
+            calendar.Year = dto.Year;
+            calendar.StartDate = dto.StartDate.Date;
+            calendar.EndDate = dto.EndDate.Date;
+            calendar.IsActive = dto.IsActive;
+            calendar.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.LeaveCalendars.UpdateAsync(calendar);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ApiResponse<LeaveCalendarDto>.SuccessResponse(new LeaveCalendarDto
+            {
+                Id = calendar.Id,
+                Name = calendar.Name,
+                Year = calendar.Year,
+                StartDate = calendar.StartDate,
+                EndDate = calendar.EndDate,
+                IsActive = calendar.IsActive
+            });
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<LeaveCalendarDto>.FailResponse(ex.Message);
+        }
+    }
+
     public async Task<ApiResponse<List<LeaveCalendarDto>>> GetLeaveCalendarsAsync()
     {
         try
@@ -577,6 +629,7 @@ public class LeaveService : ILeaveService
             leaveType.Description = dto.Description;
             leaveType.RequiresApproval = dto.RequiresApproval;
             leaveType.RequiresAttachment = dto.RequiresAttachment;
+            leaveType.IsActive = dto.IsActive;
             leaveType.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.LeaveTypes.UpdateAsync(leaveType);
@@ -764,9 +817,15 @@ public class LeaveService : ILeaveService
 
             var users = new List<(Guid UserId, string Type, string Gender)>();
             foreach (var t in teachers)
-                users.Add((t.UserId, "Teacher", t.Gender.ToString()));
+            {
+                var gender = t.User?.Gender.ToString() ?? "Male";
+                users.Add((t.UserId, "Teacher", gender));
+            }
             foreach (var e in employees)
-                users.Add((e.UserId, "Employee", e.Gender.ToString()));
+            {
+                var gender = e.User?.Gender.ToString() ?? "Male";
+                users.Add((e.UserId, "Employee", gender));
+            }
 
             var count = 0;
             foreach (var (userId, userType, gender) in users)
@@ -873,78 +932,68 @@ public class LeaveService : ILeaveService
             if (request.Status != LeaveStatus.Pending)
                 return ApiResponse<LeaveRequestDto>.FailResponse("Only pending requests can be approved.");
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            request.Status = LeaveStatus.Approved;
+            request.ApprovedBy = _currentUserService.UserId;
+            request.ApprovedAt = DateTime.UtcNow;
+            request.AdminReason = dto.AdminReason;
+            request.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.LeaveRequests.UpdateAsync(request);
+
+            var balance = await ((Repositories.LeaveBalanceRepository)_unitOfWork.LeaveBalances)
+                .GetByUserAndTypeAsync(request.UserId, request.LeaveTypeId, request.LeaveCalendarId);
+
+            if (balance is not null)
             {
-                request.Status = LeaveStatus.Approved;
-                request.ApprovedBy = _currentUserService.UserId;
-                request.ApprovedAt = DateTime.UtcNow;
-                request.AdminReason = dto.AdminReason;
-                request.UpdatedAt = DateTime.UtcNow;
-                await _unitOfWork.LeaveRequests.UpdateAsync(request);
+                balance.UsedDays += request.TotalDays;
+                balance.PendingDays = Math.Max(0, balance.PendingDays - request.TotalDays);
+                balance.UpdatedAt = DateTime.UtcNow;
+                await _unitOfWork.LeaveBalances.UpdateAsync(balance);
+            }
 
-                var balance = await ((Repositories.LeaveBalanceRepository)_unitOfWork.LeaveBalances)
-                    .GetByUserAndTypeAsync(request.UserId, request.LeaveTypeId, request.LeaveCalendarId);
+            foreach (var day in request.LeaveRequestDays)
+            {
+                day.Status = LeaveStatus.Approved;
+                await _unitOfWork.LeaveRequestDays.UpdateAsync(day);
 
-                if (balance is not null)
+                var teacher = (await _unitOfWork.Teachers.FindAsync(t => t.UserId == request.UserId && !t.IsDeleted)).FirstOrDefault();
+                var employee = (await _unitOfWork.Employees.FindAsync(e => e.UserId == request.UserId && !e.IsDeleted)).FirstOrDefault();
+
+                var existingAttendance = (await _unitOfWork.Attendances.FindAsync(a =>
+                    a.Date.Date == day.LeaveDate.Date &&
+                    ((teacher != null && a.TeacherId == teacher.Id) || (employee != null && a.EmployeeId == employee.Id)) &&
+                    !a.IsDeleted)).FirstOrDefault();
+
+                if (existingAttendance is not null)
                 {
-                    balance.UsedDays += request.TotalDays;
-                    balance.PendingDays = Math.Max(0, balance.PendingDays - request.TotalDays);
-                    balance.UpdatedAt = DateTime.UtcNow;
-                    await _unitOfWork.LeaveBalances.UpdateAsync(balance);
+                    existingAttendance.Status = AttendanceStatus.Leave;
+                    existingAttendance.LeaveRequestId = request.Id;
+                    existingAttendance.LeaveTypeId = request.LeaveTypeId;
+                    existingAttendance.LeaveReason = request.Reason;
+                    existingAttendance.UpdatedAt = DateTime.UtcNow;
+                    await _unitOfWork.Attendances.UpdateAsync(existingAttendance);
                 }
-
-                foreach (var day in request.LeaveRequestDays)
+                else
                 {
-                    day.Status = LeaveStatus.Approved;
-                    await _unitOfWork.LeaveRequestDays.UpdateAsync(day);
-
-                    var teacher = (await _unitOfWork.Teachers.FindAsync(t => t.UserId == request.UserId && !t.IsDeleted)).FirstOrDefault();
-                    var employee = (await _unitOfWork.Employees.FindAsync(e => e.UserId == request.UserId && !t.IsDeleted)).FirstOrDefault();
-
-                    var existingAttendance = (await _unitOfWork.Attendances.FindAsync(a =>
-                        a.Date.Date == day.LeaveDate.Date &&
-                        ((teacher != null && a.TeacherId == teacher.Id) || (employee != null && a.EmployeeId == employee.Id)) &&
-                        !a.IsDeleted)).FirstOrDefault();
-
-                    if (existingAttendance is not null)
+                    var schoolId = await ResolveSchoolIdAsync();
+                    if (schoolId is not null)
                     {
-                        existingAttendance.Status = AttendanceStatus.Leave;
-                        existingAttendance.LeaveRequestId = request.Id;
-                        existingAttendance.LeaveTypeId = request.LeaveTypeId;
-                        existingAttendance.LeaveReason = request.Reason;
-                        existingAttendance.UpdatedAt = DateTime.UtcNow;
-                        await _unitOfWork.Attendances.UpdateAsync(existingAttendance);
-                    }
-                    else
-                    {
-                        var schoolId = await ResolveSchoolIdAsync();
-                        if (schoolId is not null)
+                        await _unitOfWork.Attendances.AddAsync(new Domain.Entities.Attendance.Attendance
                         {
-                            await _unitOfWork.Attendances.AddAsync(new Domain.Entities.Attendance.Attendance
-                            {
-                                Date = day.LeaveDate,
-                                Status = AttendanceStatus.Leave,
-                                TeacherId = teacher?.Id,
-                                EmployeeId = employee?.Id,
-                                SchoolId = schoolId.Value,
-                                LeaveRequestId = request.Id,
-                                LeaveTypeId = request.LeaveTypeId,
-                                LeaveReason = request.Reason,
-                                CreatedAt = DateTime.UtcNow
-                            });
-                        }
+                            Date = day.LeaveDate,
+                            Status = AttendanceStatus.Leave,
+                            TeacherId = teacher?.Id,
+                            EmployeeId = employee?.Id,
+                            SchoolId = schoolId.Value,
+                            LeaveRequestId = request.Id,
+                            LeaveTypeId = request.LeaveTypeId,
+                            LeaveReason = request.Reason,
+                            CreatedAt = DateTime.UtcNow
+                        });
                     }
                 }
+            }
 
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            await _unitOfWork.SaveChangesAsync();
 
             var profile = await GetUserProfileAsync(request.UserId);
             var leaveType = await _unitOfWork.LeaveTypes.GetByIdAsync(request.LeaveTypeId);

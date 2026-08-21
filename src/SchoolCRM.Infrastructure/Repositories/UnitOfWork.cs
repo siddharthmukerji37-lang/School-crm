@@ -70,6 +70,12 @@ public class UnitOfWork : IUnitOfWork
     public ILeaveBalanceRepository LeaveBalances => ResolveRepository<ILeaveBalanceRepository>();
     public ILeaveRequestRepository LeaveRequests => ResolveRepository<ILeaveRequestRepository>();
     public ILeaveRequestDayRepository LeaveRequestDays => ResolveRepository<ILeaveRequestDayRepository>();
+    public IPayrollSettingRepository PayrollSettings => ResolveRepository<IPayrollSettingRepository>();
+    public ISalaryProfileRepository SalaryProfiles => ResolveRepository<ISalaryProfileRepository>();
+    public ISalaryComponentRepository SalaryComponents => ResolveRepository<ISalaryComponentRepository>();
+    public IPayrollRepository Payrolls => ResolveRepository<IPayrollRepository>();
+    public IPayrollDeductionRepository PayrollDeductions => ResolveRepository<IPayrollDeductionRepository>();
+    public IPayslipRepository Payslips => ResolveRepository<IPayslipRepository>();
 
     public IGenericRepository<T> Repository<T>() where T : class
     {

@@ -286,3 +286,14 @@ public enum SalaryDeductionStatus
     Applied = 4,
     Cancelled = 5
 }
+
+public enum PayrollStatus
+{
+    Draft = 1,
+    Calculated = 2,
+    UnderReview = 3,
+    Approved = 4,
+    PayslipGenerated = 5,
+    Paid = 6,
+    Cancelled = 7
+}

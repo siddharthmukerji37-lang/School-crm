@@ -1,0 +1,1 @@
+import{b2 as o,aU as m,b3 as u}from"./index-BfoAKgti.js";const p=o();function c({props:t,name:r,defaultTheme:a,themeId:s}){let e=m(a);return s&&(e=e[s]||e),u({theme:e,name:r,props:t})}export{p as s,c as u};

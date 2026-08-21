@@ -27,6 +27,9 @@ const MyAttendancePage = lazy(() => import('../pages/Attendance/MyAttendancePage
 const AttendancePolicyPage = lazy(() => import('../pages/Attendance/AttendancePolicyPage'));
 const SalaryDeductionPage = lazy(() => import('../pages/Attendance/SalaryDeductionPage'));
 const StaffLateListPage = lazy(() => import('../pages/Attendance/StaffLateListPage'));
+const AdminLeaveTypesPage = lazy(() => import('../pages/Leave/AdminLeaveTypesPage'));
+const AdminLeaveRequestsPage = lazy(() => import('../pages/Leave/AdminLeaveRequestsPage'));
+const MyLeavePage = lazy(() => import('../pages/Leave/MyLeavePage'));
 const ExamListPage = lazy(() => import('../pages/Exams/ExamListPage'));
 const ExamFormPage = lazy(() => import('../pages/Exams/ExamFormPage'));
 const ExamQuestionsPage = lazy(() => import('../pages/Exams/ExamQuestionsPage'));
@@ -58,6 +61,10 @@ const NoticeManagementPage = lazy(() => import('../pages/NoticeBoard/NoticeManag
 const TimetablePage = lazy(() => import('../pages/Timetable/TimetablePage'));
 const ChatPage = lazy(() => import('../pages/Chat/ChatPage'));
 const ProfilePage = lazy(() => import('../pages/Profile/ProfilePage'));
+const AdminPayrollSettingsPage = lazy(() => import('../pages/Payroll/AdminPayrollSettingsPage'));
+const AdminSalaryProfilesPage = lazy(() => import('../pages/Payroll/AdminSalaryProfilesPage'));
+const AdminPayrollManagementPage = lazy(() => import('../pages/Payroll/AdminPayrollManagementPage'));
+const MyPayrollPage = lazy(() => import('../pages/Payroll/MyPayrollPage'));
 
 const ADMIN_ROLES = ['SuperAdmin', 'Admin'];
 const STAFF_ROLES = ['SuperAdmin', 'Admin', 'Teacher', 'ClassTeacher'];
@@ -65,6 +72,7 @@ const FEE_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
 const ACCOUNTS_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
 const INVENTORY_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
 const LIBRARY_ROLES = ['SuperAdmin', 'Admin', 'Librarian'];
+const PAYROLL_ROLES = ['SuperAdmin', 'Admin', 'Accountant'];
 const GENERAL_ROLES = [
   'SuperAdmin', 'Admin', 'SchoolAdmin', 'Principal', 'VicePrincipal',
   'Teacher', 'ClassTeacher', 'Receptionist', 'Student', 'Parent',
@@ -163,6 +171,16 @@ export default function AppRouter() {
           <ProtectedRoute allowedRoles={ADMIN_ROLES}><StaffLateListPage /></ProtectedRoute>
         } />
 
+        <Route path="leaves/types" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminLeaveTypesPage /></ProtectedRoute>
+        } />
+        <Route path="leaves/requests" element={
+          <ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminLeaveRequestsPage /></ProtectedRoute>
+        } />
+        <Route path="my-leaves" element={
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><MyLeavePage /></ProtectedRoute>
+        } />
+
         <Route path="exams" element={
           <ProtectedRoute allowedRoles={GENERAL_ROLES}><ExamListPage /></ProtectedRoute>
         } />
@@ -257,6 +275,19 @@ export default function AppRouter() {
         <Route path="notice-board" element={<NoticeBoardPage />} />
         <Route path="notices/manage" element={
           <ProtectedRoute allowedRoles={['SuperAdmin', 'Admin']}><NoticeManagementPage /></ProtectedRoute>
+        } />
+
+        <Route path="payroll/settings" element={
+          <ProtectedRoute allowedRoles={PAYROLL_ROLES}><AdminPayrollSettingsPage /></ProtectedRoute>
+        } />
+        <Route path="payroll/salary-profiles" element={
+          <ProtectedRoute allowedRoles={PAYROLL_ROLES}><AdminSalaryProfilesPage /></ProtectedRoute>
+        } />
+        <Route path="payroll/manage" element={
+          <ProtectedRoute allowedRoles={PAYROLL_ROLES}><AdminPayrollManagementPage /></ProtectedRoute>
+        } />
+        <Route path="my-payroll" element={
+          <ProtectedRoute allowedRoles={STAFF_ROLES}><MyPayrollPage /></ProtectedRoute>
         } />
 
         <Route path="timetable" element={

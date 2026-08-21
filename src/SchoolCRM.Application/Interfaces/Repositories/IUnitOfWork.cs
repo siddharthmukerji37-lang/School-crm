@@ -54,6 +54,12 @@ public interface IUnitOfWork : IDisposable
     ILeaveBalanceRepository LeaveBalances { get; }
     ILeaveRequestRepository LeaveRequests { get; }
     ILeaveRequestDayRepository LeaveRequestDays { get; }
+    IPayrollSettingRepository PayrollSettings { get; }
+    ISalaryProfileRepository SalaryProfiles { get; }
+    ISalaryComponentRepository SalaryComponents { get; }
+    IPayrollRepository Payrolls { get; }
+    IPayrollDeductionRepository PayrollDeductions { get; }
+    IPayslipRepository Payslips { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

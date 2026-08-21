@@ -39,6 +39,7 @@ public sealed class CreateLeaveTypeDto
     public string? Description { get; set; }
     public bool RequiresApproval { get; set; } = true;
     public bool RequiresAttachment { get; set; } = false;
+    public bool IsActive { get; set; } = true;
 }
 
 public sealed class LeaveTypeConfigDto
@@ -115,6 +116,14 @@ public sealed class LeaveRequestDto
     public string Reason { get; set; } = string.Empty;
     public string? AttachmentPath { get; set; }
     public LeaveStatus Status { get; set; }
+    public string StatusName => Status switch
+    {
+        LeaveStatus.Pending => "Pending",
+        LeaveStatus.Approved => "Approved",
+        LeaveStatus.Rejected => "Rejected",
+        LeaveStatus.Cancelled => "Cancelled",
+        _ => "Unknown"
+    };
     public string? ApprovedBy { get; set; }
     public DateTime? ApprovedAt { get; set; }
     public string? RejectedBy { get; set; }

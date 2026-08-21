@@ -1,0 +1,1 @@
+import{H as e}from"./index-BfoAKgti.js";async function s(t){const a=new FormData;return a.append("file",t),(await e.post("/files/upload",a,{headers:{"Content-Type":"multipart/form-data"},timeout:6e4})).data}export{s as u};

@@ -227,6 +227,12 @@ builder.Services.AddScoped<ILeaveTypeConfigRepository, LeaveTypeConfigRepository
 builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
 builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
 builder.Services.AddScoped<ILeaveRequestDayRepository, LeaveRequestDayRepository>();
+builder.Services.AddScoped<IPayrollSettingRepository, PayrollSettingRepository>();
+builder.Services.AddScoped<ISalaryProfileRepository, SalaryProfileRepository>();
+builder.Services.AddScoped<ISalaryComponentRepository, SalaryComponentRepository>();
+builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
+builder.Services.AddScoped<IPayrollDeductionRepository, PayrollDeductionRepository>();
+builder.Services.AddScoped<IPayslipRepository, PayslipRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -249,6 +255,7 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAttendancePolicyService, AttendancePolicyService>();
 builder.Services.AddScoped<ISalaryDeductionService, SalaryDeductionService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
+builder.Services.AddScoped<IPayrollService, PayrollService>();
 builder.Services.AddScoped<IHomeworkService, HomeworkService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
@@ -256,6 +263,7 @@ builder.Services.AddScoped<INoticeService, NoticeService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 
 builder.Services.AddHostedService<FeeOverdueNotificationService>();
+builder.Services.AddHostedService<AutoClockOutService>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();

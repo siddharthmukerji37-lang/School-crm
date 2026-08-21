@@ -41,11 +41,12 @@ public class LeaveTypeConfigRepository : GenericRepository<LeaveTypeConfig>, ILe
 
     public async Task<IReadOnlyList<LeaveTypeConfig>> GetApplicableForUserAsync(Guid calendarId, string userType, string gender)
     {
+        var genderValue = gender == "Female" ? 2 : gender == "Other" ? 3 : 1;
         return await _dbSet
             .Include(c => c.LeaveType)
             .Where(c => c.LeaveCalendarId == calendarId && c.IsActive && !c.IsDeleted
                 && (c.ApplicableUserType == "Both" || c.ApplicableUserType == userType)
-                && (c.ApplicableGender.ToString() == "Male" || c.ApplicableGender.ToString() == gender || c.ApplicableGender.ToString() == "Other"))
+                && (c.ApplicableGender == Domain.Enums.Gender.Male || (int)c.ApplicableGender == genderValue))
             .OrderBy(c => c.LeaveType.Name).ToListAsync();
     }
 }

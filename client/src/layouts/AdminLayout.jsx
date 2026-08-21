@@ -30,6 +30,8 @@ import SchoolIcon from '@mui/icons-material/School';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import BadgeIcon from '@mui/icons-material/Badge';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import EventIcon from '@mui/icons-material/Event';
+import EventBusyIcon from '@mui/icons-material/EventBusy';
 import QuizIcon from '@mui/icons-material/Quiz';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -51,6 +53,10 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatIcon from '@mui/icons-material/Chat';
 import PolicyIcon from '@mui/icons-material/Policy';
 import MoneyOffIcon from '@mui/icons-material/MoneyOff';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import PaymentIcon from '@mui/icons-material/Payment';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { toggleSidebar } from '../store/slices/uiSlice';
 import { logout } from '../store/slices/authSlice';
 import {
@@ -75,6 +81,8 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Attendance Policy', icon: <PolicyIcon />, path: '/attendance/policy' },
     { label: 'Salary Deductions', icon: <MoneyOffIcon />, path: '/attendance/salary-deductions' },
     { label: 'Late Staff', icon: <PeopleIcon />, path: '/attendance/late-staff' },
+    { label: 'Leave Types & Calendar', icon: <EventIcon />, path: '/leaves/types' },
+    { label: 'Leave Requests', icon: <EventBusyIcon />, path: '/leaves/requests' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
@@ -90,6 +98,10 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
     { label: 'Notice Management', icon: <CampaignIcon />, path: '/notices/manage' },
+    { label: 'Payroll Settings', icon: <AccountBalanceWalletIcon />, path: '/payroll/settings' },
+    { label: 'Salary Profiles', icon: <MonetizationOnIcon />, path: '/payroll/salary-profiles' },
+    { label: 'Manage Payroll', icon: <PaymentIcon />, path: '/payroll/manage' },
+    { label: 'My Payroll', icon: <ReceiptLongIcon />, path: '/my-payroll' },
   ],
   Admin: [
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
@@ -101,6 +113,8 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Attendance Policy', icon: <PolicyIcon />, path: '/attendance/policy' },
     { label: 'Salary Deductions', icon: <MoneyOffIcon />, path: '/attendance/salary-deductions' },
     { label: 'Late Staff', icon: <PeopleIcon />, path: '/attendance/late-staff' },
+    { label: 'Leave Types & Calendar', icon: <EventIcon />, path: '/leaves/types' },
+    { label: 'Leave Requests', icon: <EventBusyIcon />, path: '/leaves/requests' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Exams', icon: <QuizIcon />, path: '/exams' },
     { label: 'Homework', icon: <AssignmentIcon />, path: '/homework' },
@@ -110,6 +124,10 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Inventory', icon: <InventoryIcon />, path: '/inventory' },
     { label: 'Accounts', icon: <AccountBalanceIcon />, path: '/accounts' },
+    { label: 'Payroll Settings', icon: <AccountBalanceWalletIcon />, path: '/payroll/settings' },
+    { label: 'Salary Profiles', icon: <MonetizationOnIcon />, path: '/payroll/salary-profiles' },
+    { label: 'Manage Payroll', icon: <PaymentIcon />, path: '/payroll/manage' },
+    { label: 'My Payroll', icon: <ReceiptLongIcon />, path: '/my-payroll' },
     { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
@@ -122,6 +140,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Students', icon: <SchoolIcon />, path: '/students' },
     { label: 'Teachers', icon: <PeopleIcon />, path: '/teachers' },
     { label: 'My Attendance', icon: <EventAvailableIcon />, path: '/my-attendance' },
+    { label: 'My Leave', icon: <EventBusyIcon />, path: '/my-leaves' },
     { label: 'Mark Attendance', icon: <EventAvailableIcon />, path: '/attendance/mark' },
     { label: 'Timetable', icon: <CalendarMonthIcon />, path: '/timetable' },
     { label: 'Parents', icon: <FamilyRestroomIcon />, path: '/parents' },
@@ -130,6 +149,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Transport', icon: <DirectionsBusIcon />, path: '/transport' },
     { label: 'Library', icon: <MenuBookIcon />, path: '/library' },
     { label: 'My Books', icon: <MenuBookIcon />, path: '/library/my-issues' },
+    { label: 'My Payroll', icon: <ReceiptLongIcon />, path: '/my-payroll' },
     { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },
@@ -172,6 +192,10 @@ const NAV_ITEMS_BY_ROLE = {
     { label: 'Fees', icon: <PaymentsIcon />, path: '/fees' },
     { label: 'Accounts', icon: <AccountBalanceIcon />, path: '/accounts' },
     { label: 'Inventory', icon: <InventoryIcon />, path: '/inventory' },
+    { label: 'Payroll Settings', icon: <AccountBalanceWalletIcon />, path: '/payroll/settings' },
+    { label: 'Salary Profiles', icon: <MonetizationOnIcon />, path: '/payroll/salary-profiles' },
+    { label: 'Manage Payroll', icon: <PaymentIcon />, path: '/payroll/manage' },
+    { label: 'My Payroll', icon: <ReceiptLongIcon />, path: '/my-payroll' },
     { label: 'Chat', icon: <ChatIcon />, path: '/chat' },
     { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { label: 'Notice Board', icon: <CampaignIcon />, path: '/notice-board' },

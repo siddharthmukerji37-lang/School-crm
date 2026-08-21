@@ -24,6 +24,7 @@ using EmployeeEntity = SchoolCRM.Domain.Entities.Employee.Employee;
 using SchoolCRM.Domain.Entities.Transport;
 using SchoolCRM.Domain.Entities.Inventory;
 using SchoolCRM.Domain.Entities.Leave;
+using SchoolCRM.Domain.Entities.Payroll;
 
 namespace SchoolCRM.Infrastructure.Data;
 
@@ -86,6 +87,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
     public DbSet<LeaveRequestDay> LeaveRequestDays => Set<LeaveRequestDay>();
+
+    public DbSet<PayrollSetting> PayrollSettings => Set<PayrollSetting>();
+    public DbSet<SalaryProfile> SalaryProfiles => Set<SalaryProfile>();
+    public DbSet<SalaryComponent> SalaryComponents => Set<SalaryComponent>();
+    public DbSet<Domain.Entities.Payroll.Payroll> Payrolls => Set<Domain.Entities.Payroll.Payroll>();
+    public DbSet<PayrollDeduction> PayrollDeductions => Set<PayrollDeduction>();
+    public DbSet<Payslip> Payslips => Set<Payslip>();
 
     public DbSet<ExamType> ExamTypes => Set<ExamType>();
     public DbSet<Exam> Exams => Set<Exam>();
